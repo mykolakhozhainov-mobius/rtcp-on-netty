@@ -34,13 +34,13 @@ public class MessageChannel implements ProcessingChannel {
         this.messageProcessor = messageProcessor;
 
         bootstrap = new Bootstrap();
-        ChannelInitializer<SocketChannel> nettyChannelInitializer = new StreamChannelInitializer(messageProcessor);
+        io.netty.channel.ChannelInitializer<SocketChannel> nettyChannelInitializer = new ChannelInitializer(messageProcessor);
 
         bootstrap.group(messageProcessor.workerGroup)
                 .channel(messageProcessor.getEpollServerSocketChannel())
                 .option(ChannelOption.SO_KEEPALIVE, true)
                 .handler(nettyChannelInitializer)
-                .handler(new ChannelInitializer<SocketChannel>() {
+                .handler(new io.netty.channel.ChannelInitializer<SocketChannel>() {
                  @Override
                  protected void initChannel(SocketChannel ch) {
                        ChannelPipeline p = ch.pipeline();
@@ -67,7 +67,7 @@ public class MessageChannel implements ProcessingChannel {
     public void process(Object message) {
 
         // Maybe add some long operation/timeout?
-
+        System.out.println("Processing channel:");
         System.out.println(message);
     }
 

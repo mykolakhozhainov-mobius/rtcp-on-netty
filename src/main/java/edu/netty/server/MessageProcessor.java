@@ -1,5 +1,7 @@
 package edu.netty.server;
 
+import edu.netty.executor.MessageProcessorExecutor;
+import edu.netty.executor.ProcessorExecutor;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
@@ -24,10 +26,14 @@ public class MessageProcessor {
      public EventLoopGroup bossGroup;
      public EventLoopGroup workerGroup;
 
+     public ProcessorExecutor executor;
+
      public MessageProcessor(int port) {
           messageChannels = new ConcurrentHashMap<String, MessageChannel>();
           bossGroup = new EpollEventLoopGroup();
           workerGroup = new EpollEventLoopGroup();
+
+          executor = new MessageProcessorExecutor();
 
           this.port = port;
      }
@@ -79,7 +85,7 @@ public class MessageProcessor {
 
                // Configuration for TCP connection
                bootstrap.channel(this.getEpollServerSocketChannel())
-                    .childHandler(new StreamChannelInitializer(this))
+                    .childHandler(new ChannelInitializer(this))
                     .childOption(ChannelOption.SO_KEEPALIVE, true);
 
                // Bind and start to accept incoming connections.
@@ -112,5 +118,7 @@ public class MessageProcessor {
      public static void main(String[] args) {
           MessageProcessor processor = new MessageProcessor(8080);
           processor.start();
+
+          processor.executor.start(8, 1000);
      }
 }

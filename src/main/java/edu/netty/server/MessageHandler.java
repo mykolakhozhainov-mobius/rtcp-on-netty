@@ -1,5 +1,8 @@
 package edu.netty.server;
 
+import edu.netty.executor.MessageProcessorExecutor;
+import edu.netty.executor.ProcessorExecutor;
+import edu.netty.task.MessageProcessingTask;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -17,8 +20,7 @@ public class MessageHandler extends ChannelInboundHandlerAdapter {
         Channel channel = ctx.channel();
         MessageChannel messageChannel = messageProcessor.createMessageChannel(channel);
 
-        // TODO: Add channel to task executor
-        System.out.println(msg.toString());
+        this.messageProcessor.executor.addTaskLast(new MessageProcessingTask(messageChannel, msg));
     }
 
     @Override

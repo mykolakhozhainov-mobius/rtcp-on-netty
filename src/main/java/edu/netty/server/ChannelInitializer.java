@@ -1,14 +1,13 @@
 package edu.netty.server;
 
-import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.bytes.ByteArrayEncoder;
 
-public class StreamChannelInitializer extends ChannelInitializer<SocketChannel> {
+public class ChannelInitializer extends io.netty.channel.ChannelInitializer<SocketChannel> {
     private final MessageProcessor messageProcessor;
 
-    public StreamChannelInitializer(MessageProcessor messageProcessor) {
+    public ChannelInitializer(MessageProcessor messageProcessor) {
         this.messageProcessor = messageProcessor;
     }
 

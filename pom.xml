@@ -14,5 +14,11 @@
       <artifactId>netty-all</artifactId>
       <version>4.1.113.Final</version>
     </dependency>
+
+    <dependency>
+      <groupId>com.mobius-software</groupId>
+      <artifactId>mobius-timers</artifactId>
+      <version>1.0.0-32</version>
+    </dependency>
   </dependencies>
 </project>
