@@ -9,7 +9,6 @@ import io.netty.handler.codec.http.websocketx.WebSocket13FrameEncoder;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.util.Random;
 
 public class MessageChannel implements ProcessingChannel {
     private MessageProcessor messageProcessor;
@@ -21,16 +20,16 @@ public class MessageChannel implements ProcessingChannel {
     private final int port;
 
     public MessageChannel(
-            MessageProcessor nettyStreamMessageProcessor,
+            MessageProcessor messageProcessor,
             Channel channel) {
         this(
                 ((InetSocketAddress) channel.remoteAddress()).getAddress(),
                 ((InetSocketAddress) channel.remoteAddress()).getPort(),
-                nettyStreamMessageProcessor
+                messageProcessor
         );
 
         this.channel = channel;
-        this.messageProcessor = nettyStreamMessageProcessor;
+        this.messageProcessor = messageProcessor;
     }
 
     public MessageChannel(InetAddress inetAddress, int port, MessageProcessor messageProcessor) {
@@ -68,16 +67,18 @@ public class MessageChannel implements ProcessingChannel {
 
     @Override
     public void process(Object message) {
-        System.out.println("Processing channel:");
+        //System.out.println("Processing channel:");
 
         try {
-            Thread.sleep(new Random().nextInt(5000));
+            System.out.println(messageProcessor.messageChannels);
+            Thread.sleep(1000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
         // Maybe add some long operation/timeout?
 
-        System.out.println(message);
+        System.out.println("Answer from " + channel.id());
+        //System.out.println(message);
     }
 
     public void close(boolean removeSocket) {
@@ -87,5 +88,9 @@ public class MessageChannel implements ProcessingChannel {
         }
 
         if (removeSocket) { messageProcessor.remove(this); }
+    }
+
+    public Channel getChannel() {
+        return channel;
     }
 }

@@ -21,8 +21,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class MessageProcessor {
-     private final Map<String, MessageChannel> messageChannels;
-     private int port;
+     public final Map<String, MessageChannel> messageChannels;
+     private final int port;
      private Channel channel;
 
      public EventLoopGroup bossGroup;
@@ -68,6 +68,9 @@ public class MessageProcessor {
           // IP + Port
           InetSocketAddress socketAddress = ((InetSocketAddress) channel.remoteAddress());
           String key = socketAddress.getAddress().getHostAddress() + ":" + socketAddress.getPort();
+
+          System.out.println(key);
+
           MessageChannel retval = messageChannels.get(key);
 
           if (retval == null) {

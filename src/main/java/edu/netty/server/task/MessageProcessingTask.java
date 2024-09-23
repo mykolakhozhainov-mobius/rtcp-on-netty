@@ -15,7 +15,7 @@ public class MessageProcessingTask implements Task {
     
     @Override
     public void execute() {
-        System.out.println("Task executing:");
+        System.out.println("=== EXECUTING TASK by " + channel.getChannel().id() + " ===");
         channel.process(data);
     }
 
