@@ -1,7 +1,7 @@
-package edu.netty.task;
+package edu.netty.server.task;
 
 import com.mobius.software.common.dal.timers.Task;
-import edu.netty.server.ProcessingChannel;
+import edu.netty.server.channel.ProcessingChannel;
 
 public class MessageProcessingTask implements Task {
     private final String data;

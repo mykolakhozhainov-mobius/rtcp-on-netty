@@ -1,11 +1,11 @@
-package edu.netty.executor;
+package edu.netty.server.executor;
 
 import com.mobius.software.common.dal.timers.CountableQueue;
 import com.mobius.software.common.dal.timers.PeriodicQueuedTasks;
 import com.mobius.software.common.dal.timers.Task;
 import com.mobius.software.common.dal.timers.Timer;
 import com.mobius.software.common.dal.timers.WorkerPool;
-import edu.netty.task.MessageProcessingTask;
+import edu.netty.server.task.MessageProcessingTask;
 
 public class MessageProcessorExecutor implements ProcessorExecutor {
     private WorkerPool workerPool;

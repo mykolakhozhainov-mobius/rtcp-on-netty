@@ -1,5 +1,7 @@
-package edu.netty.server;
+package edu.netty.server.channel;
 
+import edu.netty.server.handler.MessageHandler;
+import edu.netty.server.MessageProcessor;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.socket.SocketChannel;
@@ -7,6 +9,7 @@ import io.netty.handler.codec.http.websocketx.WebSocket13FrameEncoder;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.util.Random;
 
 public class MessageChannel implements ProcessingChannel {
     private MessageProcessor messageProcessor;
@@ -34,7 +37,7 @@ public class MessageChannel implements ProcessingChannel {
         this.messageProcessor = messageProcessor;
 
         bootstrap = new Bootstrap();
-        io.netty.channel.ChannelInitializer<SocketChannel> nettyChannelInitializer = new ChannelInitializer(messageProcessor);
+        io.netty.channel.ChannelInitializer<SocketChannel> nettyChannelInitializer = new MessageChannelInitializer(messageProcessor);
 
         bootstrap.group(messageProcessor.workerGroup)
                 .channel(messageProcessor.getEpollServerSocketChannel())
@@ -65,9 +68,15 @@ public class MessageChannel implements ProcessingChannel {
 
     @Override
     public void process(Object message) {
-
-        // Maybe add some long operation/timeout?
         System.out.println("Processing channel:");
+
+        try {
+            Thread.sleep(new Random().nextInt(5000));
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        // Maybe add some long operation/timeout?
+
         System.out.println(message);
     }
 

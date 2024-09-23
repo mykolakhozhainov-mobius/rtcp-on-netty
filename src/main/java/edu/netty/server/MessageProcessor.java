@@ -1,7 +1,9 @@
 package edu.netty.server;
 
-import edu.netty.executor.MessageProcessorExecutor;
-import edu.netty.executor.ProcessorExecutor;
+import edu.netty.server.executor.MessageProcessorExecutor;
+import edu.netty.server.executor.ProcessorExecutor;
+import edu.netty.server.channel.MessageChannel;
+import edu.netty.server.channel.MessageChannelInitializer;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
@@ -85,7 +87,7 @@ public class MessageProcessor {
 
                // Configuration for TCP connection
                bootstrap.channel(this.getEpollServerSocketChannel())
-                    .childHandler(new ChannelInitializer(this))
+                    .childHandler(new MessageChannelInitializer(this))
                     .childOption(ChannelOption.SO_KEEPALIVE, true);
 
                // Bind and start to accept incoming connections.

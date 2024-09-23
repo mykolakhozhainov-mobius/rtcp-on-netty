@@ -1,6 +1,6 @@
-package edu.netty.executor;
+package edu.netty.server.executor;
 
-import edu.netty.task.MessageProcessingTask;
+import edu.netty.server.task.MessageProcessingTask;
 
 public interface ProcessorExecutor {
     void start(int workersNumber, long taskInterval);

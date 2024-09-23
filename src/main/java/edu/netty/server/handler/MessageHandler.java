@@ -1,8 +1,8 @@
-package edu.netty.server;
+package edu.netty.server.handler;
 
-import edu.netty.executor.MessageProcessorExecutor;
-import edu.netty.executor.ProcessorExecutor;
-import edu.netty.task.MessageProcessingTask;
+import edu.netty.server.MessageProcessor;
+import edu.netty.server.channel.MessageChannel;
+import edu.netty.server.task.MessageProcessingTask;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
