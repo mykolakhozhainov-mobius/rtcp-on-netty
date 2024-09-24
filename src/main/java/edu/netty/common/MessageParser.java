@@ -5,20 +5,31 @@ import io.netty.buffer.ByteBuf;
 import java.nio.charset.Charset;
 
 public class MessageParser {
-    SimpleMessage message;
+    private SimpleMessage message;
+
+    private static final byte CR = (byte)'\r';
+    private static final byte LF = (byte)'\n';
+    private static final String ENCODING = "UTF-8";
 
     public MessageParser parse(ByteBuf byteBuf) {
-        StringBuilder content = new StringBuilder();
+        int readerIndex = byteBuf.readerIndex();
+        int readableBytes = byteBuf.readableBytes();
 
-        int length = byteBuf.readableBytes();
+        int lfIndex = byteBuf.indexOf(readerIndex, readerIndex + readableBytes, LF);
+        int crIndex = -1;
 
-        for (int i = 0; i < length; i++) {
-            content.append((char)byteBuf.readByte());
+        if (lfIndex >= 1 && byteBuf.getByte(lfIndex-1) == CR) crIndex = lfIndex - 1;
+
+        String line;
+        if (crIndex != -1 && lfIndex - crIndex == 1) {
+            int length = lfIndex - readerIndex + 1;
+            line = byteBuf.toString(readerIndex, length, Charset.forName(ENCODING));
+            byteBuf.skipBytes(length);
+        } else {
+            line = byteBuf.toString(readerIndex, lfIndex, Charset.forName(ENCODING));
+            byteBuf.skipBytes(readableBytes);
         }
-
-        byteBuf.discardReadBytes();
-
-        message = new SimpleMessage(content.toString());
+        this.message = new SimpleMessage(line);
 
         return this;
     }
