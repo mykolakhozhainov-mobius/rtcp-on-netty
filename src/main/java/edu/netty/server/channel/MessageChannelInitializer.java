@@ -1,6 +1,6 @@
 package edu.netty.server.channel;
 
-import edu.netty.server.handlers.MessageDecoder;
+import edu.netty.common.MessageDecoder;
 import edu.netty.server.handlers.MessageHandler;
 import edu.netty.server.MessageProcessor;
 import io.netty.channel.ChannelPipeline;

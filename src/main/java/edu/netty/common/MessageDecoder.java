@@ -1,7 +1,5 @@
-package edu.netty.server.handlers;
+package edu.netty.common;
 
-import edu.netty.common.MessageParser;
-import edu.netty.common.SimpleMessage;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;

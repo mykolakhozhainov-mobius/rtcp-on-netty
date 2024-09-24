@@ -21,12 +21,12 @@ public class MessageParser {
         if (lfIndex >= 1 && byteBuf.getByte(lfIndex-1) == CR) crIndex = lfIndex - 1;
 
         String line;
-        if (crIndex != -1 && lfIndex - crIndex == 1) {
+        if (crIndex != -1 & lfIndex != -1 && lfIndex - crIndex == 1) {
             int length = lfIndex - readerIndex + 1;
             line = byteBuf.toString(readerIndex, length, Charset.forName(ENCODING));
             byteBuf.skipBytes(length);
         } else {
-            line = byteBuf.toString(readerIndex, lfIndex, Charset.forName(ENCODING));
+            line = byteBuf.toString(readerIndex, readableBytes, Charset.forName(ENCODING));
             byteBuf.skipBytes(readableBytes);
         }
         this.message = new SimpleMessage(line);

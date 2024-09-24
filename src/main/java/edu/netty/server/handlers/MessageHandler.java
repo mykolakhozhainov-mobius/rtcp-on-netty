@@ -32,12 +32,10 @@ public class MessageHandler extends ChannelInboundHandlerAdapter {
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         if (cause instanceof ReadTimeoutException) {
             System.out.println("[HANDLER] Read Timeout Received on channel " + ctx.channel() + ", closing channel");
-            System.out.println(cause);
-            ctx.channel().close();
         } else {
             System.out.println("[HANDLER] Exception " + cause.getClass().getName() + " on channel " + ctx.channel() + ", closing channel handle context");
-            System.out.println(cause);
-            ctx.channel().close();
         }
+        System.out.println(cause);
+        ctx.channel().close();
     }
 }
