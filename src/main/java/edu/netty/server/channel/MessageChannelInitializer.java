@@ -1,6 +1,7 @@
 package edu.netty.server.channel;
 
-import edu.netty.server.handler.MessageHandler;
+import edu.netty.server.handlers.MessageDecoder;
+import edu.netty.server.handlers.MessageHandler;
 import edu.netty.server.MessageProcessor;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.ChannelInitializer;
@@ -17,6 +18,9 @@ public class MessageChannelInitializer extends ChannelInitializer<SocketChannel>
     @Override
     public void initChannel(SocketChannel ch) throws Exception {
         ChannelPipeline pipeline = ch.pipeline();
+
+        // Decoder
+        pipeline.addLast("simpleMessageDecoder", new MessageDecoder());
 
         // Encoder
         pipeline.addLast("byteArrayEncoder", new ByteArrayEncoder());

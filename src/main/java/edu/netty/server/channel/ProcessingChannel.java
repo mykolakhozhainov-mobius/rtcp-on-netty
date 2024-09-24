@@ -1,8 +1,9 @@
 package edu.netty.server.channel;
 
+import edu.netty.common.SimpleMessage;
 import io.netty.channel.Channel;
 
 public interface ProcessingChannel {
-    void process(Object message);
+    void process(SimpleMessage message);
     Channel getChannel();
 }

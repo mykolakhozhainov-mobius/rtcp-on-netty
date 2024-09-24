@@ -12,7 +12,7 @@ public class MessageProcessorExecutor implements ProcessorExecutor {
     private int workersNumber;
 
     public void start(int workersNumber, long taskInterval) {
-        System.out.println("MessageProcessorExecutor started with " + workersNumber + " workers");
+        System.out.println("[EXECUTOR] Started with " + workersNumber + " workers");
 
         this.workersNumber = workersNumber;
         workerPool = new WorkerPool(taskInterval);
@@ -20,7 +20,7 @@ public class MessageProcessorExecutor implements ProcessorExecutor {
     }
 
     public void stop() {
-        System.out.println("MessageProcessorExecutor stopped");
+        System.out.println("[EXECUTOR] Stopped");
         workerPool.stop();
         workerPool = null;
     }
@@ -28,18 +28,16 @@ public class MessageProcessorExecutor implements ProcessorExecutor {
     public void addTaskFirst(MessageProcessingTask task) {
         CountableQueue<Task> queue = getQueue(task.getId());
         if (queue != null) {
-            System.out.println("Adding task to begin of executor");
             queue.offerFirst(task);
-            System.out.println("Queue size: " + queue.size());
+            System.out.println("[EXECUTOR] Task added to BEGIN [Q: " + queue.size() + "]");
         }
     }
 
     public void addTaskLast(MessageProcessingTask task) {
         CountableQueue<Task> queue = getQueue(task.getId());
         if (queue != null) {
-            System.out.println("Adding task to last of executor");
             queue.offerLast(task);
-            System.out.println("Queue size: " + queue.size());
+            System.out.println("[EXECUTOR] Task added to END [Q: " + queue.size() + "]");
         }
     }
 

@@ -1,21 +1,22 @@
 package edu.netty.server.task;
 
 import com.mobius.software.common.dal.timers.Task;
+import edu.netty.common.SimpleMessage;
 import edu.netty.server.channel.ProcessingChannel;
 
 public class MessageProcessingTask implements Task {
-    private final String data;
+    private final SimpleMessage data;
     private final ProcessingChannel channel;
 
-    public MessageProcessingTask(ProcessingChannel channel, Object msg) {
+    public MessageProcessingTask(ProcessingChannel channel, SimpleMessage msg) {
         super();
-        this.data = msg.toString();
+        this.data = msg;
         this.channel = channel;
     }
     
     @Override
     public void execute() {
-        System.out.println("=== EXECUTING TASK by " + channel.getChannel().id() + " ===");
+        System.out.println("[TASK] Starting executing " + channel.getChannel().id());
         channel.process(data);
     }
 

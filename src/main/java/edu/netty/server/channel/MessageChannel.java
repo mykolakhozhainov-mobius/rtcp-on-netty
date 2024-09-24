@@ -1,6 +1,7 @@
 package edu.netty.server.channel;
 
-import edu.netty.server.handler.MessageHandler;
+import edu.netty.common.SimpleMessage;
+import edu.netty.server.handlers.MessageHandler;
 import edu.netty.server.MessageProcessor;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
@@ -66,19 +67,14 @@ public class MessageChannel implements ProcessingChannel {
     }
 
     @Override
-    public void process(Object message) {
-        //System.out.println("Processing channel:");
+    public void process(SimpleMessage message) {
 
         try {
-            System.out.println(messageProcessor.messageChannels);
-            Thread.sleep(1000);
+            Thread.sleep(500);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        // Maybe add some long operation/timeout?
-
-        System.out.println("Answer from " + channel.id());
-        //System.out.println(message);
+        System.out.println("[CHANNEL] Channel " + channel.id() + " proceeded message");
     }
 
     public void close(boolean removeSocket) {

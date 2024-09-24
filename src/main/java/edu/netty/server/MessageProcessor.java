@@ -69,7 +69,7 @@ public class MessageProcessor {
           InetSocketAddress socketAddress = ((InetSocketAddress) channel.remoteAddress());
           String key = socketAddress.getAddress().getHostAddress() + ":" + socketAddress.getPort();
 
-          System.out.println(key);
+          System.out.println("[PROCESSOR] Channel with key " + key + " (" + channel.id() + ") created");
 
           MessageChannel retval = messageChannels.get(key);
 
@@ -107,6 +107,7 @@ public class MessageProcessor {
                          bossGroup.shutdownGracefully();
                     }
                }).start();
+               System.out.println("[PROCESSOR] Server started on port " + port);
           } catch (InterruptedException e) {
                System.out.println(e);
           }
@@ -125,5 +126,13 @@ public class MessageProcessor {
           processor.start();
 
           processor.executor.start(8, 1000);
+//          new Thread(() -> {
+//              try {
+//                  Thread.sleep(5000);
+//              } catch (InterruptedException e) {
+//                  throw new RuntimeException(e);
+//              }
+//              processor.executor.start(8, 1000);
+//          }).start();
      }
 }
