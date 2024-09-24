@@ -4,6 +4,7 @@ import edu.netty.server.executor.MessageProcessorExecutor;
 import edu.netty.server.executor.ProcessorExecutor;
 import edu.netty.server.channel.MessageChannel;
 import edu.netty.server.channel.MessageChannelInitializer;
+import edu.netty.server.session.Session;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
@@ -22,6 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class MessageProcessor {
      public final Map<String, MessageChannel> messageChannels;
+     //public final Map<Integer, Session> sessions;
      private final int port;
      private Channel channel;
 
@@ -126,13 +128,5 @@ public class MessageProcessor {
           processor.start();
 
           processor.executor.start(8, 1000);
-//          new Thread(() -> {
-//              try {
-//                  Thread.sleep(5000);
-//              } catch (InterruptedException e) {
-//                  throw new RuntimeException(e);
-//              }
-//              processor.executor.start(8, 1000);
-//          }).start();
      }
 }

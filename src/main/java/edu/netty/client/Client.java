@@ -1,9 +1,8 @@
 package edu.netty.client;
 
-import edu.netty.common.SimpleMessage;
+import edu.netty.common.message.Message;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -34,13 +33,9 @@ public class Client {
     }
     static class EchoClientHandler extends ChannelInboundHandlerAdapter {
         @Override
-        public void channelActive(ChannelHandlerContext ctx) {
-            for (int i = 0; i < 1000; i++) {
-                ByteBuf message = Unpooled.copiedBuffer("Hi", StandardCharsets.UTF_8);
-                ctx.writeAndFlush(message);
-            }
-
-
+        public void channelActive(ChannelHandlerContext ctx) throws InterruptedException {
+            ByteBuf message = new Message("hi").toByteBuf();
+            ctx.writeAndFlush(message);
         }
         @Override
         public void channelRead(ChannelHandlerContext ctx, Object msg) {

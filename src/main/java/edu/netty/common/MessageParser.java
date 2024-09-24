@@ -1,11 +1,12 @@
 package edu.netty.common;
 
+import edu.netty.common.message.Message;
 import io.netty.buffer.ByteBuf;
 
 import java.nio.charset.Charset;
 
 public class MessageParser {
-    private SimpleMessage message;
+    private Message message;
 
     private static final byte CR = (byte)'\r';
     private static final byte LF = (byte)'\n';
@@ -29,13 +30,13 @@ public class MessageParser {
             line = byteBuf.toString(readerIndex, readableBytes, Charset.forName(ENCODING));
             byteBuf.skipBytes(readableBytes);
         }
-        this.message = new SimpleMessage(line);
+        this.message = new Message(line);
 
         return this;
     }
 
-    public SimpleMessage getMessage() {
-        SimpleMessage message = this.message;
+    public Message getMessage() {
+        Message message = this.message;
         this.message = null;
         return message;
     }

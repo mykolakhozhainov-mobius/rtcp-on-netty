@@ -1,6 +1,6 @@
 package edu.netty.server.handlers;
 
-import edu.netty.common.SimpleMessage;
+import edu.netty.common.message.Message;
 import edu.netty.server.MessageProcessor;
 import edu.netty.server.channel.MessageChannel;
 import edu.netty.server.task.MessageProcessingTask;
@@ -18,7 +18,7 @@ public class MessageHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        SimpleMessage message = (SimpleMessage) msg;
+        Message message = (Message) msg;
         System.out.println("[HANDLER] New message content from " + ctx.channel() + ":");
         System.out.println(message.data);
 

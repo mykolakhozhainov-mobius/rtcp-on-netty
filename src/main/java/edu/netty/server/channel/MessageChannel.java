@@ -1,6 +1,6 @@
 package edu.netty.server.channel;
 
-import edu.netty.common.SimpleMessage;
+import edu.netty.common.message.Message;
 import edu.netty.server.handlers.MessageHandler;
 import edu.netty.server.MessageProcessor;
 import io.netty.bootstrap.Bootstrap;
@@ -67,7 +67,7 @@ public class MessageChannel implements ProcessingChannel {
     }
 
     @Override
-    public void process(SimpleMessage message) {
+    public void process(Message message) {
 
         try {
             Thread.sleep(500);
