@@ -10,7 +10,6 @@ public class MobiusClientHandler extends ChannelInboundHandlerAdapter{
 	public void channelActive(ChannelHandlerContext ctx) throws Exception {
 	    System.out.println("channelActive");
 	    super.channelActive(ctx);
-	    ctx.writeAndFlush("hi");
 	}
 
 	@Override
