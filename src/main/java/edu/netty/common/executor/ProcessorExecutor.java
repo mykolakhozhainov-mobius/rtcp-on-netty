@@ -1,4 +1,4 @@
-package edu.netty.server.executor;
+package edu.netty.common.executor;
 
 import edu.netty.server.task.MessageProcessingTask;
 

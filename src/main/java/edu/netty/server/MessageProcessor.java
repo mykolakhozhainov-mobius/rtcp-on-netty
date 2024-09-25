@@ -1,10 +1,9 @@
 package edu.netty.server;
 
-import edu.netty.server.executor.MessageProcessorExecutor;
-import edu.netty.server.executor.ProcessorExecutor;
+import edu.netty.common.executor.MessageProcessorExecutor;
+import edu.netty.common.executor.ProcessorExecutor;
 import edu.netty.server.channel.MessageChannel;
 import edu.netty.server.channel.MessageChannelInitializer;
-import edu.netty.server.session.Session;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
