@@ -19,18 +19,12 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 
 public class Client {
-	private String host;
-	private int port;
-	private Channel channel;
-	public MessageProcessorExecutor executor = new MessageProcessorExecutor();
-
-	public Client(String host, int port) {
-      executor = new MessageProcessorExecutor();
-      this.host = host;
-      this.port = port;
-	}
+	private static String host = "localhost";
+	private static int port = 8080;
+	private static Channel channel;
+	public static MessageProcessorExecutor executor = new MessageProcessorExecutor();
 	
-	public void start() throws InterruptedException {
+	public static void main(String[] args) throws Exception {
 		NioEventLoopGroup group = new NioEventLoopGroup();
         try {
             Bootstrap bootstrap = new Bootstrap()
@@ -44,25 +38,14 @@ public class Client {
                         }
                     });
             ChannelFuture future = bootstrap.connect(host, port).sync();
-            
+            sendMessage("Hi");
             future.channel().closeFuture().sync();
         } finally {
             group.shutdownGracefully();
         }
-	}
-	
-	public static void main(String[] args) throws Exception {
-        Client client = new Client("localhost", 8080);
-        client.start();
-//        client.executor.start(8, 1000);
-        for (int i=0; i<10; i++) {
-        	Thread.sleep(100);
-        	client.sendMessage(client.channel, "Initial");
-        }
-        client.sendMessage(client.channel, "Initial");
    }
     
-    public void sendMessage(Channel channel,String msg) {
+    public static void sendMessage(String msg) {
     	ByteBuf message = new Message(MessageTypeEnum.ACK, msg).toByteBuf();
     	channel.writeAndFlush(message);
     }
