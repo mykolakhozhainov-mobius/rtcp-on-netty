@@ -14,8 +14,10 @@ public class MobiusClientHandler extends ChannelInboundHandlerAdapter{
 
 	@Override
 	public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-	    System.out.println("[]");
 	    super.channelRead(ctx, msg);
+
+		Message message = (Message) msg;
+		System.out.println(message);
 
 	}
 

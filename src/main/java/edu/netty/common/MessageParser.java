@@ -7,6 +7,7 @@ import io.netty.buffer.ByteBuf;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class MessageParser {
     private Message message;
@@ -18,32 +19,26 @@ public class MessageParser {
 
     private static final String SESSION_HEADER = "SESSION";
     private static final String TYPE_HEADER = "TYPE";
-    private static final String MESSAGE_HEADER = "MESSAGE";
+    private static final String CONTENT_HEADER = "CONTENT";
+
+    private String getHeaderContent(String header) {
+        int dataIndex = header.indexOf(DELIMITER) + 1;
+
+        return header.substring(dataIndex).trim();
+    }
 
     private Message parseFields(List<String> lines) {
         Message message = new Message();
-        ArrayList<String> content = new ArrayList<>();
-        boolean isContent = false;
 
         for (String line : lines) {
-            int dataIndex = line.indexOf(DELIMITER) + 1;
-
             if (line.startsWith(SESSION_HEADER)) {
-                message.setSession(Integer.parseInt(line.substring(dataIndex).trim()));
+                message.sessionId = UUID.fromString(this.getHeaderContent(line));
             } else if (line.startsWith(TYPE_HEADER)) {
-                String type = line.substring(dataIndex).trim();
-                message.setMessageType(MessageTypeEnum.valueOf(type));
-            } else if (line.startsWith(MESSAGE_HEADER)) {
-                String contentLine = line.substring(dataIndex).trim();
-                content.add(contentLine);
-
-                isContent = true;
-            } else {
-                if (isContent) content.add(line);
+                message.type = MessageTypeEnum.valueOf(this.getHeaderContent(line));
+            } else if (line.startsWith(CONTENT_HEADER)) {
+                message.content = this.getHeaderContent(line);
             }
         }
-
-        message.setData(String.join("\n", content));
 
         return message;
     }
@@ -51,7 +46,7 @@ public class MessageParser {
     public MessageParser parse(ByteBuf byteBuf) {
         ArrayList<String> lines = new ArrayList<>();
 
-        while (byteBuf.readableBytes() > 0) {
+        while (lines.size() < 3) {
             int readerIndex = byteBuf.readerIndex();
             int readableBytes = byteBuf.readableBytes();
 

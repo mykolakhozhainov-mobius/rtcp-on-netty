@@ -4,54 +4,38 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 
 import java.nio.charset.StandardCharsets;
+import java.util.UUID;
 
 public class Message {
-    private int session = -1;
-    private MessageTypeEnum messageType;
-
-    private String data;
+    public UUID sessionId;
+    public MessageTypeEnum type;
+    public String content;
 
     public Message() {}
 
-    public Message(String data) {
-        this.data = data;
-        this.messageType = MessageTypeEnum.DATA;
+    public Message(String content) {
+        this.sessionId = UUID.randomUUID();
+        this.type = MessageTypeEnum.DATA;
+        this.content = content;
     }
 
-    public Message(MessageTypeEnum type, String data) {
-        this.data = data;
-        this.messageType = type;
+    public Message(MessageTypeEnum type, String content) {
+        this.sessionId = UUID.randomUUID();
+        this.type = type;
+        this.content = content;
     }
 
-    public int getSession() {
-        return session;
-    }
-
-    public void setSession(int session) {
-        this.session = session;
-    }
-
-    public MessageTypeEnum getMessageType() {
-        return messageType;
-    }
-
-    public void setMessageType(MessageTypeEnum messageType) {
-        this.messageType = messageType;
-    }
-
-    public String getData() {
-        return data;
-    }
-
-    public void setData(String data) {
-        this.data = data;
+    public Message(UUID session, MessageTypeEnum type, String content) {
+        this.sessionId = session;
+        this.type = type;
+        this.content = content;
     }
 
     @Override
     public String toString() {
-        return "SESSION: " + this.session + "\n" +
-                "TYPE: " + this.messageType + "\n" +
-                "MESSAGE: " + this.data;
+        return "SESSION: " + this.sessionId + "\n" +
+                "TYPE: " + this.type + "\n" +
+                "CONTENT: " + this.content + "\n";
     }
 
     public ByteBuf toByteBuf() {

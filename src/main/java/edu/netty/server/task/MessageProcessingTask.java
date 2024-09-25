@@ -4,19 +4,19 @@ import edu.netty.common.message.Message;
 import edu.netty.server.channel.ProcessingChannel;
 
 public class MessageProcessingTask implements IdentifiedTask {
-    private final Message data;
+    private final Message message;
     private final ProcessingChannel channel;
 
-    public MessageProcessingTask(ProcessingChannel channel, Message msg) {
+    public MessageProcessingTask(ProcessingChannel channel, Message message) {
         super();
-        this.data = msg;
+        this.message = message;
         this.channel = channel;
     }
     
     @Override
     public void execute() {
         System.out.println("[TASK] Starting executing " + channel.getChannel().id());
-        channel.process(data);
+        channel.process(message);
     }
 
     @Override
@@ -34,6 +34,10 @@ public class MessageProcessingTask implements IdentifiedTask {
 
     // Дана імплементація це лише заглушка
     public String getId() {
-        return "MessageTask-" + System.currentTimeMillis();
+        if (this.channel.isSessioned(message)) {
+            return this.message.sessionId.toString();
+        }
+
+        return String.valueOf(System.currentTimeMillis());
     }
 }

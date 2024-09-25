@@ -1,5 +1,6 @@
 package edu.netty.client;
 
+import edu.netty.common.MessageDecoder;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
@@ -12,6 +13,7 @@ public class MobiusClientInitializer extends ChannelInitializer<SocketChannel> {
 	protected void initChannel(SocketChannel ch) throws Exception {
 		
 		ChannelPipeline pipeline = ch.pipeline();
-		pipeline.addLast(new StringDecoder(), new StringEncoder(), new MobiusClientHandler());
+		pipeline.addLast(new MessageDecoder());
+		pipeline.addLast(new StringEncoder(), new MobiusClientHandler());
 	}
 }

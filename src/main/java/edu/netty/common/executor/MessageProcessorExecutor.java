@@ -35,6 +35,7 @@ public class MessageProcessorExecutor implements ProcessorExecutor {
 
     public void addTaskLast(IdentifiedTask task) {
         CountableQueue<Task> queue = getQueue(task.getId());
+
         if (queue != null) {
             queue.offerLast(task);
             System.out.println("[EXECUTOR] Task added to END [Q: " + queue.size() + "]");
@@ -43,6 +44,7 @@ public class MessageProcessorExecutor implements ProcessorExecutor {
 
     private CountableQueue<Task> getQueue(String id) {
         int index = findQueueIndex(id);
+        System.out.println("[PROCESSOR] Queue index: " + index);
 
         return workerPool.getLocalQueue(index);
     }

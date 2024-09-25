@@ -1,15 +1,19 @@
 package edu.netty.server.channel;
 
 import edu.netty.common.message.Message;
+import edu.netty.common.message.MessageTypeEnum;
 import edu.netty.server.handlers.MessageHandler;
 import edu.netty.server.MessageProcessor;
 import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.http.websocketx.WebSocket13FrameEncoder;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.util.Random;
+import java.util.UUID;
 
 public class MessageChannel implements ProcessingChannel {
     private MessageProcessor messageProcessor;
@@ -70,11 +74,40 @@ public class MessageChannel implements ProcessingChannel {
     public void process(Message message) {
 
         try {
-            Thread.sleep(500);
+            Thread.sleep(new Random().nextInt(1000));
+
+            UUID sessionId = message.sessionId;
+            MessageTypeEnum type = message.type;
+
+            if (type == MessageTypeEnum.OPEN) {
+                this.messageProcessor.createSession(sessionId);
+
+                writeMessage(new Message(sessionId, MessageTypeEnum.ACK, "OK").toByteBuf());
+            }
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
         System.out.println("[CHANNEL] Channel " + channel.id() + " proceeded message");
+    }
+
+    public void writeMessage(ByteBuf message) {
+        ChannelFuture future = channel.writeAndFlush(message);
+
+        final ChannelFuture finalFuture = future;
+
+        future.addListener(new ChannelFutureListener() {
+            @Override
+            public void operationComplete(ChannelFuture completeFuture) {
+                assert finalFuture == completeFuture;
+                if (!finalFuture.isSuccess()) {
+                    System.out.println(
+                            "[CHANNEL] Response message not sent successfully " + finalFuture.cause().getMessage()
+                    );
+                } else {
+                    System.out.println("[CHANNEL] Response message sent successfully");
+                }
+            }
+        });
     }
 
     public void close(boolean removeSocket) {
@@ -88,5 +121,10 @@ public class MessageChannel implements ProcessingChannel {
 
     public Channel getChannel() {
         return channel;
+    }
+
+    @Override
+    public boolean isSessioned(Message message) {
+        return this.messageProcessor.isSessioned(message.sessionId);
     }
 }

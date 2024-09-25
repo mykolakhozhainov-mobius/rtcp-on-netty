@@ -17,12 +17,12 @@ import io.netty.handler.logging.LoggingHandler;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class MessageProcessor {
      public final Map<String, MessageChannel> messageChannels;
-     //public final Map<Integer, Session> sessions;
+     public final Set<UUID> sessions;
      private final int port;
      private Channel channel;
 
@@ -37,6 +37,7 @@ public class MessageProcessor {
           workerGroup = new EpollEventLoopGroup();
 
           executor = new MessageProcessorExecutor();
+          sessions = Collections.synchronizedSet(new HashSet<>());
 
           this.port = port;
      }
@@ -55,7 +56,7 @@ public class MessageProcessor {
           return retval;
      }
 
-     public MessageChannel createMessageChannel(InetAddress targetHost, int port) throws IOException {
+     public MessageChannel createMessageChannel(InetAddress targetHost, int port) {
           String key = MessageChannel.getKey(targetHost, port);
           MessageChannel retval = messageChannels.get(key);
 
@@ -80,6 +81,17 @@ public class MessageProcessor {
           }
 
           return retval;
+     }
+
+     public void createSession(UUID id) {
+          if (this.isSessioned(id)) return;
+
+          this.sessions.add(id);
+          System.out.println("[PROCESSOR] UUID " + id + " added as sessioned");
+     }
+
+     public boolean isSessioned(UUID id) {
+          return this.sessions.contains(id);
      }
 
      public void start() {
