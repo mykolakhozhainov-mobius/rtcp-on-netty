@@ -1,10 +1,9 @@
 package edu.netty.server.task;
 
-import com.mobius.software.common.dal.timers.Task;
 import edu.netty.common.message.Message;
 import edu.netty.server.channel.ProcessingChannel;
 
-public class MessageProcessingTask implements Task {
+public class MessageProcessingTask implements IdentifiedTask {
     private final Message data;
     private final ProcessingChannel channel;
 

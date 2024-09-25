@@ -1,10 +1,10 @@
 package edu.netty.common.executor;
 
-import edu.netty.server.task.MessageProcessingTask;
+import edu.netty.server.task.IdentifiedTask;
 
 public interface ProcessorExecutor {
     void start(int workersNumber, long taskInterval);
     void stop();
-    void addTaskFirst(MessageProcessingTask task);
-    void addTaskLast(MessageProcessingTask task);
+    void addTaskFirst(IdentifiedTask task);
+    void addTaskLast(IdentifiedTask task);
 }

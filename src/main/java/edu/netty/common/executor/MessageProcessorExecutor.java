@@ -5,7 +5,7 @@ import com.mobius.software.common.dal.timers.PeriodicQueuedTasks;
 import com.mobius.software.common.dal.timers.Task;
 import com.mobius.software.common.dal.timers.Timer;
 import com.mobius.software.common.dal.timers.WorkerPool;
-import edu.netty.server.task.MessageProcessingTask;
+import edu.netty.server.task.IdentifiedTask;
 
 public class MessageProcessorExecutor implements ProcessorExecutor {
     private WorkerPool workerPool;
@@ -25,7 +25,7 @@ public class MessageProcessorExecutor implements ProcessorExecutor {
         workerPool = null;
     }
 
-    public void addTaskFirst(MessageProcessingTask task) {
+    public void addTaskFirst(IdentifiedTask task) {
         CountableQueue<Task> queue = getQueue(task.getId());
         if (queue != null) {
             queue.offerFirst(task);
@@ -33,7 +33,7 @@ public class MessageProcessorExecutor implements ProcessorExecutor {
         }
     }
 
-    public void addTaskLast(MessageProcessingTask task) {
+    public void addTaskLast(IdentifiedTask task) {
         CountableQueue<Task> queue = getQueue(task.getId());
         if (queue != null) {
             queue.offerLast(task);
