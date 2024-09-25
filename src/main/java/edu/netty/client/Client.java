@@ -1,6 +1,7 @@
 package edu.netty.client;
 
 import edu.netty.common.message.Message;
+import edu.netty.common.message.MessageTypeEnum;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelFuture;
@@ -33,8 +34,10 @@ public class Client {
     }
     static class EchoClientHandler extends ChannelInboundHandlerAdapter {
         @Override
-        public void channelActive(ChannelHandlerContext ctx) throws InterruptedException {
-            ByteBuf message = new Message("hi").toByteBuf();
+        public void channelActive(ChannelHandlerContext ctx) {
+            String content = "first line\nsecond line\r\nthird line";
+
+            ByteBuf message = new Message(MessageTypeEnum.ACK, content).toByteBuf();
             ctx.writeAndFlush(message);
         }
         @Override

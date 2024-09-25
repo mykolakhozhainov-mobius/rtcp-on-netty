@@ -17,10 +17,10 @@ public class MessageHandler extends ChannelInboundHandlerAdapter {
     }
 
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+    public void channelRead(ChannelHandlerContext ctx, Object msg) {
         Message message = (Message) msg;
         System.out.println("[HANDLER] New message content from " + ctx.channel() + ":");
-        System.out.println(message.data);
+        System.out.println(message);
 
         Channel channel = ctx.channel();
         MessageChannel messageChannel = messageProcessor.createMessageChannel(channel);
@@ -29,7 +29,7 @@ public class MessageHandler extends ChannelInboundHandlerAdapter {
     }
 
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         if (cause instanceof ReadTimeoutException) {
             System.out.println("[HANDLER] Read Timeout Received on channel " + ctx.channel() + ", closing channel");
         } else {

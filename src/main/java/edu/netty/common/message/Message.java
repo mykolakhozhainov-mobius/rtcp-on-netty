@@ -9,7 +9,9 @@ public class Message {
     private int session = -1;
     private MessageTypeEnum messageType;
 
-    public String data;
+    private String data;
+
+    public Message() {}
 
     public Message(String data) {
         this.data = data;
@@ -21,19 +23,38 @@ public class Message {
         this.messageType = type;
     }
 
+    public int getSession() {
+        return session;
+    }
+
     public void setSession(int session) {
         this.session = session;
+    }
+
+    public MessageTypeEnum getMessageType() {
+        return messageType;
     }
 
     public void setMessageType(MessageTypeEnum messageType) {
         this.messageType = messageType;
     }
 
-    public ByteBuf toByteBuf() {
-        String message = "SESSION: " + this.session + "\n" +
-                "TYPE: " + this.messageType + "\n" +
-                "MESSAGE: " + this.data + "\n";
+    public String getData() {
+        return data;
+    }
 
-        return Unpooled.copiedBuffer(message, StandardCharsets.UTF_8);
+    public void setData(String data) {
+        this.data = data;
+    }
+
+    @Override
+    public String toString() {
+        return "SESSION: " + this.session + "\n" +
+                "TYPE: " + this.messageType + "\n" +
+                "MESSAGE: " + this.data;
+    }
+
+    public ByteBuf toByteBuf() {
+        return Unpooled.copiedBuffer(this.toString(), StandardCharsets.UTF_8);
     }
 }
