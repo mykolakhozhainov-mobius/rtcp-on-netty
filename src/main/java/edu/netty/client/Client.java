@@ -2,7 +2,16 @@ package edu.netty.client;
 
 import edu.netty.common.message.Message;
 import edu.netty.common.message.MessageTypeEnum;
+import edu.netty.common.session.Session;
+import edu.netty.common.session.SessionStateEnum;
 import edu.netty.server.task.IdentifiedTask;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import edu.netty.common.executor.MessageProcessorExecutor;
@@ -19,10 +28,11 @@ public class Client {
 	private static int port = 8080;
 	private Channel channel;
 	public MessageProcessorExecutor executor;
-    private UUID sessionId = new UUID(1, 2);
+	public final Map<UUID, Session> sessions;
 
 	public Client() {
-		executor = new MessageProcessorExecutor();
+		this.executor = new MessageProcessorExecutor();
+		this.sessions = new HashMap<UUID, Session>();
 	}
 
 	public void start() throws InterruptedException {
@@ -33,11 +43,10 @@ public class Client {
 						@Override
 						protected void initChannel(SocketChannel socketChannel) {
 							channel = socketChannel;
-							socketChannel.pipeline().addLast(new MobiusClientInitializer());
+							socketChannel.pipeline().addLast(new MobiusClientInitializer(sessions));
 						}
 					});
 			ChannelFuture future = bootstrap.connect(host, port).sync();
-
 			new Thread(() -> {
 				try {
 					channel.closeFuture().sync();
@@ -51,14 +60,13 @@ public class Client {
 			System.out.println(e);
 		}
 	}
+	
+	public IdentifiedTask makeMessageTask(Message message) {
+		return new IdentifiedTask() {
 
-	public void sendMessage(Message message) throws InterruptedException {
-		//Thread.sleep(2000);
-		channel.writeAndFlush(message);
-
-		executor.addTaskLast(new IdentifiedTask() {
 			@Override
 			public void execute() {
+
 				channel.writeAndFlush(message.toByteBuf());
 			}
 
@@ -69,25 +77,85 @@ public class Client {
 
 			@Override
 			public String getId() {
-				return "Task-" + System.currentTimeMillis();
+				if (message.sessionId != null) {
+
+					return message.sessionId.toString();
+				}
+				return String.valueOf(System.currentTimeMillis());
 			}
-		});
+		};
+	}
+
+//	public void sendMessage(Message message) throws InterruptedException {
+//		for (Session s : sessions) {
+//			if (s.id == message.sessionId) {
+//				if (s.state == SessionStateEnum.INIT) {
+//					
+//					s.setState(SessionStateEnum.REQUEST);
+//					executor.addTaskLast(new IdentifiedTask() {
+//
+//						@Override
+//						public void execute() {
+//
+//							channel.writeAndFlush(message.toByteBuf());
+//						}
+//
+//						@Override
+//						public long getStartTime() {
+//							return System.currentTimeMillis();
+//						}
+//
+//						@Override
+//						public String getId() {
+//							if (message.sessionId != null) {
+//
+//								return message.sessionId.toString();
+//							}
+//							return String.valueOf(System.currentTimeMillis());
+//						}
+//					});
+//				}
+//				else {
+//					System.out.println("Trying "+ s.state);
+//					Thread.sleep(1000);
+//					sendMessage(message);
+//				}
+//
+//			}
+//		}
+//
+//	}
+
+	public void createSession(UUID id) {
+		if (this.isSessioned(id))
+			return;
+		Session session = new Session(id, channel, executor);
+		this.sessions.put(session.id, session);
+		System.out.println("[PROCESSOR] UUID " + id + " added as sessioned");
+	}
+
+	public boolean isSessioned(UUID id) {
+		return this.sessions.containsKey(id);
 	}
 
 	public static void main(String[] args) throws Exception {
-		Client cl1 = new Client();
-		cl1.start();
-		// ATTENTION: workers numbers is 1
-		cl1.executor.start(1, 1000);
+		Client client = new Client();
+		client.start();
+		client.executor.start(2, 1000);
+//		client.executor.wait();
 
-		Message begin = new Message(MessageTypeEnum.OPEN, "Create session");
-		UUID session = begin.sessionId;
+		client.createSession(UUID.randomUUID());
+		client.createSession(UUID.randomUUID());
+		client.createSession(UUID.randomUUID());
+		
+		client.sessions.values().forEach(session -> {
+			
+			session.addMessageTask(new Message(session.id, MessageTypeEnum.OPEN, "1"));
+			for(int i = 0; i<10; i++) {
+				session.addMessageTask(new Message(session.id, MessageTypeEnum.DATA, ""+i));
+			}
+		});
 
-		cl1.sendMessage(begin);
-		cl1.sendMessage(new Message(session, MessageTypeEnum.DATA, "1"));
-		cl1.sendMessage(new Message(session, MessageTypeEnum.DATA, "2"));
-		cl1.sendMessage(new Message(session, MessageTypeEnum.DATA, "3"));
-
-		cl1.sendMessage(new Message("Not from session"));
+//		client.sendMessage(new Message("Not from session"));
 	}
 }
