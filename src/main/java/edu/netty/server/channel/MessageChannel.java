@@ -73,21 +73,21 @@ public class MessageChannel implements ProcessingChannel {
     @Override
     public void process(Message message) {
 
-        try {
-            Thread.sleep(new Random().nextInt(1000));
+//        try {
+            //Thread.sleep(new Random().nextInt(1000));
 
-            UUID sessionId = message.sessionId;
-            MessageTypeEnum type = message.type;
+        UUID sessionId = message.sessionId;
+        MessageTypeEnum type = message.type;
 
-            if (type == MessageTypeEnum.OPEN) {
-                this.messageProcessor.createSession(sessionId);
-            }
-            
-            writeMessage(new Message(sessionId, MessageTypeEnum.ACK, "OK").toByteBuf());
-
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        if (type == MessageTypeEnum.OPEN) {
+            this.messageProcessor.createSession(sessionId);
         }
+
+        writeMessage(new Message(sessionId, MessageTypeEnum.ACK, message.content).toByteBuf());
+
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
         System.out.println("[CHANNEL] Channel " + channel.id() + " proceeded message");
     }
 

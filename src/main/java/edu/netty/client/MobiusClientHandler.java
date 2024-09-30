@@ -28,14 +28,21 @@ public class MobiusClientHandler extends ChannelInboundHandlerAdapter {
 
 		Message message = (Message) msg;
 		UUID sessionId = message.sessionId;
-		String content = message.content;
+
 		System.out.println(message);
 		Session session = sessions.get(sessionId);
-		if (session != null) {
-			if (session.state == SessionStateEnum.REQUEST) {
+
+		if (session == null) return;
+
+		if (session.state == SessionStateEnum.REQUEST) {
+			session.state = SessionStateEnum.LISTEN;
+
+			session.addMessageTask(message, (callSession, callMessage) -> {
 				session.state = SessionStateEnum.LISTEN;
 				session.runTask();
-			}
+			});
+
+			session.runTask();
 		}
 	}
 

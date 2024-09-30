@@ -1,11 +1,14 @@
 package edu.netty.common.session;
 
+import java.lang.reflect.Method;
 import java.util.LinkedList;
 import java.util.Objects;
 import java.util.UUID;
 
+import edu.netty.client.callback.Executable;
 import edu.netty.common.executor.MessageProcessorExecutor;
 import edu.netty.common.message.Message;
+import edu.netty.common.message.MessageTypeEnum;
 import edu.netty.server.task.IdentifiedTask;
 import io.netty.channel.Channel;
 
@@ -33,21 +36,24 @@ public class Session {
 		}
 	}
 	
-	public void addTask(IdentifiedTask task) {
-		tasks.addLast(task);
+	public void addTask(IdentifiedTask task, boolean toBegin) {
+		// ACK messages should be handled firstly
+		if (toBegin) tasks.addFirst(task);
+		else tasks.addLast(task);
+
 		if (state == SessionStateEnum.LISTEN || state == SessionStateEnum.INIT) {
 			executor.addTaskLast(Objects.requireNonNull(tasks.poll()));
+
 			state = SessionStateEnum.REQUEST;
 		}
 	}
 	
-	public void addMessageTask(Message message) {
-		this.addTask(new IdentifiedTask() {
-
+	public void addMessageTask(Message message, Executable callback) {
+		Session current = this;
+		IdentifiedTask task = new IdentifiedTask() {
 			@Override
 			public void execute() {
-
-				channel.writeAndFlush(message.toByteBuf());
+				callback.execute(current, message);
 			}
 
 			@Override
@@ -61,6 +67,8 @@ public class Session {
 
 				return String.valueOf(System.currentTimeMillis());
 			}
-		});
+		};
+
+		this.addTask(task, message.type == MessageTypeEnum.ACK);
 	}
 }

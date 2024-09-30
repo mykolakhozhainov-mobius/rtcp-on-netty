@@ -1,5 +1,6 @@
 package edu.netty.client;
 
+import edu.netty.client.callback.Executable;
 import edu.netty.common.message.Message;
 import edu.netty.common.message.MessageTypeEnum;
 import edu.netty.common.session.Session;
@@ -143,13 +144,24 @@ public class Client {
 		client.createSession(UUID.randomUUID());
 		client.createSession(UUID.randomUUID());
 		client.createSession(UUID.randomUUID());
+		client.createSession(UUID.randomUUID());
+		client.createSession(UUID.randomUUID());
+		client.createSession(UUID.randomUUID());
+		client.createSession(UUID.randomUUID());
+		client.createSession(UUID.randomUUID());
+		client.createSession(UUID.randomUUID());
+		client.createSession(UUID.randomUUID());
 		
 		client.sessions.values().forEach(session -> {
-			session.addMessageTask(new Message(session.id, MessageTypeEnum.OPEN, "1"));
+			session.addMessageTask(
+					new Message(session.id, MessageTypeEnum.OPEN, "1"),
+                    (callSession, message) -> callSession.channel.writeAndFlush(message.toByteBuf())
+            );
 
 			for (int i = 0; i < 10; i++) {
 				session.addMessageTask(
-						new Message(session.id, MessageTypeEnum.DATA, String.valueOf(i))
+					new Message(session.id, MessageTypeEnum.DATA, String.valueOf(i)),
+					(callSession, message) -> callSession.channel.writeAndFlush(message.toByteBuf())
 				);
 			}
 		});
