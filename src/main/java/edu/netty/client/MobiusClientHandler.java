@@ -1,10 +1,7 @@
 package edu.netty.client;
 
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
-
-import javax.swing.plaf.nimbus.State;
 
 import edu.netty.common.message.Message;
 import edu.netty.common.session.Session;

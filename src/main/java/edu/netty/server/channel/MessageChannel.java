@@ -95,17 +95,14 @@ public class MessageChannel implements ProcessingChannel {
 
         final ChannelFuture finalFuture = future;
 
-        future.addListener(new ChannelFutureListener() {
-            @Override
-            public void operationComplete(ChannelFuture completeFuture) {
-                assert finalFuture == completeFuture;
-                if (!finalFuture.isSuccess()) {
-                    System.out.println(
-                            "[CHANNEL] Response message not sent successfully " + finalFuture.cause().getMessage()
-                    );
-                } else {
-                    System.out.println("[CHANNEL] Response message sent successfully");
-                }
+        future.addListener((ChannelFutureListener) completeFuture -> {
+            assert finalFuture == completeFuture;
+            if (!finalFuture.isSuccess()) {
+                System.out.println(
+                        "[CHANNEL] Response message not sent successfully " + finalFuture.cause().getMessage()
+                );
+            } else {
+                System.out.println("[CHANNEL] Response message sent successfully");
             }
         });
     }

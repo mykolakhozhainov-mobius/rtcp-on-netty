@@ -3,15 +3,10 @@ package edu.netty.client;
 import edu.netty.common.message.Message;
 import edu.netty.common.message.MessageTypeEnum;
 import edu.netty.common.session.Session;
-import edu.netty.common.session.SessionStateEnum;
 import edu.netty.server.task.IdentifiedTask;
 
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 import edu.netty.common.executor.MessageProcessorExecutor;
@@ -24,8 +19,8 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 
 public class Client {
-	private static String host = "localhost";
-	private static int port = 8080;
+	private static final String host = "localhost";
+	private static final int port = 8080;
 	private Channel channel;
 	public MessageProcessorExecutor executor;
 	public final Map<UUID, Session> sessions;
@@ -127,10 +122,11 @@ public class Client {
 //	}
 
 	public void createSession(UUID id) {
-		if (this.isSessioned(id))
-			return;
+		if (this.isSessioned(id)) return;
+
 		Session session = new Session(id, channel, executor);
 		this.sessions.put(session.id, session);
+
 		System.out.println("[PROCESSOR] UUID " + id + " added as sessioned");
 	}
 
@@ -149,10 +145,12 @@ public class Client {
 		client.createSession(UUID.randomUUID());
 		
 		client.sessions.values().forEach(session -> {
-			
 			session.addMessageTask(new Message(session.id, MessageTypeEnum.OPEN, "1"));
-			for(int i = 0; i<10; i++) {
-				session.addMessageTask(new Message(session.id, MessageTypeEnum.DATA, ""+i));
+
+			for (int i = 0; i < 10; i++) {
+				session.addMessageTask(
+						new Message(session.id, MessageTypeEnum.DATA, String.valueOf(i))
+				);
 			}
 		});
 

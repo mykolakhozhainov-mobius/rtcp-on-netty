@@ -1,9 +1,8 @@
 package edu.netty.common.session;
 
 import java.util.LinkedList;
+import java.util.Objects;
 import java.util.UUID;
-
-import com.sun.tools.javac.util.List;
 
 import edu.netty.common.executor.MessageProcessorExecutor;
 import edu.netty.common.message.Message;
@@ -20,13 +19,13 @@ public class Session {
 	public Session (UUID id, Channel channel, MessageProcessorExecutor executor) {
 		this.channel = channel;
 		this.id = id;
-		this.state = state.INIT; 
+		this.state = SessionStateEnum.INIT;
 		this.executor = executor;
-		this.tasks = new LinkedList<IdentifiedTask>();
+		this.tasks = new LinkedList<>();
 	}
 	
 	public void runTask() {
-		Boolean isPositiveState = state == SessionStateEnum.INIT || state == SessionStateEnum.LISTEN;
+		boolean isPositiveState = state == SessionStateEnum.INIT || state == SessionStateEnum.LISTEN;
 		
 		if (!tasks.isEmpty() && isPositiveState) {
 			executor.addTaskLast(tasks.poll());
@@ -36,13 +35,13 @@ public class Session {
 	public void addTask(IdentifiedTask task) {
 		tasks.addLast(task);
 		if (state == SessionStateEnum.LISTEN || state == SessionStateEnum.INIT) {
-			executor.addTaskLast(tasks.poll());
+			executor.addTaskLast(Objects.requireNonNull(tasks.poll()));
 			state = SessionStateEnum.REQUEST;
 		}
 	}
 	
 	public void addMessageTask(Message message) {
-		addTask(new IdentifiedTask() {
+		this.addTask(new IdentifiedTask() {
 
 			@Override
 			public void execute() {
@@ -57,10 +56,8 @@ public class Session {
 
 			@Override
 			public String getId() {
-				if (id != null) {
+				if (id != null) return id.toString();
 
-					return id.toString();
-				}
 				return String.valueOf(System.currentTimeMillis());
 			}
 		});
