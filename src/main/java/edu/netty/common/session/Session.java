@@ -29,6 +29,7 @@ public class Session {
 		
 		if (!tasks.isEmpty() && isPositiveState) {
 			executor.addTaskLast(tasks.poll());
+			state = SessionStateEnum.REQUEST;
 		}
 	}
 	

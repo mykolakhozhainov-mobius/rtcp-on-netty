@@ -81,9 +81,10 @@ public class MessageChannel implements ProcessingChannel {
 
             if (type == MessageTypeEnum.OPEN) {
                 this.messageProcessor.createSession(sessionId);
-
-                writeMessage(new Message(sessionId, MessageTypeEnum.ACK, "OK").toByteBuf());
             }
+            
+            writeMessage(new Message(sessionId, MessageTypeEnum.ACK, "OK").toByteBuf());
+
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
