@@ -34,11 +34,14 @@ public class Message {
     @Override
     public String toString() {
         return "SESSION: " + this.sessionId + "\n" +
-                "TYPE: " + this.type.getID() + "\n" +
+                "TYPE: " + this.type + "\n" +
                 "CONTENT: " + this.content + "\n";
     }
 
     public ByteBuf toByteBuf() {
-        return Unpooled.copiedBuffer(this.toString(), StandardCharsets.UTF_8);
+        return Unpooled.copiedBuffer(
+                this.sessionId.toString() + this.type.getID() + "OK",
+                StandardCharsets.UTF_8
+        );
     }
 }

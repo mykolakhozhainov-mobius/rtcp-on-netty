@@ -8,6 +8,8 @@ import io.netty.handler.codec.ByteToMessageDecoder;
 import java.util.List;
 
 public class MessageDecoder extends ByteToMessageDecoder {
+    public static final int MAX_FRAME_SIZE = 39;
+
     private final MessageParser messageParser;
 
     public MessageDecoder() {
@@ -16,7 +18,9 @@ public class MessageDecoder extends ByteToMessageDecoder {
 
     @Override
     protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) {
-        Message message = messageParser.parse(in).getMessage();
+        if (in.readableBytes() < MAX_FRAME_SIZE) return;
+
+        Message message = messageParser.parse(in);
         out.add(message);
     }
 }
