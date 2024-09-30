@@ -34,7 +34,7 @@ public class Message {
     @Override
     public String toString() {
         return "SESSION: " + this.sessionId + "\n" +
-                "TYPE: " + this.type + "\n" +
+                "TYPE: " + this.type.getID() + "\n" +
                 "CONTENT: " + this.content + "\n";
     }
 

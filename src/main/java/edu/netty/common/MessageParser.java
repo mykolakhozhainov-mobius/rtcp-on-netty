@@ -27,6 +27,10 @@ public class MessageParser {
         return header.substring(dataIndex).trim();
     }
 
+    // Session id (UUID) takes 128 bits
+    // Message type (ENUM) takes only 2 bits (values: 0, 1, 2, 3)
+    // Content takes 128 bits
+
     private Message parseFields(List<String> lines) {
         Message message = new Message();
 
@@ -34,7 +38,9 @@ public class MessageParser {
             if (line.startsWith(SESSION_HEADER)) {
                 message.sessionId = UUID.fromString(this.getHeaderContent(line));
             } else if (line.startsWith(TYPE_HEADER)) {
-                message.type = MessageTypeEnum.valueOf(this.getHeaderContent(line));
+                String content = this.getHeaderContent(line);
+
+                message.type = MessageTypeEnum.from(Integer.parseInt(content));
             } else if (line.startsWith(CONTENT_HEADER)) {
                 message.content = this.getHeaderContent(line);
             }

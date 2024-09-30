@@ -143,14 +143,14 @@ public class Client {
 
 		client.createSession(UUID.randomUUID());
 		client.createSession(UUID.randomUUID());
-		client.createSession(UUID.randomUUID());
-		client.createSession(UUID.randomUUID());
-		client.createSession(UUID.randomUUID());
-		client.createSession(UUID.randomUUID());
-		client.createSession(UUID.randomUUID());
-		client.createSession(UUID.randomUUID());
-		client.createSession(UUID.randomUUID());
-		client.createSession(UUID.randomUUID());
+//		client.createSession(UUID.randomUUID());
+//		client.createSession(UUID.randomUUID());
+//		client.createSession(UUID.randomUUID());
+//		client.createSession(UUID.randomUUID());
+//		client.createSession(UUID.randomUUID());
+//		client.createSession(UUID.randomUUID());
+//		client.createSession(UUID.randomUUID());
+//		client.createSession(UUID.randomUUID());
 		
 		client.sessions.values().forEach(session -> {
 			session.addMessageTask(
