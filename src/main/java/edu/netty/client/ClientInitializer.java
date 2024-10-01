@@ -10,10 +10,10 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.string.StringEncoder;
 
-public class MobiusClientInitializer extends ChannelInitializer<SocketChannel> {
+public class ClientInitializer extends ChannelInitializer<SocketChannel> {
     public final Map<UUID, Session> sessions;
     
-    public MobiusClientInitializer (Map<UUID, Session> sessions) {
+    public ClientInitializer(Map<UUID, Session> sessions) {
     	this.sessions = sessions;
     }
 
@@ -21,6 +21,6 @@ public class MobiusClientInitializer extends ChannelInitializer<SocketChannel> {
 	protected void initChannel(SocketChannel ch) {
 		ChannelPipeline pipeline = ch.pipeline();
 		pipeline.addLast(new MessageDecoder());
-		pipeline.addLast(new StringEncoder(), new MobiusClientHandler(sessions));
+		pipeline.addLast(new StringEncoder(), new ClientHandler(sessions));
 	}
 }

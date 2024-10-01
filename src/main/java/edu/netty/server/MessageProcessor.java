@@ -48,14 +48,15 @@ public class MessageProcessor {
           InetSocketAddress socketAddress = ((InetSocketAddress) channel.remoteAddress());
           String key = socketAddress.getAddress().getHostAddress() + ":" + socketAddress.getPort();
 
-          System.out.println("[PROCESSOR] Channel with key " + key + " (" + channel.id() + ") created");
-
           MessageChannel retval = messageChannels.get(key);
 
           if (retval == null) {
+               System.out.println("[PROCESSOR] Channel with key " + key + " (" + channel.id() + ") created");
                retval = new MessageChannel(this, channel);
                this.messageChannels.put(key, retval);
           }
+
+          System.out.println("[PROCESSOR] Channel with key " + key + " (" + channel.id() + ") used for processing message");
 
           return retval;
      }

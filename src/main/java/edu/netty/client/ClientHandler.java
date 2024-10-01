@@ -9,10 +9,10 @@ import edu.netty.common.session.SessionStateEnum;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 
-public class MobiusClientHandler extends ChannelInboundHandlerAdapter {
+public class ClientHandler extends ChannelInboundHandlerAdapter {
 	public final Map<UUID, Session> sessions;
 
-	public MobiusClientHandler(Map<UUID, Session> sessions) {
+	public ClientHandler(Map<UUID, Session> sessions) {
 		this.sessions = sessions;
 	}
 
@@ -37,8 +37,10 @@ public class MobiusClientHandler extends ChannelInboundHandlerAdapter {
 		if (session.state == SessionStateEnum.REQUEST) {
 			session.state = SessionStateEnum.LISTEN;
 
+			System.out.print("[ACK-PROCESSING]");
 			session.addMessageTask(message, (callSession, callMessage) -> {
 				session.state = SessionStateEnum.LISTEN;
+				System.out.println("[CLIENT-HANDLER] ACK from session [" + message.sessionId + "] processed");
 				session.runTask();
 			});
 

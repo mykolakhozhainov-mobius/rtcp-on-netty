@@ -38,7 +38,7 @@ public class Client {
 						@Override
 						protected void initChannel(SocketChannel socketChannel) {
 							channel = socketChannel;
-							socketChannel.pipeline().addLast(new MobiusClientInitializer(sessions));
+							socketChannel.pipeline().addLast(new ClientInitializer(sessions));
 						}
 					});
 			ChannelFuture future = bootstrap.connect(host, port).sync();
@@ -81,46 +81,6 @@ public class Client {
 		};
 	}
 
-//	public void sendMessage(Message message) throws InterruptedException {
-//		for (Session s : sessions) {
-//			if (s.id == message.sessionId) {
-//				if (s.state == SessionStateEnum.INIT) {
-//					
-//					s.setState(SessionStateEnum.REQUEST);
-//					executor.addTaskLast(new IdentifiedTask() {
-//
-//						@Override
-//						public void execute() {
-//
-//							channel.writeAndFlush(message.toByteBuf());
-//						}
-//
-//						@Override
-//						public long getStartTime() {
-//							return System.currentTimeMillis();
-//						}
-//
-//						@Override
-//						public String getId() {
-//							if (message.sessionId != null) {
-//
-//								return message.sessionId.toString();
-//							}
-//							return String.valueOf(System.currentTimeMillis());
-//						}
-//					});
-//				}
-//				else {
-//					System.out.println("Trying "+ s.state);
-//					Thread.sleep(1000);
-//					sendMessage(message);
-//				}
-//
-//			}
-//		}
-//
-//	}
-
 	public void createSession(UUID id) {
 		if (this.isSessioned(id)) return;
 
@@ -138,26 +98,12 @@ public class Client {
 		Client client = new Client();
 		client.start();
 		client.executor.start(8, 10);
-//		client.executor.wait();
 
-		final int SESSIONS = 10;
-		final int MESSAGES = 100;
+		final int SESSIONS = 1;
+		final int MESSAGES = 1;
 
-		for (int i = 0; i < SESSIONS; i++) {
-			client.createSession(UUID.randomUUID());
-		}
+		for (int i = 0; i < SESSIONS; i++) { client.createSession(UUID.randomUUID()); }
 
-//		client.createSession(UUID.randomUUID());
-//		client.createSession(UUID.randomUUID());
-//		client.createSession(UUID.randomUUID());
-//		client.createSession(UUID.randomUUID());
-//		client.createSession(UUID.randomUUID());
-//		client.createSession(UUID.randomUUID());
-//		client.createSession(UUID.randomUUID());
-//		client.createSession(UUID.randomUUID());
-//		client.createSession(UUID.randomUUID());
-
-		
 		client.sessions.values().forEach(session -> {
 			session.addMessageTask(
 					new Message(session.id, MessageTypeEnum.OPEN, "Open new session " + session.id),
@@ -171,7 +117,5 @@ public class Client {
 				);
 			}
 		});
-
-//		client.sendMessage(new Message("Not from session"));
 	}
 }
