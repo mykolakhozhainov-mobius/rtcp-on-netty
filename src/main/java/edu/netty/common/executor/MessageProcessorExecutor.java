@@ -29,7 +29,7 @@ public class MessageProcessorExecutor implements ProcessorExecutor {
         CountableQueue<Task> queue = getQueue(task.getId());
         if (queue != null) {
             queue.offerFirst(task);
-            System.out.println("[EXECUTOR] Task added to BEGIN [Q: " + queue.size() + "]");
+            System.out.println("[EXECUTOR] Task " + task.getId() + " added to BEGIN [Q: " + queue.size() + "]");
         }
     }
 
@@ -37,7 +37,7 @@ public class MessageProcessorExecutor implements ProcessorExecutor {
         CountableQueue<Task> queue = getQueue(task.getId());
         if (queue != null) {
             queue.offerLast(task);
-            System.out.println("[EXECUTOR] Task added to END [Q: " + queue.size() + "]");
+            System.out.println("[EXECUTOR] Task " + task.getId() + " added to END [Q: " + queue.size() + "]");
         }
     }
 

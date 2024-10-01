@@ -31,7 +31,7 @@ public class MessageProcessor {
      public ProcessorExecutor executor;
 
      public MessageProcessor(int port) {
-          messageChannels = new ConcurrentHashMap<String, MessageChannel>();
+          messageChannels = new ConcurrentHashMap<>();
           bossGroup = new EpollEventLoopGroup();
           workerGroup = new EpollEventLoopGroup();
 
@@ -137,6 +137,6 @@ public class MessageProcessor {
           MessageProcessor processor = new MessageProcessor(8080);
           processor.start();
 
-          processor.executor.start(8, 1000);
+          processor.executor.start(8, 100);
      }
 }

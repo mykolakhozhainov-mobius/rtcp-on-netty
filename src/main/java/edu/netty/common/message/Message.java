@@ -1,5 +1,6 @@
 package edu.netty.common.message;
 
+import edu.netty.common.DecodingUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 
@@ -33,14 +34,23 @@ public class Message {
 
     @Override
     public String toString() {
-        return "SESSION: " + this.sessionId + "\n" +
+        return "\u001B[32mSESSION: " + this.sessionId + "\n" +
                 "TYPE: " + this.type + "\n" +
-                "CONTENT: " + this.content + "\n";
+                "CONTENT: " + this.content + "\u001B[0m";
     }
 
     public ByteBuf toByteBuf() {
+        StringBuilder builder = new StringBuilder(this.content);
+        builder.setLength(DecodingUtils.CONTENT_SIZE);
+
+        int length = this.content.length();
+
+        for (int i = length; i < DecodingUtils.CONTENT_SIZE; i++) {
+            builder.setCharAt(i, ' ');
+        }
+
         return Unpooled.copiedBuffer(
-                this.sessionId.toString() + this.type.getID() + "OK",
+                this.sessionId.toString() + this.type.getID() + builder,
                 StandardCharsets.UTF_8
         );
     }

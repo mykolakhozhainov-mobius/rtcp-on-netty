@@ -1,6 +1,5 @@
 package edu.netty.client;
 
-import edu.netty.client.callback.Executable;
 import edu.netty.common.message.Message;
 import edu.netty.common.message.MessageTypeEnum;
 import edu.netty.common.session.Session;
@@ -28,10 +27,10 @@ public class Client {
 
 	public Client() {
 		this.executor = new MessageProcessorExecutor();
-		this.sessions = new HashMap<UUID, Session>();
+		this.sessions = new HashMap<>();
 	}
 
-	public void start() throws InterruptedException {
+	public void start() {
 		NioEventLoopGroup group = new NioEventLoopGroup();
 		try {
 			Bootstrap bootstrap = new Bootstrap().group(group).channel(NioSocketChannel.class)
@@ -138,11 +137,11 @@ public class Client {
 	public static void main(String[] args) throws Exception {
 		Client client = new Client();
 		client.start();
-		client.executor.start(2, 1000);
+		client.executor.start(8, 1000);
 //		client.executor.wait();
 
+
 		client.createSession(UUID.randomUUID());
-		client.createSession(UUID.randomUUID());
 //		client.createSession(UUID.randomUUID());
 //		client.createSession(UUID.randomUUID());
 //		client.createSession(UUID.randomUUID());
@@ -151,16 +150,18 @@ public class Client {
 //		client.createSession(UUID.randomUUID());
 //		client.createSession(UUID.randomUUID());
 //		client.createSession(UUID.randomUUID());
+//		client.createSession(UUID.randomUUID());
+
 		
 		client.sessions.values().forEach(session -> {
 			session.addMessageTask(
-					new Message(session.id, MessageTypeEnum.OPEN, "1"),
+					new Message(session.id, MessageTypeEnum.OPEN, "Open new session " + session.id),
                     (callSession, message) -> callSession.channel.writeAndFlush(message.toByteBuf())
             );
 
-			for (int i = 0; i < 10; i++) {
+			for (int i = 0; i < 1; i++) {
 				session.addMessageTask(
-					new Message(session.id, MessageTypeEnum.DATA, String.valueOf(i)),
+					new Message(session.id, MessageTypeEnum.DATA, "Message from client #" + i),
 					(callSession, message) -> callSession.channel.writeAndFlush(message.toByteBuf())
 				);
 			}
