@@ -137,11 +137,16 @@ public class Client {
 	public static void main(String[] args) throws Exception {
 		Client client = new Client();
 		client.start();
-		client.executor.start(8, 1000);
+		client.executor.start(8, 10);
 //		client.executor.wait();
 
+		final int SESSIONS = 10;
+		final int MESSAGES = 100;
 
-		client.createSession(UUID.randomUUID());
+		for (int i = 0; i < SESSIONS; i++) {
+			client.createSession(UUID.randomUUID());
+		}
+
 //		client.createSession(UUID.randomUUID());
 //		client.createSession(UUID.randomUUID());
 //		client.createSession(UUID.randomUUID());
@@ -159,7 +164,7 @@ public class Client {
                     (callSession, message) -> callSession.channel.writeAndFlush(message.toByteBuf())
             );
 
-			for (int i = 0; i < 1; i++) {
+			for (int i = 0; i < MESSAGES; i++) {
 				session.addMessageTask(
 					new Message(session.id, MessageTypeEnum.DATA, "Message from client #" + i),
 					(callSession, message) -> callSession.channel.writeAndFlush(message.toByteBuf())

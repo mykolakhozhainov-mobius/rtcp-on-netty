@@ -12,7 +12,6 @@ import io.netty.handler.codec.http.websocketx.WebSocket13FrameEncoder;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.util.Random;
 import java.util.UUID;
 
 public class MessageChannel implements ProcessingChannel {
@@ -72,10 +71,6 @@ public class MessageChannel implements ProcessingChannel {
 
     @Override
     public void process(Message message) {
-
-//        try {
-            //Thread.sleep(new Random().nextInt(1000));
-
         UUID sessionId = message.sessionId;
         MessageTypeEnum type = message.type;
 
@@ -83,11 +78,14 @@ public class MessageChannel implements ProcessingChannel {
             this.messageProcessor.createSession(sessionId);
         }
 
-        writeMessage(new Message(sessionId, MessageTypeEnum.ACK, message.content).toByteBuf());
+        if (this.messageProcessor.isSessioned(sessionId)) {
+            this.writeMessage(new Message(
+                    sessionId,
+                    MessageTypeEnum.ACK,
+                    message.content
+            ).toByteBuf());
+        }
 
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
         System.out.println("[CHANNEL] Channel " + channel.id() + " proceeded message");
     }
 

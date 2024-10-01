@@ -7,7 +7,7 @@ import com.mobius.software.common.dal.timers.Timer;
 import com.mobius.software.common.dal.timers.WorkerPool;
 import edu.netty.server.task.IdentifiedTask;
 
-public class MessageProcessorExecutor implements ProcessorExecutor {
+public class MessageProcessorExecutor {
     private WorkerPool workerPool;
     private int workersNumber;
 

@@ -1,7 +1,6 @@
 package edu.netty.server;
 
 import edu.netty.common.executor.MessageProcessorExecutor;
-import edu.netty.common.executor.ProcessorExecutor;
 import edu.netty.server.channel.MessageChannel;
 import edu.netty.server.channel.MessageChannelInitializer;
 import io.netty.channel.Channel;
@@ -14,7 +13,6 @@ import io.netty.channel.socket.ServerSocketChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -28,7 +26,7 @@ public class MessageProcessor {
      public EventLoopGroup bossGroup;
      public EventLoopGroup workerGroup;
 
-     public ProcessorExecutor executor;
+     public MessageProcessorExecutor executor;
 
      public MessageProcessor(int port) {
           messageChannels = new ConcurrentHashMap<>();
@@ -43,26 +41,6 @@ public class MessageProcessor {
 
      public Class<? extends ServerSocketChannel> getEpollServerSocketChannel() {
           return EpollServerSocketChannel.class;
-     }
-
-     private MessageChannel createMessageChannel(String key, InetAddress targetHost, int port) {
-          MessageChannel retval = messageChannels.get(key);
-
-          if (retval == null) {
-               retval = new MessageChannel(targetHost, port, this);
-               this.messageChannels.put(key, retval);
-          }
-          return retval;
-     }
-
-     public MessageChannel createMessageChannel(InetAddress targetHost, int port) {
-          String key = MessageChannel.getKey(targetHost, port);
-          MessageChannel retval = messageChannels.get(key);
-
-          if (retval == null) {
-               retval = createMessageChannel(key, targetHost, port);
-          }
-          return retval;
      }
 
      public MessageChannel createMessageChannel(Channel channel) {
