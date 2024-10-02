@@ -34,7 +34,7 @@ public class Message {
 
     @Override
     public String toString() {
-        return "\u001B[32mSESSION: " + this.sessionId + "\n" +
+        return "\u001B[32m" + "SESSION: " + this.sessionId + "\n" +
                 "TYPE: " + this.type + "\n" +
                 "CONTENT: " + this.content + "\u001B[0m";
     }

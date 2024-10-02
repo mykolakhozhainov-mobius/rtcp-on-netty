@@ -21,7 +21,7 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 public class Client {
 	private static final String host = "localhost";
 	private static final int port = 8080;
-	private Channel channel;
+	public Channel channel;
 	public MessageProcessorExecutor executor;
 	public final Map<UUID, Session> sessions;
 
@@ -99,8 +99,8 @@ public class Client {
 		client.start();
 		client.executor.start(8, 10);
 
-		final int SESSIONS = 1;
-		final int MESSAGES = 1;
+		final int SESSIONS = 10;
+		final int MESSAGES = 100;
 
 		for (int i = 0; i < SESSIONS; i++) { client.createSession(UUID.randomUUID()); }
 
@@ -117,5 +117,15 @@ public class Client {
 				);
 			}
 		});
+
+		for (int i = 0; i < MESSAGES; i++) {
+			client.channel.writeAndFlush(
+				new Message(
+						UUID.randomUUID(),
+						MessageTypeEnum.DATA,
+						"Not sessioned message from client #" + i
+				).toByteBuf()
+			);
+		}
 	}
 }
