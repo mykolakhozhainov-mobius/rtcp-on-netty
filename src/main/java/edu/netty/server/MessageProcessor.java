@@ -116,6 +116,6 @@ public class MessageProcessor {
           MessageProcessor processor = new MessageProcessor(8080);
           processor.start();
 
-          processor.executor.start(8, 100);
+          processor.executor.start(16, 10);
      }
 }
