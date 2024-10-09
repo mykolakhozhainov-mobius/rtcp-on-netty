@@ -1,4 +1,4 @@
-package edu.netty.client;
+package edu.netty.client.handlers;
 
 import java.util.Map;
 import java.util.UUID;

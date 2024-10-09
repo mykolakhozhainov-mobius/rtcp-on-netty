@@ -34,7 +34,8 @@ public class MessageProcessorExecutor {
     }
 
     public void addTaskLast(IdentifiedTask task) {
-        CountableQueue<Task> queue = getQueue(task.getId());
+        CountableQueue<Task> queue = this.getQueue(task.getId());
+
         if (queue != null) {
             queue.offerLast(task);
             System.out.println("[EXECUTOR] Task " + task.getId() + " added to END [Q: " + queue.size() + "]");

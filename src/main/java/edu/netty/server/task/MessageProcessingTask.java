@@ -1,14 +1,13 @@
 package edu.netty.server.task;
 
 import edu.netty.common.message.Message;
-import edu.netty.server.channel.ProcessingChannel;
+import edu.netty.server.channel.MessageChannel;
 
 public class MessageProcessingTask implements IdentifiedTask {
     private final Message message;
-    private final ProcessingChannel channel;
+    private final MessageChannel channel;
 
-    public MessageProcessingTask(ProcessingChannel channel, Message message) {
-        super();
+    public MessageProcessingTask(MessageChannel channel, Message message) {
         this.message = message;
         this.channel = channel;
     }

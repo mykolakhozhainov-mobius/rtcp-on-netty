@@ -12,7 +12,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import edu.netty.client.Client;
 import edu.netty.common.message.Message;
 import edu.netty.common.message.MessageTypeEnum;
 import edu.netty.common.session.Session;
