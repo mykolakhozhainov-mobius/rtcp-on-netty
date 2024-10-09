@@ -1,7 +1,7 @@
 package edu.netty.server.handlers;
 
 import edu.netty.common.message.Message;
-import edu.netty.server.channel.MessageChannel;
+import edu.netty.server.channel.transports.DatagramMessageChannel;
 import edu.netty.server.processor.DatagramMessageProcessor;
 import edu.netty.server.task.MessageProcessingTask;
 import io.netty.channel.Channel;
@@ -21,8 +21,8 @@ public class DatagramMessageHandler extends MessageHandler {
         System.out.println(message);
 
         Channel channel = ctx.channel();
-        MessageChannel streamMessageChannel = datagramMessageProcessor.createMessageChannel(channel);
+        DatagramMessageChannel datagramMessageChannel = (DatagramMessageChannel) datagramMessageProcessor.createMessageChannel(channel);
 
-        this.datagramMessageProcessor.executor.addTaskLast(new MessageProcessingTask(streamMessageChannel, message));
+        this.datagramMessageProcessor.executor.addTaskLast(new MessageProcessingTask(datagramMessageChannel, message));
     }
 }
