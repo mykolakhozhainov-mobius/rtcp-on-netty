@@ -20,16 +20,15 @@ block  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
 public class ReportBlock
 {
-
     private Integer ssrc; 
-    private Integer fractionLost; 
+    private Short fractionLost; 
     private Integer cumulativePacketsLost; 
     private Integer extendedHighestSeqNumber; 
     private Integer interarrivalJitter; 
     private Integer lastSenderReport; 
     private Integer delaySinceLastSenderReport; 
 
-    public ReportBlock(Integer ssrc, Integer fractionLost, Integer cumulativePacketsLost, Integer extendedHighestSeqNumber, Integer interarrivalJitter, Integer lastSenderReport, Integer delaySinceLastSenderReport) 
+    public ReportBlock(Integer ssrc, Short fractionLost, Integer cumulativePacketsLost, Integer extendedHighestSeqNumber, Integer interarrivalJitter, Integer lastSenderReport, Integer delaySinceLastSenderReport) 
     {
         this.ssrc = ssrc;
         this.fractionLost = fractionLost;
@@ -55,7 +54,7 @@ public class ReportBlock
         return fractionLost;
     }
 
-    public void setFractionLost(Integer value) 
+    public void setFractionLost(Short value) 
     {
         this.fractionLost = value;
     }

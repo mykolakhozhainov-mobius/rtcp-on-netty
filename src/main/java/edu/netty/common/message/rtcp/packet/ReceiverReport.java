@@ -2,12 +2,15 @@ package edu.netty.common.message.rtcp.packet;
 
 import java.util.List;
 
-import edu.netty.common.message.rtcp.header.RTCPBasePacket;
-import edu.netty.common.message.rtcp.header.RTCPHeader;
+import edu.netty.common.message.rtcp.header.RtcpBasePacket;
+import edu.netty.common.message.rtcp.header.RtcpHeader;
 import edu.netty.common.message.rtcp.parts.ReportBlock;
 
 
 /*
+ 
+	6.4.2 RR: Receiver Report RTCP Packet
+		
 			0                   1                   2                   3
 			0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 			+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -36,26 +39,24 @@ import edu.netty.common.message.rtcp.parts.ReportBlock;
 
 */
 
-public class ReceiverReport extends RTCPBasePacket 
+public class ReceiverReport extends RtcpBasePacket 
 {
-	private List<ReportBlock> reportBlock;
+    private List<ReportBlock> reportBlocks;
 
-	public ReceiverReport(RTCPHeader header) 
-	{
-		super(header);
-	}
-	
-	public List<ReportBlock> getReportBlock()
+    public ReceiverReport(RtcpHeader header)
     {
-    	if(reportBlock==null)
-    		return null;
-    	
-    	return reportBlock;
+        super(header);
     }
     
-    public void setReportBlock(List<ReportBlock> value) 
+    public List<ReportBlock> getReportBlocks()
     {
-        this.reportBlock = value;
+        return reportBlocks; 
+    }
+    
+    public void setReportBlocks(List<ReportBlock> value) 
+    {
+        this.reportBlocks = value;
     }
 
 }
+    

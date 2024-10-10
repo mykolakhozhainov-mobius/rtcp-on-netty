@@ -1,27 +1,25 @@
 package edu.netty.common.message.rtcp.header;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
-
-public abstract class RTCPBasePacket 
+public abstract class RtcpBasePacket 
 {
-    protected RTCPHeader header;
+    protected RtcpHeader header;
 
-    public RTCPBasePacket(RTCPHeader header) 
+    public RtcpBasePacket(RtcpHeader header) 
     {
         this.header = header;
     }
 
-    public RTCPHeader getHeader() 
+    public RtcpHeader getHeader() 
     {
         return this.header;
     }
 
-    public void setHeader(RTCPHeader header) 
+    public void setHeader(RtcpHeader header) 
     {
         this.header = header;
     }
 
+    /*
     protected ByteBuf headerToByteBuf() 
     {
         ByteBuf headerInBuffer = Unpooled.buffer(8); 
@@ -40,4 +38,5 @@ public abstract class RTCPBasePacket
 
         return headerInBuffer; 
     }
+    */
 }

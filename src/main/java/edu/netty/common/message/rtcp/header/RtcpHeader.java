@@ -1,20 +1,19 @@
 package edu.netty.common.message.rtcp.header;
 
-import edu.netty.common.message.rtcp.PacketTypeEnum;
+import edu.netty.common.message.rtcp.types.PacketTypeEnum;
 
-public abstract class RTCPHeader 
+public class RtcpHeader 
 {
-	private Integer version;
+	private Short version;
 	private Boolean isPadding;
-	private Integer itemCount;
+	private Short itemCount;
 	private PacketTypeEnum packetType;
 	private Integer length;
 	private Integer ssrc;
+	
 	private boolean ssrcAllowed = true;
 	
-	
-	
-	public RTCPHeader(Integer version, Boolean isPadding, Integer itemCount, PacketTypeEnum packetType, Integer length, Integer ssrc)
+	public RtcpHeader(Short version, Boolean isPadding, Short itemCount, PacketTypeEnum packetType, Integer length, Integer ssrc)
 	{
 		this.isPadding = isPadding;
 		this.version = version;
@@ -35,7 +34,7 @@ public abstract class RTCPHeader
 		return this.version;
 	}
 	
-	public void setVersion(Integer value) 
+	public void setVersion(Short value) 
 	{
 		this.version = value;
 	}
@@ -55,7 +54,7 @@ public abstract class RTCPHeader
 		return this.itemCount;
 	}
 	
-	public void setItemCount(Integer value) 
+	public void setItemCount(Short value) 
 	{
 		this.itemCount = value;
 	}

@@ -1,4 +1,4 @@
-package edu.netty.common.message.rtcp;
+package edu.netty.common.message.rtcp.types;
 
 import java.util.HashMap;
 import java.util.Map;

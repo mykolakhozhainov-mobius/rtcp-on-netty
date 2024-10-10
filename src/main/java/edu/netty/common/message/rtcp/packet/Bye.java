@@ -1,6 +1,12 @@
 package edu.netty.common.message.rtcp.packet;
 
+import edu.netty.common.message.rtcp.header.RtcpBasePacket;
+import edu.netty.common.message.rtcp.header.RtcpHeader;
+
 /*
+ 
+ 	   6.6 BYE: Goodbye RTCP Packet
+ 	   
 	   0                   1                   2                   3
        0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -14,3 +20,27 @@ package edu.netty.common.message.rtcp.packet;
       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
       
 */
+
+public class Bye extends RtcpBasePacket 
+{
+    private String reason;
+
+    public Bye(RtcpHeader header, String reason)
+    {
+        super(header);
+        this.reason = reason;
+    }
+
+    public String getReason() 
+    {
+        return reason;
+    }
+
+    public void setReason(String value) 
+    {
+        this.reason = value;
+    }
+}
+	
+	
+	
