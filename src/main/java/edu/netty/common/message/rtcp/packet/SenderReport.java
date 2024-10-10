@@ -121,7 +121,7 @@ public class SenderReport extends RtcpBasePacket
         this.senderOctetCount = value;
     }
     
-    public List<ReportBlock> getReportBlock()
+    public List<ReportBlock> getReportBlocks()
     {
     	if(reportBlock==null)
     		return null;
@@ -129,7 +129,7 @@ public class SenderReport extends RtcpBasePacket
     	return reportBlock;
     }
     
-    public void setReportBlock(List<ReportBlock> value) 
+    public void setReportBlocks(List<ReportBlock> value) 
     {
         this.reportBlock = value;
     }
