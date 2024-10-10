@@ -3,7 +3,7 @@ package edu.netty.common.message.rtcp.factory;
 import edu.netty.common.message.rtcp.parts.chunk.SdesItem;
 import edu.netty.common.message.rtcp.types.ItemsTypeEnum;
 
-public class SDESItemFactory 
+public class SdesItemFactory 
 {
     public static SdesItem createCname(String value) 
     {

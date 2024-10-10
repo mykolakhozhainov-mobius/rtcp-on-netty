@@ -1,5 +1,7 @@
 package edu.netty.common.message.rtcp.packet;
 
+import java.util.List;
+
 import edu.netty.common.message.rtcp.header.RtcpBasePacket;
 import edu.netty.common.message.rtcp.header.RtcpHeader;
 import edu.netty.common.message.rtcp.parts.chunk.Chunk;
@@ -26,7 +28,7 @@ import edu.netty.common.message.rtcp.parts.chunk.Chunk;
 
 public class SourceDescription extends RtcpBasePacket 
 {
-	public Chunk chunk;
+	public List<Chunk> chunk;
 
 	public SourceDescription(RtcpHeader header) 
 	{
@@ -34,12 +36,12 @@ public class SourceDescription extends RtcpBasePacket
 		header.setSSRCAllowed(false);
 	}
 	
-	public Chunk getChunk()
+	public List<Chunk> getChunks()
 	{
 		return chunk;
 	}
 	
-	public void setChunk(Chunk value)
+	public void setChunks(List<Chunk> value)
 	{
 		this.chunk = value;
 	}
