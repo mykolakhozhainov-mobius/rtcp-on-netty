@@ -34,7 +34,7 @@ public class DatagramClient extends AbstractClient {
 
     @Override
     public void start() {
-        this.executor.start(8, 10);
+        this.executor.start(64, 10);
 
         EventLoopGroup group = new EpollEventLoopGroup(); // Change to EpollEventLoopGroup
         try {
@@ -43,7 +43,7 @@ public class DatagramClient extends AbstractClient {
                     .channel(EpollDatagramChannel.class) // Use EpollDatagramChannel
                     .handler(new ChannelInitializer<DatagramChannel>() {
                         @Override
-                        protected void initChannel(DatagramChannel ch) throws Exception {
+                        protected void initChannel(DatagramChannel ch) {
                             channel = ch;
                             ch.pipeline().addLast(new DatagramClientInitializer(sessions));
                         }
@@ -52,7 +52,7 @@ public class DatagramClient extends AbstractClient {
             this.future = bootstrap.bind(0).sync();
 
             final int SESSIONS = 3;
-            final int MESSAGES = 10;
+            final int MESSAGES = 10000;
 
             for (int i = 0; i < SESSIONS; i++) { this.createSession(UUID.randomUUID()); }
 
