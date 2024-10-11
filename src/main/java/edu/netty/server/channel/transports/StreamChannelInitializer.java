@@ -1,6 +1,6 @@
 package edu.netty.server.channel.transports;
 
-import edu.netty.common.MessageDecoder;
+import edu.netty.common.decoder.StreamMessageDecoder;
 import edu.netty.server.handlers.StreamMessageHandler;
 import edu.netty.server.processor.StreamMessageProcessor;
 import io.netty.channel.ChannelPipeline;
@@ -20,7 +20,7 @@ public class StreamChannelInitializer extends ChannelInitializer<SocketChannel> 
         ChannelPipeline pipeline = ch.pipeline();
 
         // Decoder
-        pipeline.addLast("decoder", new MessageDecoder());
+        pipeline.addLast("decoder", new StreamMessageDecoder());
 
         // Encoder
         pipeline.addLast("byteEncoder", new ByteArrayEncoder());

@@ -1,4 +1,4 @@
-package edu.netty.common;
+package edu.netty.common.decoder;
 
 import edu.netty.common.message.Message;
 import edu.netty.common.message.MessageTypeEnum;

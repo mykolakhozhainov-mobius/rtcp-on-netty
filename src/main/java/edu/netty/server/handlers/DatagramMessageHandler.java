@@ -1,28 +1,27 @@
 package edu.netty.server.handlers;
 
 import edu.netty.common.message.Message;
-import edu.netty.server.channel.transports.DatagramMessageChannel;
-import edu.netty.server.processor.DatagramMessageProcessor;
+import edu.netty.server.channel.AbstractChannel;
+import edu.netty.server.processor.MessageProcessor;
 import edu.netty.server.task.MessageProcessingTask;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 
-public class DatagramMessageHandler extends MessageHandler {
-    private final DatagramMessageProcessor datagramMessageProcessor;
-
-    public DatagramMessageHandler(DatagramMessageProcessor datagramMessageProcessor) {
-        this.datagramMessageProcessor = datagramMessageProcessor;
+public class DatagramMessageHandler extends AbstractHandler {
+    public DatagramMessageHandler(MessageProcessor messageProcessor) {
+        this.messageProcessor = messageProcessor;
     }
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
         Message message = (Message) msg;
+
         System.out.println("[HANDLER] New message content from " + ctx.channel() + ":");
         System.out.println(message);
 
         Channel channel = ctx.channel();
-        DatagramMessageChannel datagramMessageChannel = (DatagramMessageChannel) datagramMessageProcessor.createMessageChannel(channel);
+        AbstractChannel messageChannel = messageProcessor.createMessageChannel(channel, message.sender);
 
-        this.datagramMessageProcessor.executor.addTaskLast(new MessageProcessingTask(datagramMessageChannel, message));
+        this.messageProcessor.executor.addTaskLast(new MessageProcessingTask(messageChannel, message));
     }
 }

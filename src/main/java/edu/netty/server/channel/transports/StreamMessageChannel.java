@@ -2,7 +2,7 @@ package edu.netty.server.channel.transports;
 
 import edu.netty.common.message.Message;
 import edu.netty.common.message.MessageTypeEnum;
-import edu.netty.server.channel.MessageChannel;
+import edu.netty.server.channel.AbstractChannel;
 import edu.netty.server.processor.StreamMessageProcessor;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
@@ -11,7 +11,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.UUID;
 
-public class StreamMessageChannel extends MessageChannel {
+public class StreamMessageChannel extends AbstractChannel {
     private final InetAddress address;
     private final int port;
 

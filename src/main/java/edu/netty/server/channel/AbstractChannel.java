@@ -7,7 +7,7 @@ import io.netty.channel.Channel;
 
 import java.net.InetAddress;
 
-public abstract class MessageChannel {
+public abstract class AbstractChannel {
     public MessageProcessor messageProcessor;
     protected Channel channel;
 

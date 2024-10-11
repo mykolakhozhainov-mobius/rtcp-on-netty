@@ -1,13 +1,16 @@
 package edu.netty.common.message;
 
-import edu.netty.common.DecodingUtils;
+import edu.netty.common.decoder.DecodingUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 
+import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 public class Message {
+    public InetSocketAddress sender;
+
     public UUID sessionId;
     public MessageTypeEnum type;
     public String content;
@@ -30,6 +33,10 @@ public class Message {
         this.sessionId = session;
         this.type = type;
         this.content = content;
+    }
+
+    public void setSender(InetSocketAddress sender) {
+        this.sender = sender;
     }
 
     @Override

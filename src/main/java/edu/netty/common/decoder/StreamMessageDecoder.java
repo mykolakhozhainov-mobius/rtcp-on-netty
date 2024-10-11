@@ -1,4 +1,4 @@
-package edu.netty.common;
+package edu.netty.common.decoder;
 
 import edu.netty.common.message.Message;
 import io.netty.buffer.ByteBuf;
@@ -7,12 +7,10 @@ import io.netty.handler.codec.ByteToMessageDecoder;
 
 import java.util.List;
 
-public class MessageDecoder extends ByteToMessageDecoder {
-
-
+public class StreamMessageDecoder extends ByteToMessageDecoder {
     private final MessageParser messageParser;
 
-    public MessageDecoder() {
+    public StreamMessageDecoder() {
         messageParser = new MessageParser();
     }
 

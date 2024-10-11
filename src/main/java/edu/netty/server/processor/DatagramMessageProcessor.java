@@ -1,7 +1,7 @@
 package edu.netty.server.processor;
 
 import edu.netty.common.ServerChannelUtils;
-import edu.netty.server.channel.MessageChannel;
+import edu.netty.server.channel.AbstractChannel;
 import edu.netty.server.channel.transports.DatagramChannelInitializer;
 import edu.netty.server.channel.transports.DatagramMessageChannel;
 import io.netty.bootstrap.Bootstrap;
@@ -28,8 +28,13 @@ public class DatagramMessageProcessor extends MessageProcessor {
     }
 
     @Override
-    public MessageChannel createMessageChannel(Channel channel) {
-        return new DatagramMessageChannel(this, channel);
+    public AbstractChannel createMessageChannel(Channel channel, InetSocketAddress remoteAddress) {
+        return new DatagramMessageChannel(this, channel, remoteAddress);
+    }
+
+    @Override
+    public AbstractChannel createMessageChannel(Channel channel) {
+        return new DatagramMessageChannel(this, channel, null);
     }
 
     @Override

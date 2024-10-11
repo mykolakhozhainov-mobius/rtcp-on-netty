@@ -1,9 +1,10 @@
 package edu.netty.server.processor;
 
 import edu.netty.common.executor.MessageProcessorExecutor;
-import edu.netty.server.channel.MessageChannel;
+import edu.netty.server.channel.AbstractChannel;
 import io.netty.channel.Channel;
 
+import java.net.InetSocketAddress;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -26,6 +27,8 @@ public abstract class MessageProcessor {
         return this.sessions.contains(id);
     }
 
-    public abstract MessageChannel createMessageChannel(Channel channel);
+    public abstract AbstractChannel createMessageChannel(Channel channel);
+    public abstract AbstractChannel createMessageChannel(Channel channel, InetSocketAddress sender);
+
     public abstract void start();
 }

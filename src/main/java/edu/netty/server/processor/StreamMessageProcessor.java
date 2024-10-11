@@ -1,7 +1,7 @@
 package edu.netty.server.processor;
 
 import edu.netty.common.ServerChannelUtils;
-import edu.netty.server.channel.MessageChannel;
+import edu.netty.server.channel.AbstractChannel;
 import edu.netty.server.channel.transports.StreamMessageChannel;
 import edu.netty.server.channel.transports.StreamChannelInitializer;
 import io.netty.channel.Channel;
@@ -31,7 +31,12 @@ public class StreamMessageProcessor extends MessageProcessor {
      }
 
      @Override
-     public MessageChannel createMessageChannel(Channel channel) {
+     public AbstractChannel createMessageChannel(Channel channel, InetSocketAddress sender) {
+          return this.createMessageChannel(channel);
+     }
+
+     @Override
+     public AbstractChannel createMessageChannel(Channel channel) {
           // IP + Port
           InetSocketAddress socketAddress = ((InetSocketAddress) channel.remoteAddress());
           String key = socketAddress.getAddress().getHostAddress() + ":" + socketAddress.getPort();
@@ -79,14 +84,6 @@ public class StreamMessageProcessor extends MessageProcessor {
                System.out.println("[TCP-PROCESSOR] Server started on port " + port);
           } catch (InterruptedException e) {
                System.out.println(e);
-          }
-     }
-
-     public void remove(StreamMessageChannel streamMessageChannel) {
-          String key = streamMessageChannel.getKey();
-
-          if (messageChannels.get(key) == streamMessageChannel) {
-               this.messageChannels.remove(key);
           }
      }
 }

@@ -2,7 +2,7 @@ package edu.netty.server.channel.transports;
 
 import edu.netty.common.message.Message;
 import edu.netty.common.message.MessageTypeEnum;
-import edu.netty.server.channel.MessageChannel;
+import edu.netty.server.channel.AbstractChannel;
 import edu.netty.server.processor.MessageProcessor;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -13,16 +13,18 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.UUID;
 
-public class DatagramMessageChannel extends MessageChannel {
-    private final InetAddress remoteAddress;
-    private final int remotePort;
+public class DatagramMessageChannel extends AbstractChannel {
+    private InetAddress remoteAddress;
+    private int remotePort;
 
-    public DatagramMessageChannel(MessageProcessor messageProcessor, Channel channel) {
+    public DatagramMessageChannel(MessageProcessor messageProcessor, Channel channel, InetSocketAddress sender) {
         this.messageProcessor = messageProcessor;
         this.channel = channel;
 
-        this.remoteAddress = ((InetSocketAddress) channel.remoteAddress()).getAddress();
-        this.remotePort = ((InetSocketAddress) channel.remoteAddress()).getPort();
+        if (sender != null) {
+            this.remoteAddress = sender.getAddress();
+            this.remotePort = sender.getPort();
+        }
     }
 
     public String getKey() {
@@ -52,6 +54,7 @@ public class DatagramMessageChannel extends MessageChannel {
     @Override
     public void sendMessage(ByteBuf message) {
         ByteBuf byteBuf = Unpooled.wrappedBuffer(message);
+
         channel.writeAndFlush(new DatagramPacket(byteBuf, new InetSocketAddress(remoteAddress, remotePort)));
     }
 }

@@ -1,6 +1,6 @@
 package edu.netty.client;
 
-import edu.netty.client.handlers.ClientInitializer;
+import edu.netty.client.handlers.StreamClientInitializer;
 import edu.netty.common.message.Message;
 import edu.netty.common.message.MessageTypeEnum;
 import java.util.UUID;
@@ -26,7 +26,7 @@ public class StreamClient extends AbstractClient {
 						@Override
 						protected void initChannel(SocketChannel socketChannel) {
 							channel = socketChannel;
-							socketChannel.pipeline().addLast(new ClientInitializer(sessions));
+							socketChannel.pipeline().addLast(new StreamClientInitializer(sessions));
 						}
 					});
 			ChannelFuture future = bootstrap.connect(host, port).sync();

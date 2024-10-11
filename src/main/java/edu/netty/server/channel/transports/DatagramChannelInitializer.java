@@ -1,6 +1,6 @@
 package edu.netty.server.channel.transports;
 
-import edu.netty.common.MessageDecoder;
+import edu.netty.common.decoder.DatagramMessageDecoder;
 import edu.netty.server.handlers.DatagramMessageHandler;
 import edu.netty.server.processor.DatagramMessageProcessor;
 import io.netty.channel.ChannelInitializer;
@@ -21,11 +21,12 @@ public class DatagramChannelInitializer extends ChannelInitializer<DatagramChann
         ChannelPipeline pipeline = ch.pipeline();
 
         // Decoder
-        pipeline.addLast("decoder", new MessageDecoder());
+        pipeline.addLast("decoder", new DatagramMessageDecoder());
 
         // Encoder
         pipeline.addLast("byteEncoder", new ByteArrayEncoder());
 
+        // Handler
         pipeline.addLast("handler", new DatagramMessageHandler(this.datagramMessageProcessor));
     }
 }

@@ -27,9 +27,10 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
 		super.channelRead(ctx, msg);
 
 		Message message = (Message) msg;
+		System.out.println(message);
+
 		UUID sessionId = message.sessionId;
 
-		System.out.println(message);
 		Session session = sessions.get(sessionId);
 
 		if (session == null) return;

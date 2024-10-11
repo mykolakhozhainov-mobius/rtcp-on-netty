@@ -1,7 +1,6 @@
-package edu.netty.common;
+package edu.netty.common.decoder;
 
 import io.netty.util.CharsetUtil;
-
 import java.nio.charset.Charset;
 
 public final class DecodingUtils {
