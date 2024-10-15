@@ -1,11 +1,11 @@
-package edu.rtcp.server.network.executor;
+package edu.rtcp.server.executor;
 
 import com.mobius.software.common.dal.timers.CountableQueue;
 import com.mobius.software.common.dal.timers.PeriodicQueuedTasks;
 import com.mobius.software.common.dal.timers.Task;
 import com.mobius.software.common.dal.timers.Timer;
 import com.mobius.software.common.dal.timers.WorkerPool;
-import edu.rtcp.server.network.executor.tasks.MessageTask;
+import edu.rtcp.server.executor.tasks.MessageTask;
 
 public class MessageExecutor {
     private WorkerPool workerPool;

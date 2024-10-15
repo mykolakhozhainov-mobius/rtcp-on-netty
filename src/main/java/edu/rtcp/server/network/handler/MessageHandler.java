@@ -2,19 +2,20 @@ package edu.rtcp.server.network.handler;
 
 import edu.rtcp.common.message.Message;
 import edu.rtcp.RtcpStack;
+import edu.rtcp.server.executor.MessageExecutor;
 import edu.rtcp.server.network.processor.AbstractProcessor;
-import edu.rtcp.server.network.executor.tasks.MessageProcessingTask;
+import edu.rtcp.server.executor.tasks.MessageProcessingTask;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.timeout.ReadTimeoutException;
 
 public class MessageHandler extends ChannelInboundHandlerAdapter {
     private final RtcpStack stack;
-    private final AbstractProcessor messageProcessor;
+    private final MessageExecutor executor;
 
     public MessageHandler(RtcpStack stack) {
         this.stack = stack;
-        this.messageProcessor = stack.getProcessor();
+        this.executor = stack.getMessageExecutor();
     }
 
     @Override
@@ -30,7 +31,7 @@ public class MessageHandler extends ChannelInboundHandlerAdapter {
 
         this.stack.getNetworkManager().getNetworkListener().onMessage(message);
 
-        this.messageProcessor.executor.addTaskLast(new MessageProcessingTask(message, this.stack));
+        this.executor.addTaskLast(new MessageProcessingTask(message, this.stack));
     }
 
     @Override

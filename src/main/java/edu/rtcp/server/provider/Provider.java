@@ -14,9 +14,10 @@ import java.util.UUID;
 
 public class Provider {
     private final RtcpStack stack;
-    private final SessionStorage sessionStorage = new SessionStorage();
     private ServerSessionListener listener;
-    private SessionFactory sessionFactory = new SessionFactory(this);
+
+    private final SessionStorage sessionStorage = new SessionStorage();
+    private final SessionFactory sessionFactory = new SessionFactory(this);
 
     public Provider(RtcpStack stack) {
         this.stack = stack;
@@ -39,7 +40,6 @@ public class Provider {
     }
 
     private Session createNewSession(Message message) {
-        // TODO: Add originator to message
         return new ServerSession(UUID.randomUUID(), this, message.sender);
     }
 

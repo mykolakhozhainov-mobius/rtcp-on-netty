@@ -4,11 +4,10 @@ import java.net.InetSocketAddress;
 import java.util.UUID;
 
 import edu.rtcp.RtcpStack;
-import edu.rtcp.server.network.executor.MessageExecutor;
+import edu.rtcp.server.executor.MessageExecutor;
 import edu.rtcp.common.message.Message;
-import edu.rtcp.common.message.rtcp.header.RtcpBasePacket;
 import edu.rtcp.server.callback.AsyncCallback;
-import edu.rtcp.server.network.executor.tasks.MessageTask;
+import edu.rtcp.server.executor.tasks.MessageTask;
 import edu.rtcp.server.provider.Provider;
 
 public abstract class Session {
@@ -17,7 +16,7 @@ public abstract class Session {
 	protected Provider provider;
 	public InetSocketAddress remoteAddress;
 
-	private Message lastRequest;
+	// private MessageFactory messageFactory;
 
 	public UUID getId() {
 		return this.id;
@@ -31,9 +30,16 @@ public abstract class Session {
 		this.state = state;
 	}
 
+	// Handles default messages
 	public void processRequest(Message request, AsyncCallback callback) {
+		// TODO: define message types
+		// Idea: we have sessionId field in every message
+		// We may organize as if sessionId is defined:
+		// - session is not exist or IDLE -> create session
+		// - session exists -> data
+		// - session exists and message type is Bye -> close session
 
-//				if (request instanceof OpenSession) {
+//		if (request instanceof OpenSession) {
 			if (this.state != SessionStateEnum.IDLE) {
 				callback.onError(new RuntimeException("Session has already been opened"));
 				return;
@@ -51,7 +57,7 @@ public abstract class Session {
 //			this.state = SessionStateEnum.CLOSED;
 //			this.provider.getSessionStorage().remove(this);
 //			this.provider.getListener().onTerminationRequest(request, this, callback);
-//		} else if (request instanceof RtcpBasePacket) {
+//		} else if (request instanceof DataPacket) {
 //			if (this.state == SessionStateEnum.IDLE || this.state == SessionStateEnum.CLOSED) {
 //				callback.onError(new RuntimeException("Session can not handle data requests in this moment"));
 //				return;
@@ -66,8 +72,11 @@ public abstract class Session {
 //		this.lastRequest = request;
 	}
 
+	// Handles acks
 	public void processResponse(Message message, AsyncCallback callback) {
-//		if (this.lastRequest == null) {
+
+
+		//		if (this.lastRequest == null) {
 //			callback.onError(new RuntimeException("Session received response with no request been sent"));
 //			return;
 //		}
@@ -76,14 +85,14 @@ public abstract class Session {
 //		this.provider.getListener().onAcknowledgementResponse(message, this, callback);
 	}
 	
-	public void sendAnswer(Message message, InetSocketAddress address, AsyncCallback callback) {
+	public void sendAnswer(Message message, int port, AsyncCallback callback) {
 		RtcpStack stack = this.provider.getStack();
-		MessageExecutor executor = stack.getProcessor().executor;
+		MessageExecutor executor = stack.getMessageExecutor();
 		
 		executor.addTaskLast(new MessageTask() {
 			@Override
 			public void execute() {
-				stack.getNetworkManager().sendMessage(message, address, callback);
+				stack.getNetworkManager().sendMessage(message, port, callback);
 			}
 
 			@Override
