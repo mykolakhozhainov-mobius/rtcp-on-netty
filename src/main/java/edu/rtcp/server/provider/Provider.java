@@ -61,7 +61,11 @@ public class Provider {
     // Message request has come to onMessage() function
     // So, as a result, created session is Server session
     private Session createNewSession(Message message) {
-        return new ServerSession(UUID.randomUUID(), this, message.sender);
+        UUID id = message.sessionId == null ?
+                UUID.randomUUID() :
+                message.sessionId;
+
+        return new ServerSession(id, this);
     }
 
     public void onMessage(Message message, AsyncCallback callback) {
