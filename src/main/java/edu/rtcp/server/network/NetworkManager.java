@@ -1,7 +1,7 @@
 package edu.rtcp.server.network;
 
 import edu.rtcp.RtcpStack;
-import edu.rtcp.common.message.Message;
+import edu.rtcp.common.message.rtcp.header.RtcpBasePacket;
 import edu.rtcp.server.callback.AsyncCallback;
 import java.net.InetSocketAddress;
 
@@ -25,6 +25,6 @@ public class NetworkManager {
         this.networkListener = listener;
     }
 
-    public void sendMessage(Message message, InetSocketAddress address, AsyncCallback callback) {
+    public void sendMessage(RtcpBasePacket message, InetSocketAddress address, AsyncCallback callback) {
     }
 }

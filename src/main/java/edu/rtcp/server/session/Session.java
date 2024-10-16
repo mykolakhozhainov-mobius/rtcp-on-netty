@@ -1,17 +1,15 @@
 package edu.rtcp.server.session;
 
-import java.util.UUID;
-
-import edu.rtcp.common.message.Message;
+import edu.rtcp.common.message.rtcp.header.RtcpBasePacket;
 import edu.rtcp.server.callback.AsyncCallback;
 import edu.rtcp.server.provider.Provider;
 
 public abstract class Session {
-	protected UUID id;
+	protected int id;
 	protected SessionStateEnum state;
 	protected Provider provider;
 
-	public UUID getId() {
+	public int getId() {
 		return this.id;
 	}
 
@@ -23,8 +21,8 @@ public abstract class Session {
 		this.state = state;
 	}
 
-	public abstract void processRequest(Message request, AsyncCallback callback);
-	public abstract void processAnswer(Message answer, AsyncCallback callback);
+	public abstract void processRequest(RtcpBasePacket request, boolean isNewSession, AsyncCallback callback);
+	public abstract void processAnswer(RtcpBasePacket answer, AsyncCallback callback);
 
 	public abstract boolean isServer();
 }

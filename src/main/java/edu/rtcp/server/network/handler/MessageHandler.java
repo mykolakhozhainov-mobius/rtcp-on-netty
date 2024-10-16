@@ -1,7 +1,7 @@
 package edu.rtcp.server.network.handler;
 
-import edu.rtcp.common.message.Message;
 import edu.rtcp.RtcpStack;
+import edu.rtcp.common.message.rtcp.header.RtcpBasePacket;
 import edu.rtcp.server.executor.tasks.MessageProcessingTask;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -16,11 +16,7 @@ public class MessageHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
-        Message message = (Message) msg;
-
-        if (message.sender == null) {
-            message.sender = (java.net.InetSocketAddress) ctx.channel().remoteAddress();
-        }
+        RtcpBasePacket message = (RtcpBasePacket) msg;
 
         System.out.println("[HANDLER] New message content from " + ctx.channel() + ":");
         System.out.println(message);

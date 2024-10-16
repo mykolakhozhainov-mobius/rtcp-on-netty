@@ -1,7 +1,9 @@
 package edu.rtcp.server.provider;
 
-import edu.rtcp.common.message.Message;
 import edu.rtcp.RtcpStack;
+import edu.rtcp.common.message.rtcp.factory.PacketFactory;
+import edu.rtcp.common.message.rtcp.header.RtcpBasePacket;
+import edu.rtcp.common.message.rtcp.packet.ReceiverReport;
 import edu.rtcp.server.callback.AsyncCallback;
 import edu.rtcp.server.provider.listeners.ClientSessionListener;
 import edu.rtcp.server.provider.listeners.ServerSessionListener;
@@ -9,8 +11,6 @@ import edu.rtcp.server.session.SessionFactory;
 import edu.rtcp.server.session.SessionStorage;
 import edu.rtcp.server.session.types.ServerSession;
 import edu.rtcp.server.session.Session;
-
-import java.util.UUID;
 
 public class Provider {
     private final RtcpStack stack;
@@ -22,6 +22,9 @@ public class Provider {
     // Listeners ---------------------------------
     private ServerSessionListener serverListener;
     private ClientSessionListener clientListener;
+
+    // Messages ----------------------------------
+    private final PacketFactory packetFactory = new PacketFactory();
 
     public Provider(RtcpStack stack) {
         this.stack = stack;
@@ -48,6 +51,10 @@ public class Provider {
         this.clientListener = clientListener;
     }
 
+    public PacketFactory getPacketFactory() {
+        return this.packetFactory;
+    }
+
     // Sessions handling -------------------------
     public SessionFactory getSessionFactory() {
         return this.sessionFactory;
@@ -60,32 +67,35 @@ public class Provider {
     // This session is created when there are no session specified and
     // Message request has come to onMessage() function
     // So, as a result, created session is Server session
-    private Session createNewSession(Message message) {
-        UUID id = message.sessionId == null ?
-                UUID.randomUUID() :
-                message.sessionId;
+    private Session createNewSession(RtcpBasePacket message) {
+        int sessionId = message.getHeader().getSSRC();
 
-        return new ServerSession(id, this);
+        return new ServerSession(sessionId, this);
     }
 
-    public void onMessage(Message message, AsyncCallback callback) {
-        UUID sessionId = message.sessionId;
-        if (sessionId == null) {
-            callback.onError(new RuntimeException("Session ID is null"));
+    // Event handling -----------------------------
+    public void onMessage(RtcpBasePacket message, AsyncCallback callback) {
+        int sessionId = message.getHeader().getSSRC();
+
+        boolean isAnswer = message instanceof ReceiverReport && message.getHeader().getItemCount() == 0;
+        boolean isNewSession = false;
+
+        Session session = sessionStorage.get(sessionId);
+        if (session == null && !isAnswer) {
+            session = this.createNewSession(message);
+            this.sessionStorage.store(session);
+            isNewSession = true;
+        }
+
+        if (session == null) {
+            callback.onError(new RuntimeException("Session is not created"));
             return;
         }
 
-        Session session = sessionStorage.get(sessionId);
-        if (session == null) { //&& message instanceof Request) {
-            session = this.createNewSession(message);
-            this.sessionStorage.store(session);
+        if (isAnswer) {
+            session.processAnswer(message, callback);
+        } else {
+            session.processRequest(message, isNewSession, callback);
         }
-
-        session.processRequest(message, callback);
-//        if (message instanceof Request) {
-//            session.processRequest();
-//        } else {
-//            session.processResponce();
-//        }
     }
 }

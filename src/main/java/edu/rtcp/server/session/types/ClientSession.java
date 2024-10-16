@@ -1,54 +1,91 @@
 package edu.rtcp.server.session.types;
 
-import edu.rtcp.common.message.Message;
+import edu.rtcp.common.message.rtcp.header.RtcpBasePacket;
+import edu.rtcp.common.message.rtcp.packet.Bye;
 import edu.rtcp.server.callback.AsyncCallback;
+import edu.rtcp.server.executor.tasks.MessageTask;
 import edu.rtcp.server.provider.Provider;
 import edu.rtcp.server.provider.listeners.ClientSessionListener;
 import edu.rtcp.server.session.Session;
 import edu.rtcp.server.session.SessionStateEnum;
 
-import java.util.UUID;
-
 public class ClientSession extends Session {
-    private Message lastSentMessage;
+    boolean isFirstMessage = true;
+    private RtcpBasePacket lastSentMessage;
 
-    public ClientSession(UUID id, Provider provider) {
+    public ClientSession(int id, Provider provider) {
         this.id = id;
         this.state = SessionStateEnum.IDLE;
         this.provider = provider;
     }
 
-    public void sendInitialRequest(Message request, AsyncCallback callback) {
-        // TODO: Implement this method
+    public void sendInitialRequest(RtcpBasePacket request, AsyncCallback callback) {
+        if (this.state != SessionStateEnum.IDLE) {
+            callback.onError(new RuntimeException("Client session can not send initial request cause it is already opened"));
+            return;
+        }
+
+        this.provider.getStack().getMessageExecutor().addTaskFirst(new MessageTask() {
+            @Override
+            public void execute() {
+                lastSentMessage = request;
+
+                // TODO: how to determine receiver of the message
+                //provider.getStack().getNetworkManager().sendMessage(request, callback);
+            }
+        });
     }
 
-    public void sendTerminationRequest() {
-        // TODO: Implement this method
+    public void sendTerminationRequest(Bye request, AsyncCallback callback) {
+        if (this.state != SessionStateEnum.OPEN) {
+            callback.onError(new RuntimeException("Client session can not send termination request cause it is already opened"));
+            return;
+        }
+
+        this.provider.getStack().getMessageExecutor().addTaskFirst(new MessageTask() {
+            @Override
+            public void execute() {
+                lastSentMessage = request;
+
+                // TODO: how to determine receiver of the message
+                //provider.getStack().getNetworkManager().sendMessage(request, callback);
+            }
+        });
     }
 
     @Override
-    public void processRequest(Message request, AsyncCallback callback) {
+    public void processRequest(RtcpBasePacket request, boolean isNewSession, AsyncCallback callback) {
         // Here will be some logic if client will process any requests
     }
 
     @Override
-    public void processAnswer(Message answer, AsyncCallback callback) {
+    public void processAnswer(RtcpBasePacket answer, AsyncCallback callback) {
         ClientSessionListener listener = this.provider.getClientListener();
 
-        // TODO: Implement answer processing
-        // We can also validate the message that incomes by checking it
-        // To the type of the lastSentMessage
+        // TODO: Rework message types
+        // Data messages are ignored
 
-        if (listener != null) {
-            // If answer message is came after we sent initial message
-            listener.onInitialAnswer(answer, this, callback);
+        if (isFirstMessage) {
+            if (this.state != SessionStateEnum.IDLE) {
+                callback.onError(new RuntimeException("Init session answer gotten by already opened session"));
+                return;
+            }
 
-            // If answer message is came after we sent termination message
-            listener.onTerminationAnswer(answer, this, callback);
+            if (listener != null) {
+                listener.onInitialAnswer(answer, this, callback);
+            }
+        } else if (answer instanceof Bye) {
+            if (this.state != SessionStateEnum.OPEN) {
+                callback.onError(new RuntimeException("Session can not be closed as it is not opened"));
+                return;
+            }
 
-            // If answer message is came after we sent data
-            listener.onDataRequest(answer, this, callback);
+            if (listener != null) {
+                listener.onTerminationAnswer(answer, this, callback);
+            }
         }
+
+        isFirstMessage = false;
     }
 
     @Override
