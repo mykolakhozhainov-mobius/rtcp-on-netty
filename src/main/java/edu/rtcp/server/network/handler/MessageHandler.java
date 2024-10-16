@@ -2,8 +2,6 @@ package edu.rtcp.server.network.handler;
 
 import edu.rtcp.common.message.Message;
 import edu.rtcp.RtcpStack;
-import edu.rtcp.server.executor.MessageExecutor;
-import edu.rtcp.server.network.processor.AbstractProcessor;
 import edu.rtcp.server.executor.tasks.MessageProcessingTask;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -11,11 +9,9 @@ import io.netty.handler.timeout.ReadTimeoutException;
 
 public class MessageHandler extends ChannelInboundHandlerAdapter {
     private final RtcpStack stack;
-    private final MessageExecutor executor;
 
     public MessageHandler(RtcpStack stack) {
         this.stack = stack;
-        this.executor = stack.getMessageExecutor();
     }
 
     @Override
@@ -29,9 +25,7 @@ public class MessageHandler extends ChannelInboundHandlerAdapter {
         System.out.println("[HANDLER] New message content from " + ctx.channel() + ":");
         System.out.println(message);
 
-        this.stack.getNetworkManager().getNetworkListener().onMessage(message);
-
-        this.executor.addTaskLast(new MessageProcessingTask(message, this.stack));
+        this.stack.getMessageExecutor().addTaskLast(new MessageProcessingTask(message, this.stack));
     }
 
     @Override

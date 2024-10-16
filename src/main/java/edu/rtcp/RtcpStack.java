@@ -16,17 +16,12 @@ public class RtcpStack {
     // Message processing ------------------------------
     private final AbstractProcessor processor;
 
-    // Networking --------------------------------------
-    public final boolean isServer;
-
     private final NetworkManager networkManager;
 
     // Provider ----------------------------------------
     private Provider provider;
 
-    public RtcpStack(boolean isServer) {
-        this.isServer = isServer;
-
+    public RtcpStack() {
         this.messageExecutor = new MessageExecutor();
         this.messageExecutor.start(WORKERS_NUMBER, TASK_INTERVAL);
 
@@ -46,8 +41,8 @@ public class RtcpStack {
         return this.provider;
     }
 
-    public AbstractProcessor getProcessor() {
-        return this.processor;
+    public void setProvider(Provider provider) {
+        this.provider = provider;
     }
 
     public NetworkManager getNetworkManager() {

@@ -28,5 +28,22 @@ public class MessageProcessingTask extends MessageTask {
                 System.out.println(e.getMessage());
             }
         });
+
+        this.stack.getNetworkManager()
+                .getNetworkListener()
+                .onMessage(
+                        this.message,
+                        this.stack.getProvider().getSessionStorage().get(message.sessionId),
+                        new AsyncCallback() {
+            @Override
+            public void onSuccess() {
+                System.out.println("[TASK] Message is gone through network listener");
+            }
+
+            @Override
+            public void onError(Exception e) {
+
+            }
+        });
     }
 }

@@ -5,5 +5,7 @@ import edu.rtcp.server.callback.AsyncCallback;
 import edu.rtcp.server.session.Session;
 
 public interface ClientSessionListener extends SessionListener {
-    void onInitialResponse(Message response, Session session, AsyncCallback callback);
+    void onInitialAnswer(Message response, Session session, AsyncCallback callback);
+
+    void onTerminationAnswer(Message response, Session session, AsyncCallback callback);
 }
