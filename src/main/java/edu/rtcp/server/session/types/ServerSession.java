@@ -76,7 +76,10 @@ public class ServerSession extends Session {
                 listener.onInitialRequest(request, this, callback);
             }
         } else {
-            if (this.state == SessionStateEnum.CLOSED) {
+            if (this.state == SessionStateEnum.IDLE) {
+                callback.onError(new RuntimeException("Unknown message type is passed to session"));
+                return;
+            } else if (this.state == SessionStateEnum.CLOSED) {
                 callback.onError(new RuntimeException("Closed session can not handle data"));
                 return;
             }

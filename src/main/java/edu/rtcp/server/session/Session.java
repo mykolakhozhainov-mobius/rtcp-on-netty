@@ -17,6 +17,10 @@ public abstract class Session {
 		this.provider = provider;
 	}
 
+	public SessionStateEnum getSessionState() {
+		return this.state;
+	}
+
 	public void setSessionState(SessionStateEnum state) {
 		this.state = state;
 	}
