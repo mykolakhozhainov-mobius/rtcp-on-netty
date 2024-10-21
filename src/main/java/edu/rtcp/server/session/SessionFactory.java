@@ -1,6 +1,6 @@
 package edu.rtcp.server.session;
 
-import edu.rtcp.common.message.Message;
+import edu.rtcp.common.message.rtcp.header.RtcpBasePacket;
 import edu.rtcp.server.provider.Provider;
 import edu.rtcp.server.session.types.ClientSession;
 import edu.rtcp.server.session.types.ServerSession;
@@ -12,11 +12,11 @@ public class SessionFactory {
         this.provider = provider;
     }
 
-    public Session createServerSession(Message request) {
-        return new ServerSession(request.sessionId, provider, request.sender);
+    public ServerSession createServerSession(RtcpBasePacket request) {
+        return new ServerSession(request.getHeader().getSSRC(), provider);
     }
 
-    public Session createClientSession(Message request) {
-        return new ClientSession(request.sessionId, provider, request.sender);
+    public ClientSession createClientSession(RtcpBasePacket request) {
+        return new ClientSession(request.getHeader().getSSRC(), provider);
     }
 }

@@ -4,6 +4,7 @@ import com.mobius.software.common.dal.timers.WorkerPool;
 
 import edu.rtcp.common.TransportEnum;
 import edu.rtcp.common.message.Message;
+import edu.rtcp.common.message.rtcp.header.RtcpBasePacket;
 import edu.rtcp.server.callback.AsyncCallback;
 import edu.rtcp.server.provider.Provider;
 import org.apache.logging.log4j.core.config.Configurator;
@@ -36,7 +37,7 @@ public class NetworkTestBase {
 		serverStack = new RtcpStack(4, true, TransportEnum.UDP);
 		Provider serverProvider = new Provider(serverStack) {
 			@Override
-			public void onMessage(Message message, AsyncCallback callback) {
+			public void onMessage(RtcpBasePacket message, AsyncCallback callback) {
 				requestReceived.incrementAndGet();
 			}
 		};
@@ -55,7 +56,7 @@ public class NetworkTestBase {
 		localStack = new RtcpStack(4, false, TransportEnum.UDP);
 		Provider localProvider = new Provider(localStack) {
 			@Override
-			public void onMessage(Message message, AsyncCallback callback) {
+			public void onMessage(RtcpBasePacket message, AsyncCallback callback) {
 				answerReceived.incrementAndGet();
 			}
 		};

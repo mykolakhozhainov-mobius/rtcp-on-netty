@@ -1,13 +1,12 @@
 package edu.rtcp.server.session;
 
-import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class SessionStorage {
-    private final Map<UUID, Session> sessionsMap = new HashMap<UUID, Session>();
+    private final Map<Integer, Session> sessionsMap = new ConcurrentHashMap<>();
 
-    public Session get(UUID id) {
+    public Session get(int id) {
         return this.sessionsMap.get(id);
     }
 

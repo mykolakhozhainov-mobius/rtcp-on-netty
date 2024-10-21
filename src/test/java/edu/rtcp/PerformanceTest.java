@@ -3,6 +3,7 @@ package edu.rtcp;
 //import static org.junit.Assert.assertEquals;
 import edu.rtcp.common.message.Message;
 import edu.rtcp.common.message.MessageTypeEnum;
+import edu.rtcp.common.message.rtcp.header.RtcpBasePacket;
 import edu.rtcp.server.callback.AsyncCallback;
 import edu.rtcp.server.network.NetworkLink;
 import edu.rtcp.server.session.Session;
@@ -38,7 +39,8 @@ public class PerformanceTest extends NetworkTestBase {
         
         for(int i = 0; i < numberOfSessions; i++) {
             UUID sessionId = UUID.randomUUID();
-            Message msg = new Message(sessionId,MessageTypeEnum.OPEN ,"Open session");
+//            Message msg = new Message(sessionId,MessageTypeEnum.OPEN ,"Open session");
+//            RtcpBasePacket msg = new RtcpBasePacket;
             sessions.add(localStack.getProvider().getSessionFactory().createClientSession(msg));
             sessions.get(i).sendMessage(msg, localLink.getRemotePort(), new AsyncCallback() {
             	public void onSuccess()

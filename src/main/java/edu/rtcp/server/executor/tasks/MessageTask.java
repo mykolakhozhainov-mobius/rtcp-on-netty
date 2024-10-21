@@ -1,10 +1,10 @@
 package edu.rtcp.server.executor.tasks;
 
 import com.mobius.software.common.dal.timers.Task;
-import edu.rtcp.common.message.Message;
+import edu.rtcp.common.message.rtcp.header.RtcpBasePacket;
 
 public abstract class MessageTask implements Task {
-    protected Message message;
+    protected RtcpBasePacket message;
 
     @Override
     public long getStartTime() {
@@ -12,8 +12,8 @@ public abstract class MessageTask implements Task {
     }
 
     public String getId() {
-        if (this.message.sessionId != null) {
-            return this.message.sessionId.toString();
+        if (this.message.getHeader().getSSRC() != null) {
+            return this.message.getHeader().getSSRC().toString();
         }
 
         return String.valueOf(System.currentTimeMillis());

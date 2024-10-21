@@ -56,6 +56,10 @@ public class RtcpStack {
     {
         networkManager.stop();
     }
+    
+    public void setProvider(Provider provider) {
+        this.provider = provider;
+    }
 
 //    public AbstractProcessor getProcessor() {
 //        return this.processor;
