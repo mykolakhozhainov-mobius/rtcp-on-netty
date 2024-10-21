@@ -34,6 +34,9 @@ public class MessageExecutor {
     }
 
     public void addTaskLast(MessageTask task) {
+
+        System.out.println("[EXECUTOR] Task " + task);
+
         CountableQueue<Task> queue = this.getQueue(task.getId());
 
         if (queue != null) {

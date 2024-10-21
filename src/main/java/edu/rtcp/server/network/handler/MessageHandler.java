@@ -1,5 +1,6 @@
 package edu.rtcp.server.network.handler;
 
+import edu.rtcp.common.TransportEnum;
 import edu.rtcp.common.message.Message;
 import edu.rtcp.RtcpStack;
 import edu.rtcp.server.executor.MessageExecutor;
@@ -29,7 +30,7 @@ public class MessageHandler extends ChannelInboundHandlerAdapter {
         System.out.println("[HANDLER] New message content from " + ctx.channel() + ":");
         System.out.println(message);
 
-        this.stack.getNetworkManager().getNetworkListener().onMessage(message);
+//        this.stack.getNetworkManager().getNetworkListener().onMessage(message);
 
         this.executor.addTaskLast(new MessageProcessingTask(message, this.stack));
     }
@@ -39,9 +40,12 @@ public class MessageHandler extends ChannelInboundHandlerAdapter {
         if (cause instanceof ReadTimeoutException) {
             System.out.println("[HANDLER] Read Timeout Received on channel " + ctx.channel() + ", closing channel");
         } else {
-            System.out.println("[HANDLER] Exception " + cause.getClass().getName() + " on channel " + ctx.channel() + ", closing channel handle context");
+            System.out.println("[HANDLER] " + cause.toString());
+            System.out.println("[HANDLER] Exception " + cause.getClass().getName() + " on channel " + stack.isServer + ctx.channel() + ", closing channel handle context");
+        }
+        if(stack.transport == TransportEnum.TCP) {
+        	ctx.channel().close();	
         }
         System.out.println(cause);
-        ctx.channel().close();
     }
 }
