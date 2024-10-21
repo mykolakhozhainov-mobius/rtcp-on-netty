@@ -2,6 +2,7 @@ package edu.rtcp.server.session;
 
 import edu.rtcp.common.message.rtcp.header.RtcpBasePacket;
 import edu.rtcp.server.callback.AsyncCallback;
+import edu.rtcp.server.executor.tasks.MessageTask;
 import edu.rtcp.server.provider.Provider;
 
 public abstract class Session {
@@ -29,4 +30,14 @@ public abstract class Session {
 	public abstract void processAnswer(RtcpBasePacket answer, AsyncCallback callback);
 
 	public abstract boolean isServer();
+
+	public void sendMessage(RtcpBasePacket message, int port, AsyncCallback callback) {
+		this.provider.getStack().getMessageExecutor().addTaskLast(new MessageTask() {
+			@Override
+			public void execute() {
+				// TODO: Replace Message with RtcpBasePacker
+				// provider.getStack().getNetworkManager().sendMessage(message, port, callback);
+			}
+		});
+	}
 }

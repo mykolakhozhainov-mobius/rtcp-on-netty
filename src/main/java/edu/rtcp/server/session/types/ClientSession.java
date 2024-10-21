@@ -19,7 +19,7 @@ public class ClientSession extends Session {
         this.provider = provider;
     }
 
-    public void sendInitialRequest(RtcpBasePacket request, AsyncCallback callback) {
+    public void sendInitialRequest(RtcpBasePacket request, int port, AsyncCallback callback) {
         if (this.state != SessionStateEnum.IDLE) {
             callback.onError(new RuntimeException("Client session can not send initial request cause it is already opened"));
             return;
@@ -30,13 +30,12 @@ public class ClientSession extends Session {
             public void execute() {
                 lastSentMessage = request;
 
-                // TODO: how to determine receiver of the message
-                //provider.getStack().getNetworkManager().sendMessage(request, callback);
+                sendMessage(request, port, callback);
             }
         });
     }
 
-    public void sendTerminationRequest(Bye request, AsyncCallback callback) {
+    public void sendTerminationRequest(Bye request, int port, AsyncCallback callback) {
         if (this.state != SessionStateEnum.OPEN) {
             callback.onError(new RuntimeException("Client session can not send termination request cause it is already opened"));
             return;
@@ -47,8 +46,7 @@ public class ClientSession extends Session {
             public void execute() {
                 lastSentMessage = request;
 
-                // TODO: how to determine receiver of the message
-                //provider.getStack().getNetworkManager().sendMessage(request, callback);
+                sendMessage(request, port, callback);
             }
         });
     }

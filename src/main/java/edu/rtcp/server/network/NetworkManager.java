@@ -195,16 +195,14 @@ public class NetworkManager {
 	}
 
 	public void stop() {
-		if (links.size() > 0) {
-			Iterator<Map.Entry<String, NetworkLink>> iterator = links.entrySet().iterator();
-			while (iterator.hasNext()) {
-				Map.Entry<String, NetworkLink> currEntry = iterator.next();
-				try {
-					stopLink(currEntry.getKey());
-				} catch (Exception e) {
-					System.out.println(e);
-				}
-			}
+		if (!links.isEmpty()) {
+            for (Map.Entry<String, NetworkLink> currEntry : links.entrySet()) {
+                try {
+                    stopLink(currEntry.getKey());
+                } catch (Exception e) {
+                    System.out.println(e);
+                }
+            }
 		}
 	}
 }

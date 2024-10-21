@@ -16,7 +16,7 @@ public class ServerSession extends Session {
         this.provider = provider;
     }
 
-    public void sendInitialAnswer(RtcpBasePacket answer, AsyncCallback callback) {
+    public void sendInitialAnswer(RtcpBasePacket answer, int port, AsyncCallback callback) {
         if (this.state != SessionStateEnum.IDLE) {
             callback.onError(new RuntimeException("Can not send initial answer cause session is already open or closed"));
             return;
@@ -27,13 +27,12 @@ public class ServerSession extends Session {
             public void execute() {
                 setSessionState(SessionStateEnum.OPEN);
 
-                // TODO: how to determine originator of the message
-                // provider.getStack().getNetworkManager().sendMessage(answer, callback);
+                sendMessage(answer, port, callback);
             }
         });
     }
 
-    public void sendTerminationAnswer(RtcpBasePacket answer, AsyncCallback callback) {
+    public void sendTerminationAnswer(RtcpBasePacket answer, int port, AsyncCallback callback) {
         if (this.state != SessionStateEnum.OPEN) {
             callback.onError(new RuntimeException("Can not terminate not opened session"));
             return;
@@ -47,8 +46,7 @@ public class ServerSession extends Session {
                 setSessionState(SessionStateEnum.CLOSED);
                 provider.getSessionStorage().remove(session);
 
-                // TODO: how to determine originator of the message
-                // provider.getStack().getNetworkManager().sendMessage(answer, callback);
+                sendMessage(answer, port, callback);
             }
         });
     }
