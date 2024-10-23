@@ -3,7 +3,6 @@ package edu.rtcp.server.session.types;
 import edu.rtcp.common.message.rtcp.header.RtcpBasePacket;
 import edu.rtcp.common.message.rtcp.packet.Bye;
 import edu.rtcp.server.callback.AsyncCallback;
-import edu.rtcp.server.executor.tasks.MessageTask;
 import edu.rtcp.server.provider.Provider;
 import edu.rtcp.server.provider.listeners.ServerSessionListener;
 import edu.rtcp.server.session.Session;
@@ -22,14 +21,11 @@ public class ServerSession extends Session {
             return;
         }
 
-        this.provider.getStack().getMessageExecutor().addTaskLast(new MessageTask() {
-            @Override
-            public void execute() {
-                setSessionState(SessionStateEnum.OPEN);
+        System.out.println("[SERVER-SESSION] Session state is now WAITING");
+        setSessionState(SessionStateEnum.WAITING);
 
-                sendMessage(answer, port, callback);
-            }
-        });
+        sendMessage(answer, port, callback);
+        System.out.println("[SERVER-SESSION] ACK (RR) message is sent");
     }
 
     public void sendTerminationAnswer(RtcpBasePacket answer, int port, AsyncCallback callback) {
@@ -38,17 +34,11 @@ public class ServerSession extends Session {
             return;
         }
 
-        ServerSession session = this;
+        System.out.println("[SERVER-LISTENER] Session state is now CLOSED");
+        setSessionState(SessionStateEnum.CLOSED);
+        provider.getSessionStorage().remove(this);
 
-        this.provider.getStack().getMessageExecutor().addTaskLast(new MessageTask() {
-            @Override
-            public void execute() {
-                setSessionState(SessionStateEnum.CLOSED);
-                provider.getSessionStorage().remove(session);
-
-                sendMessage(answer, port, callback);
-            }
-        });
+        sendMessage(answer, port, callback);
     }
 
     @Override

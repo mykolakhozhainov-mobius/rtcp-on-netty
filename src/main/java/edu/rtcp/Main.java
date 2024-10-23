@@ -3,12 +3,14 @@ package edu.rtcp;
 import com.mobius.software.common.dal.timers.WorkerPool;
 import edu.rtcp.common.TransportEnum;
 import edu.rtcp.common.message.rtcp.header.RtcpBasePacket;
+import edu.rtcp.common.message.rtcp.packet.ReceiverReport;
 import edu.rtcp.common.message.rtcp.packet.SenderReport;
 import edu.rtcp.server.callback.AsyncCallback;
 import edu.rtcp.server.provider.Provider;
 import edu.rtcp.server.provider.listeners.ServerSessionListener;
 import edu.rtcp.server.session.Session;
 import edu.rtcp.server.session.SessionStateEnum;
+import edu.rtcp.server.session.types.ServerSession;
 
 import java.net.InetAddress;
 
@@ -32,14 +34,32 @@ public class Main {
         serverProvider.setServerListener(new ServerSessionListener() {
             @Override
             public void onInitialRequest(RtcpBasePacket request, Session session, AsyncCallback callback) {
-                session.setSessionState(SessionStateEnum.OPEN);
-                System.out.println("[SERVER-LISTENER] Session state is now OPEN");
+                ServerSession serverSession = (ServerSession) session;
+
+                ReceiverReport answer = serverProvider.getPacketFactory().
+                        createReceiverReport(
+                        (byte) 0,
+                        request.getSSRC(),
+                        null
+                );
+
+                serverSession.sendInitialAnswer(answer, 8081, new AsyncCallback() {
+                    @Override
+                    public void onSuccess() {
+                        serverSession.setSessionState(SessionStateEnum.OPEN);
+                        System.out.println("[SERVER-LISTENER] Session opened");
+                    }
+
+                    @Override
+                    public void onError(Exception e) {
+
+                    }
+                });
             }
 
             @Override
             public void onTerminationRequest(RtcpBasePacket request, Session session, AsyncCallback callback) {
-                session.setSessionState(SessionStateEnum.CLOSED);
-                System.out.println("[SERVER-LISTENER] Session state is now CLOSED");
+
             }
 
             @Override
@@ -74,7 +94,9 @@ public class Main {
 
         Provider localProvider = new Provider(localStack) {
             @Override
-            public void onMessage(RtcpBasePacket message, AsyncCallback callback) {}
+            public void onMessage(RtcpBasePacket message, AsyncCallback callback) {
+                System.out.println("Message");
+            }
         };
 
         localStack.registerProvider(localProvider);

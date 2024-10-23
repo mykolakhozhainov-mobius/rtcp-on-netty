@@ -188,10 +188,13 @@ public class NetworkManager {
 
 	public void sendMessage(RtcpBasePacket message, int port, AsyncCallback callback) {
 		NetworkLink link = getLinkByPort(port);
+
 		if (link == null) {
+			callback.onError(new RuntimeException("Link is not found"));
 			return;
 		}
 		link.getChannel().writeAndFlush(RtcpParser.encode(message));
+		callback.onSuccess();
 	}
 
 	public void stop() {
