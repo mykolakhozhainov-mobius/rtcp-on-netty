@@ -1,8 +1,8 @@
-package edu.netty.common.message.rtcp.factory;
+package edu.rtcp.common.message.rtcp.factory;
 
-import edu.netty.common.message.rtcp.parts.ReportBlock;
-import edu.netty.common.message.rtcp.parts.chunk.Chunk;
-import edu.netty.common.message.rtcp.parts.chunk.SdesItem;
+import edu.rtcp.common.message.rtcp.parts.ReportBlock;
+import edu.rtcp.common.message.rtcp.parts.chunk.Chunk;
+import edu.rtcp.common.message.rtcp.parts.chunk.SdesItem;
 
 import java.util.List;
 

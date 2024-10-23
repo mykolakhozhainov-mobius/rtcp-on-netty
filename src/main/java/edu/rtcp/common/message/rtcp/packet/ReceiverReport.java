@@ -1,8 +1,8 @@
-package edu.netty.common.message.rtcp.packet;
+package edu.rtcp.common.message.rtcp.packet;
 
-import edu.netty.common.message.rtcp.header.RtcpBasePacket;
-import edu.netty.common.message.rtcp.header.RtcpHeader;
-import edu.netty.common.message.rtcp.parts.ReportBlock;
+import edu.rtcp.common.message.rtcp.header.RtcpBasePacket;
+import edu.rtcp.common.message.rtcp.header.RtcpHeader;
+import edu.rtcp.common.message.rtcp.parts.ReportBlock;
 
 import java.util.List;
 

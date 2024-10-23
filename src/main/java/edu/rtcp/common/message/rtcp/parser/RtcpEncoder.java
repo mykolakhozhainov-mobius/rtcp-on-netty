@@ -1,10 +1,10 @@
-package edu.netty.common.message.rtcp.parser;
+package edu.rtcp.common.message.rtcp.parser;
 
-import edu.netty.common.message.rtcp.header.RtcpHeader;
-import edu.netty.common.message.rtcp.packet.*;
-import edu.netty.common.message.rtcp.parts.ReportBlock;
-import edu.netty.common.message.rtcp.parts.chunk.Chunk;
-import edu.netty.common.message.rtcp.parts.chunk.SdesItem;
+import edu.rtcp.common.message.rtcp.header.RtcpHeader;
+import edu.rtcp.common.message.rtcp.packet.*;
+import edu.rtcp.common.message.rtcp.parts.ReportBlock;
+import edu.rtcp.common.message.rtcp.parts.chunk.Chunk;
+import edu.rtcp.common.message.rtcp.parts.chunk.SdesItem;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 
