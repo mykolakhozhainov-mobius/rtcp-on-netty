@@ -3,6 +3,8 @@ package edu.rtcp.server.session;
 import edu.rtcp.common.message.rtcp.header.RtcpBasePacket;
 import edu.rtcp.server.callback.AsyncCallback;
 import edu.rtcp.server.executor.tasks.MessageOutgoingTask;
+import edu.rtcp.server.executor.tasks.MessageTask;
+import edu.rtcp.server.network.PendingStorage;
 import edu.rtcp.server.provider.Provider;
 
 public abstract class Session {
@@ -32,6 +34,14 @@ public abstract class Session {
 	public abstract boolean isServer();
 
 	public void sendMessage(RtcpBasePacket packet, int port, AsyncCallback callback) {
-		this.provider.getStack().getMessageExecutor().addTaskLast(new MessageOutgoingTask(packet, port, this.provider.getStack(), callback));
+		PendingStorage pendingStorage = this.provider.getStack().getNetworkManager().getPendingStorage();
+
+		MessageTask task = new MessageOutgoingTask(packet, port, this.provider.getStack(), callback);
+
+		if (this.state == SessionStateEnum.WAITING) {
+			pendingStorage.addTask(packet.getSSRC(), task);
+		} else {
+			this.provider.getStack().getMessageExecutor().addTaskLast(task);
+		}
 	}
 }

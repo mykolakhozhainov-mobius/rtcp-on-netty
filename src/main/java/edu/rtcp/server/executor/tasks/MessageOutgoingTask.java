@@ -19,6 +19,7 @@ public class MessageOutgoingTask extends MessageTask {
     @Override
     public void execute() {
         System.out.println("[OUTGOING-TASK] Sending message...");
+
         this.stack.getNetworkManager().sendMessage(message, port, callback);
     }
 }

@@ -1,31 +1,47 @@
 package edu.rtcp;
 
-import com.mobius.software.common.dal.timers.WorkerPool;
 import edu.rtcp.common.TransportEnum;
 import edu.rtcp.common.message.rtcp.header.RtcpBasePacket;
+import edu.rtcp.common.message.rtcp.packet.ApplicationDefined;
 import edu.rtcp.common.message.rtcp.packet.ReceiverReport;
 import edu.rtcp.common.message.rtcp.packet.SenderReport;
 import edu.rtcp.server.callback.AsyncCallback;
 import edu.rtcp.server.provider.Provider;
+import edu.rtcp.server.provider.listeners.ClientSessionListener;
 import edu.rtcp.server.provider.listeners.ServerSessionListener;
 import edu.rtcp.server.session.Session;
 import edu.rtcp.server.session.SessionStateEnum;
+import edu.rtcp.server.session.types.ClientSession;
 import edu.rtcp.server.session.types.ServerSession;
 
 import java.net.InetAddress;
+import java.util.HashSet;
+import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Main {
     private static final String localLinkID = "1";
-    private WorkerPool workerPool;
 
-    public RtcpStack setupServer() throws Exception {
-        if (workerPool == null) {
-            workerPool = new WorkerPool();
-            workerPool.start(4);
+    private static final AtomicInteger received = new AtomicInteger(0);
+    private static final AtomicInteger sent = new AtomicInteger(0);
+
+    private final HashSet<Integer> usedIds = new HashSet<>();
+
+    private int generateId() {
+        int id = new Random().nextInt();
+
+        while (usedIds.contains(id)) {
+            id = new Random().nextInt();
         }
 
+        usedIds.add(id);
+
+        return id;
+    }
+
+    public RtcpStack setupServer() throws Exception {
         RtcpStack serverStack = new RtcpStack(
-                4,
+                16,
                 true,
                 TransportEnum.TCP
         );
@@ -52,7 +68,7 @@ public class Main {
 
                     @Override
                     public void onError(Exception e) {
-
+                        System.out.println(e);
                     }
                 });
             }
@@ -64,7 +80,29 @@ public class Main {
 
             @Override
             public void onDataRequest(RtcpBasePacket request, Session session, AsyncCallback callback) {
+                received.incrementAndGet();
                 System.out.println("[SERVER-LISTENER] Received data request");
+
+                ServerSession serverSession = (ServerSession) session;
+
+                ReceiverReport answer = serverProvider.getPacketFactory().
+                        createReceiverReport(
+                                (byte) 0,
+                                request.getSSRC(),
+                                null
+                        );
+
+                serverSession.sendDataAnswer(answer, 8081, new AsyncCallback() {
+                    @Override
+                    public void onSuccess() {
+
+                    }
+
+                    @Override
+                    public void onError(Exception e) {
+
+                    }
+                });
             }
         });
 
@@ -77,27 +115,17 @@ public class Main {
                         InetAddress.getByName("127.0.0.1"),
                         8080);
 
-        serverStack.getNetworkManager().startLink(localLinkID);
+        serverStack.getNetworkManager().startServer(localLinkID);
         return serverStack;
     }
 
     public RtcpStack setupLocal() throws Exception {
-        if (workerPool == null) {
-            workerPool = new WorkerPool();
-            workerPool.start(4);
-        }
-
         RtcpStack localStack = new RtcpStack(
-                4,
+                16,
                 false,
                 TransportEnum.TCP);
 
-        Provider localProvider = new Provider(localStack) {
-            @Override
-            public void onMessage(RtcpBasePacket message, AsyncCallback callback) {
-                System.out.println("Message");
-            }
-        };
+        Provider localProvider = new Provider(localStack);
 
         localStack.registerProvider(localProvider);
         localStack.getNetworkManager()
@@ -109,7 +137,7 @@ public class Main {
                         8081
                 );
 
-        localStack.getNetworkManager().startLink(localLinkID);
+        localStack.getNetworkManager().startServer(localLinkID);
         return localStack;
     }
 
@@ -119,27 +147,83 @@ public class Main {
         RtcpStack server = main.setupServer();
         RtcpStack local = main.setupLocal();
 
-        SenderReport packet =  local.getProvider().getPacketFactory().createSenderReport(
-                (byte) 0,
-                1568,
-                null,
-                null
-        );
+        server.getNetworkManager().startLink(localLinkID);
+        local.getNetworkManager().startLink(localLinkID);
 
-        Session clientSession = local.getProvider()
-                .getSessionFactory()
-                .createClientSession(packet);
-
-        clientSession.sendMessage(packet, 8080, new AsyncCallback() {
+        local.getProvider().setClientListener(new ClientSessionListener() {
             @Override
-            public void onSuccess() {
-                System.out.println("Success");
+            public void onDataAnswer(RtcpBasePacket response, Session session, AsyncCallback callback) {
+                System.out.println("[CLIENT-LISTENER] Data ACK from session " + response.getSSRC() + " received");
+                session.setSessionState(SessionStateEnum.OPEN);
             }
 
             @Override
-            public void onError(Exception e) {
+            public void onInitialAnswer(RtcpBasePacket response, Session session, AsyncCallback callback) {
+                System.out.println("[CLIENT-LISTENER] Opening ACK from session " + response.getSSRC() + " received");
+                session.setSessionState(SessionStateEnum.OPEN);
+                System.out.println("[CLIENT-LISTENER] Client session state is now OPEN");
+            }
 
+            @Override
+            public void onTerminationAnswer(RtcpBasePacket response, Session session, AsyncCallback callback) {
+                System.out.println("[CLIENT-LISTENER] Termination ACK from session " + response.getSSRC() + " received");
+                session.setSessionState(SessionStateEnum.CLOSED);
+                System.out.println("[CLIENT-LISTENER] Client session state is now CLOSED");
             }
         });
+
+        for (int k = 0; k < 3; k++) {
+            int sessionId = main.generateId();
+
+            SenderReport packet = local.getProvider().getPacketFactory().createSenderReport(
+                    (byte) 0,
+                    sessionId,
+                    null,
+                    null
+            );
+
+            ClientSession clientSession = local.getProvider()
+                    .getSessionFactory()
+                    .createClientSession(packet);
+
+            clientSession.sendInitialRequest(packet, 8080, new AsyncCallback() {
+                @Override
+                public void onSuccess() {
+                    System.out.println("[CLIENT] Initial message sent successfully");
+                }
+
+                @Override
+                public void onError(Exception e) {
+                    System.out.println(e);
+                }
+            });
+
+            ApplicationDefined dataPacker = local.getProvider()
+                    .getPacketFactory()
+                    .createApplicationDefined(
+                            (byte) 0,
+                            sessionId,
+                            "Something",
+                            0
+                    );
+
+            for (int i = 0; i < 3; i++) {
+                clientSession.sendMessageAndWaitForAck(dataPacker, 8080, new AsyncCallback() {
+                    @Override
+                    public void onSuccess() {
+                        sent.incrementAndGet();
+                    }
+
+                    @Override
+                    public void onError(Exception e) {
+                    }
+                });
+            }
+        }
+
+        Thread.sleep(3000);
+
+        System.out.println(received.get());
+        System.out.println(sent.get());
     }
 }

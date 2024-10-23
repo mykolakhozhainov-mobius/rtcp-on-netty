@@ -21,11 +21,20 @@ public class ServerSession extends Session {
             return;
         }
 
-        System.out.println("[SERVER-SESSION] Session state is now WAITING");
-        setSessionState(SessionStateEnum.WAITING);
+        sendMessage(answer, port, callback);
+
+        setSessionState(SessionStateEnum.OPEN);
+        System.out.println("[SERVER-SESSION] ACK (RR) on initial message is sent");
+    }
+
+    public void sendDataAnswer(RtcpBasePacket answer, int port, AsyncCallback callback) {
+        if (this.state != SessionStateEnum.OPEN) {
+            callback.onError(new RuntimeException("Can not send data answer cause session is idle, waiting or closed"));
+            return;
+        }
 
         sendMessage(answer, port, callback);
-        System.out.println("[SERVER-SESSION] ACK (RR) message is sent");
+        System.out.println("[SERVER-SESSION] ACK (RR) on data message is sent");
     }
 
     public void sendTerminationAnswer(RtcpBasePacket answer, int port, AsyncCallback callback) {
@@ -34,11 +43,10 @@ public class ServerSession extends Session {
             return;
         }
 
-        System.out.println("[SERVER-LISTENER] Session state is now CLOSED");
+        sendMessage(answer, port, callback);
+
         setSessionState(SessionStateEnum.CLOSED);
         provider.getSessionStorage().remove(this);
-
-        sendMessage(answer, port, callback);
     }
 
     @Override

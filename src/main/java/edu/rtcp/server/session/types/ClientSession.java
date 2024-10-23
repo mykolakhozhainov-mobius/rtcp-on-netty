@@ -25,15 +25,10 @@ public class ClientSession extends Session {
             return;
         }
 
-        this.provider.getStack().getMessageExecutor().addTaskFirst(new MessageTask() {
-            @Override
-            public void execute() {
-                lastSentMessage = request;
-                setSessionState(SessionStateEnum.WAITING);
+        this.lastSentMessage = request;
 
-                sendMessage(request, port, callback);
-            }
-        });
+        super.sendMessage(request, port, callback);
+        this.setSessionState(SessionStateEnum.WAITING);
     }
 
     public void sendTerminationRequest(Bye request, int port, AsyncCallback callback) {
@@ -46,9 +41,9 @@ public class ClientSession extends Session {
             @Override
             public void execute() {
                 lastSentMessage = request;
-                setSessionState(SessionStateEnum.WAITING);
 
                 sendMessage(request, port, callback);
+                setSessionState(SessionStateEnum.WAITING);
             }
         });
     }
@@ -63,6 +58,7 @@ public class ClientSession extends Session {
         ClientSessionListener listener = this.provider.getClientListener();
 
         if (this.state != SessionStateEnum.WAITING) {
+            System.out.println(this.state);
             callback.onError(new RuntimeException("ACK response received while session status is not WAITING"));
             return;
         }
@@ -76,8 +72,14 @@ public class ClientSession extends Session {
                 listener.onTerminationAnswer(answer, this, callback);
             }
         } else {
-            listener.onDataRequest(answer, this, callback);
+            listener.onDataAnswer(answer, this, callback);
         }
+    }
+
+    public void sendMessageAndWaitForAck(RtcpBasePacket packet, int port, AsyncCallback callback) {
+        this.sendMessage(packet, port, callback);
+
+        this.setSessionState(SessionStateEnum.WAITING);
     }
 
     @Override
