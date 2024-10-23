@@ -9,10 +9,7 @@ import edu.rtcp.server.callback.AsyncCallback;
 import edu.rtcp.server.network.processor.transport.DatagramChannelInitializer;
 import edu.rtcp.server.network.processor.transport.StreamChannelInitializer;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.EventLoopGroup;
+import io.netty.channel.*;
 import io.netty.channel.epoll.EpollChannelOption;
 import io.netty.channel.epoll.EpollDatagramChannel;
 import io.netty.channel.epoll.EpollEventLoopGroup;
@@ -24,7 +21,6 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -193,8 +189,9 @@ public class NetworkManager {
 			callback.onError(new RuntimeException("Link is not found"));
 			return;
 		}
-		link.getChannel().writeAndFlush(RtcpParser.encode(message));
-		callback.onSuccess();
+		ChannelFuture future = link.getChannel().writeAndFlush(RtcpParser.encode(message));
+
+		if (future.isSuccess()) callback.onSuccess();
 	}
 
 	public void stop() {

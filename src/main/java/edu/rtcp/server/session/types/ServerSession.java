@@ -70,6 +70,9 @@ public class ServerSession extends Session {
             if (this.state == SessionStateEnum.IDLE) {
                 callback.onError(new RuntimeException("Unknown message type is passed to session"));
                 return;
+            } else if (state == SessionStateEnum.WAITING) {
+                callback.onError(new RuntimeException("Data packet received while session is waiting for ACK"));
+                return;
             } else if (this.state == SessionStateEnum.CLOSED) {
                 callback.onError(new RuntimeException("Closed session can not handle data"));
                 return;

@@ -2,6 +2,7 @@ package edu.rtcp.server.session.types;
 
 import edu.rtcp.common.message.rtcp.header.RtcpBasePacket;
 import edu.rtcp.common.message.rtcp.packet.Bye;
+import edu.rtcp.common.message.rtcp.packet.SenderReport;
 import edu.rtcp.server.callback.AsyncCallback;
 import edu.rtcp.server.executor.tasks.MessageTask;
 import edu.rtcp.server.provider.Provider;
@@ -10,7 +11,6 @@ import edu.rtcp.server.session.Session;
 import edu.rtcp.server.session.SessionStateEnum;
 
 public class ClientSession extends Session {
-    boolean isFirstMessage = true;
     private RtcpBasePacket lastSentMessage;
 
     public ClientSession(int id, Provider provider) {
@@ -29,6 +29,7 @@ public class ClientSession extends Session {
             @Override
             public void execute() {
                 lastSentMessage = request;
+                setSessionState(SessionStateEnum.WAITING);
 
                 sendMessage(request, port, callback);
             }
@@ -45,6 +46,7 @@ public class ClientSession extends Session {
             @Override
             public void execute() {
                 lastSentMessage = request;
+                setSessionState(SessionStateEnum.WAITING);
 
                 sendMessage(request, port, callback);
             }
@@ -60,30 +62,22 @@ public class ClientSession extends Session {
     public void processAnswer(RtcpBasePacket answer, AsyncCallback callback) {
         ClientSessionListener listener = this.provider.getClientListener();
 
-        // TODO: Rework message types
-        // Data messages are ignored
+        if (this.state != SessionStateEnum.WAITING) {
+            callback.onError(new RuntimeException("ACK response received while session status is not WAITING"));
+            return;
+        }
 
-        if (isFirstMessage) {
-            if (this.state != SessionStateEnum.IDLE) {
-                callback.onError(new RuntimeException("Init session answer gotten by already opened session"));
-                return;
-            }
-
+        if (lastSentMessage instanceof SenderReport && lastSentMessage.getHeader().getItemCount() == 0) {
             if (listener != null) {
                 listener.onInitialAnswer(answer, this, callback);
             }
-        } else if (answer instanceof Bye) {
-            if (this.state != SessionStateEnum.OPEN) {
-                callback.onError(new RuntimeException("Session can not be closed as it is not opened"));
-                return;
-            }
-
+        } else if (lastSentMessage instanceof Bye) {
             if (listener != null) {
                 listener.onTerminationAnswer(answer, this, callback);
             }
+        } else {
+            listener.onDataRequest(answer, this, callback);
         }
-
-        isFirstMessage = false;
     }
 
     @Override
