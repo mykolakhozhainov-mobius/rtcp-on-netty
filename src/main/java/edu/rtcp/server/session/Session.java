@@ -1,0 +1,43 @@
+package edu.rtcp.server.session;
+
+import edu.rtcp.common.message.rtcp.header.RtcpBasePacket;
+import edu.rtcp.server.callback.AsyncCallback;
+import edu.rtcp.server.executor.tasks.MessageTask;
+import edu.rtcp.server.provider.Provider;
+
+public abstract class Session {
+	protected int id;
+	protected SessionStateEnum state;
+	protected Provider provider;
+
+	public int getId() {
+		return this.id;
+	}
+
+	public void setProvider(Provider provider) {
+		this.provider = provider;
+	}
+
+	public SessionStateEnum getSessionState() {
+		return this.state;
+	}
+
+	public void setSessionState(SessionStateEnum state) {
+		this.state = state;
+	}
+
+	public abstract void processRequest(RtcpBasePacket request, boolean isNewSession, AsyncCallback callback);
+	public abstract void processAnswer(RtcpBasePacket answer, AsyncCallback callback);
+
+	public abstract boolean isServer();
+
+	public void sendMessage(RtcpBasePacket message, int port, AsyncCallback callback) {
+		this.provider.getStack().getMessageExecutor().addTaskLast(new MessageTask() {
+			@Override
+			public void execute() {
+				// TODO: Replace Message with RtcpBasePacker
+				// provider.getStack().getNetworkManager().sendMessage(message, port, callback);
+			}
+		});
+	}
+}
