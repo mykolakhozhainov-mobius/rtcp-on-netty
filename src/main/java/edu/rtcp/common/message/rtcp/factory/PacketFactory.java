@@ -1,42 +1,48 @@
-package edu.rtcp.common.message.rtcp.factory;
+package edu.netty.common.message.rtcp.factory;
+
+import edu.netty.common.message.rtcp.header.RtcpHeader;
+import edu.netty.common.message.rtcp.packet.*;
+import edu.netty.common.message.rtcp.parts.ReportBlock;
+import edu.netty.common.message.rtcp.parts.chunk.Chunk;
+import edu.netty.common.message.rtcp.types.PacketTypeEnum;
+import io.netty.buffer.ByteBuf;
 
 import java.util.List;
 
-import edu.rtcp.common.message.rtcp.header.RtcpHeader;
-import edu.rtcp.common.message.rtcp.packet.ApplicationDefined;
-import edu.rtcp.common.message.rtcp.packet.Bye;
-import edu.rtcp.common.message.rtcp.packet.ReceiverReport;
-import edu.rtcp.common.message.rtcp.packet.SenderReport;
-import edu.rtcp.common.message.rtcp.packet.SourceDescription;
-import edu.rtcp.common.message.rtcp.parts.ReportBlock;
-import edu.rtcp.common.message.rtcp.parts.chunk.Chunk;
-import edu.rtcp.common.message.rtcp.types.PacketTypeEnum;
+public class PacketFactory 
+{
 
-public class PacketFactory {
-
-   
-    public ApplicationDefined createApplicationDefined(Short version, Boolean isPadding, Short itemCount, PacketTypeEnum packetType,Integer length, Integer ssrc, String name, Long applicationDependentData) 
+    public ApplicationDefined createApplicationDefined(Byte version, Boolean isPadding, Byte itemCount, PacketTypeEnum packetType, Short length, Integer ssrc, String name, Integer applicationDependentData) 
     {
-        RtcpHeader header = new RtcpHeader(version, isPadding, itemCount, packetType, length, ssrc);
-        ApplicationDefined appPacket = new ApplicationDefined(header, name, applicationDependentData);
+        RtcpHeader header = new RtcpHeader(version, isPadding, itemCount, packetType, length);
+        
+        ApplicationDefined appPacket = new ApplicationDefined(header, ssrc, name, applicationDependentData);
         
         return appPacket;
     }
 
     
-    public Bye createBye(Short version, Boolean isPadding, Short itemCount, PacketTypeEnum packetType,Integer length, Integer ssrc, String reason) 
+    public Bye createBye(Byte version, Boolean isPadding, Byte itemCount, PacketTypeEnum packetType, Short length, Integer ssrc, Integer lengthOfReason, String reason) 
     {
-        RtcpHeader header = new RtcpHeader(version, isPadding, itemCount, packetType, length, ssrc);
-        Bye byePacket = new Bye(header, reason);
+        RtcpHeader header = new RtcpHeader(version, isPadding, itemCount, packetType, length);
+        
+        Bye byePacket = new Bye(header, ssrc);
+        
+        if (lengthOfReason != null && reason != null && !reason.isEmpty()) 
+        {
+            byePacket.setLengthOfReason(lengthOfReason);
+            byePacket.setReason(reason);
+        }
         
         return byePacket;
     }
 
   
-    public ReceiverReport createReceiverReport(Short version, Boolean isPadding, Short itemCount, PacketTypeEnum packetType,Integer length, Integer ssrc,List<ReportBlock> reportBlocks) 
+    public ReceiverReport createReceiverReport(Byte version, Boolean isPadding, Byte itemCount, PacketTypeEnum packetType, Short length, Integer ssrc,List<ReportBlock> reportBlocks) 
     {
-        RtcpHeader header = new RtcpHeader(version, isPadding, itemCount, packetType, length, ssrc);
-        ReceiverReport rrPacket = new ReceiverReport(header);
+        RtcpHeader header = new RtcpHeader(version, isPadding, itemCount, packetType, length);
+        
+        ReceiverReport rrPacket = new ReceiverReport(header, ssrc);
         
         if (reportBlocks != null && !reportBlocks.isEmpty()) 
         {
@@ -49,23 +55,30 @@ public class PacketFactory {
     }
 
    
-    public SenderReport createSenderReport(Short version, Boolean isPadding, Short itemCount, PacketTypeEnum packetType,Integer length, Integer ssrc, Integer ntpTimestampMostSignificant,Integer ntpTimestampLeastSignificant, Integer rtpTimestamp,Integer senderPacketCount, Integer senderOctetCount,List<ReportBlock> reportBlocks)
+    public SenderReport createSenderReport(Byte version, Boolean isPadding, Byte itemCount, PacketTypeEnum packetType, Short length, Integer ssrc, Integer ntpTimestampMostSignificant,Integer ntpTimestampLeastSignificant, Integer rtpTimestamp,Integer senderPacketCount, Integer senderOctetCount,List<ReportBlock> reportBlocks,ByteBuf profileSpecificExtensions)
     {
-        RtcpHeader header = new RtcpHeader(version, isPadding, itemCount, packetType, length, ssrc);
-        SenderReport srPacket = new SenderReport(header, ntpTimestampMostSignificant, ntpTimestampLeastSignificant, rtpTimestamp, senderPacketCount, senderOctetCount);
+        RtcpHeader header = new RtcpHeader(version, isPadding, itemCount, packetType, length);
+        
+        SenderReport srPacket = new SenderReport(header,ssrc, ntpTimestampMostSignificant, ntpTimestampLeastSignificant, rtpTimestamp, senderPacketCount, senderOctetCount);
         
         if (reportBlocks != null && !reportBlocks.isEmpty()) 
         {
             srPacket.setReportBlocks(reportBlocks);
         }
         
+        if (profileSpecificExtensions != null) 
+        {
+            srPacket.setProfileSpecificExtensions(profileSpecificExtensions);
+        }
+        
         return srPacket;
     }
 
   
-    public SourceDescription createSourceDescription(Short version, Boolean isPadding, Short itemCount, PacketTypeEnum packetType,Integer length, Integer ssrc, List<Chunk> chunks) 
+    public SourceDescription createSourceDescription(Byte version, Boolean isPadding, Byte itemCount, PacketTypeEnum packetType, Short length, Integer ssrc, List<Chunk> chunks) 
     {
-        RtcpHeader header = new RtcpHeader(version, isPadding, itemCount, packetType, length, ssrc);
+        RtcpHeader header = new RtcpHeader(version, isPadding, itemCount, packetType, length);
+        
         SourceDescription sdPacket = new SourceDescription(header);
         
     

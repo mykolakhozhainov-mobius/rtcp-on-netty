@@ -57,17 +57,21 @@ public class SdesItem
 {
     private ItemsTypeEnum itemsType;
    
+    private Integer length;
+    
     private String data;
+    
+    private Integer prefixLength;
     
     private String prefix;
     
-    public SdesItem(ItemsTypeEnum itemsType, String data) 
+    public SdesItem(ItemsTypeEnum itemsType, Integer length, String data) 
     {
         this.itemsType = itemsType;
         this.data = data;
     }
     
-    public SdesItem(ItemsTypeEnum itemsType, String data, String prefix) 
+    public SdesItem(ItemsTypeEnum itemsType, Integer length, Integer prefixLength, String prefix, String data) 
     {
 
         this.itemsType = itemsType;
@@ -88,10 +92,18 @@ public class SdesItem
         this.itemsType = value;
     }
     
+    public Integer getLength() 
+    {
+        return length;
+    }
+
+    public void setLength(Integer length) 
+    {
+        this.length = length;
+    }
     
     public String getData() 
     {
-    	
         return data;
     }
 
@@ -103,15 +115,35 @@ public class SdesItem
         this.data = value;
     }
     
+    public Integer getPrefixLength() 
+    {
+    	if(prefixLength == null)
+			return null;
+    	
+        return prefixLength;
+    }
+
+    public void setPrefixLength(Integer value) throws RtcpException 
+    {
+    	if (value == null) 
+    		this.prefixLength = null;
+    	
+        this.prefixLength = value;
+    }
+    
+    
     public String getPrefix() 
     {
+    	if(prefix == null)
+			return null;
+    	
         return prefix;
     }
 
     public void setPrefix(String value) throws RtcpException 
     {
     	if (value == null) 
-            throw new RtcpException("Prefix cannot be null");
+    		this.prefix = null;
     	
         this.prefix = value;
     }

@@ -1,15 +1,15 @@
-package edu.rtcp.common.message.rtcp.factory;
+package edu.netty.common.message.rtcp.factory;
+
+import edu.netty.common.message.rtcp.parts.ReportBlock;
+import edu.netty.common.message.rtcp.parts.chunk.Chunk;
+import edu.netty.common.message.rtcp.parts.chunk.SdesItem;
 
 import java.util.List;
-
-import edu.rtcp.common.message.rtcp.parts.ReportBlock;
-import edu.rtcp.common.message.rtcp.parts.chunk.Chunk;
-import edu.rtcp.common.message.rtcp.parts.chunk.SdesItem;
 
 public class PartsFactory 
 {
 
-    public ReportBlock createReportBlock(Integer ssrc, Short fractionLost, Integer cumulativePacketsLost, Integer extendedHighestSeqNumber, Integer interarrivalJitter, Integer lastSenderReport, Integer delaySinceLastSenderReport)
+    public ReportBlock createReportBlock(Integer ssrc, Byte fractionLost, Integer cumulativePacketsLost, Integer extendedHighestSeqNumber, Integer interarrivalJitter, Integer lastSenderReport, Integer delaySinceLastSenderReport)
     {
         return new ReportBlock(ssrc, fractionLost, cumulativePacketsLost, extendedHighestSeqNumber, interarrivalJitter, lastSenderReport, delaySinceLastSenderReport);
     }

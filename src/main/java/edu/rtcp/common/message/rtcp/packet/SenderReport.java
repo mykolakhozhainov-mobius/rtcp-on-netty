@@ -1,11 +1,11 @@
-package edu.rtcp.common.message.rtcp.packet;
+package edu.netty.common.message.rtcp.packet;
+
+import edu.netty.common.message.rtcp.header.RtcpBasePacket;
+import edu.netty.common.message.rtcp.header.RtcpHeader;
+import edu.netty.common.message.rtcp.parts.ReportBlock;
+import io.netty.buffer.ByteBuf;
 
 import java.util.List;
-
-import edu.rtcp.common.message.rtcp.header.RtcpBasePacket;
-import edu.rtcp.common.message.rtcp.header.RtcpHeader;
-import edu.rtcp.common.message.rtcp.parts.ReportBlock;
-import io.netty.buffer.ByteBuf;
 
 
 /*
@@ -51,7 +51,7 @@ import io.netty.buffer.ByteBuf;
 
 public class SenderReport extends RtcpBasePacket 
 {
-
+	private Integer ssrc;
     private Integer ntpTimestampMostSignificant;
     private Integer ntpTimestampLeastSignificant; 
     private Integer rtpTimestamp;
@@ -60,9 +60,10 @@ public class SenderReport extends RtcpBasePacket
     private List<ReportBlock> reportBlock;
     private ByteBuf profileSpecificExtensions;
 
-    public SenderReport(RtcpHeader header,Integer ntpTimestampMostSignificant,Integer ntpTimestampLeastSignificant, Integer rtpTimestamp, Integer senderPacketCount, Integer senderOctetCount) 
+    public SenderReport(RtcpHeader header,Integer ssrc,Integer ntpTimestampMostSignificant,Integer ntpTimestampLeastSignificant, Integer rtpTimestamp, Integer senderPacketCount, Integer senderOctetCount) 
     {
         super(header);
+        setSSRC(ssrc);
         setNtpTimestampMostSignificant(ntpTimestampMostSignificant);
         setNtpTimestampMostSignificant(ntpTimestampMostSignificant);
         setRtpTimestamp(rtpTimestamp);
@@ -70,6 +71,16 @@ public class SenderReport extends RtcpBasePacket
         setSenderOctetCount(senderOctetCount);
        
     }
+    
+    public Integer getSSRC()
+	{
+		return this.ssrc;
+	}
+	
+	public void setSSRC(Integer value)
+	{       
+        this.ssrc = value;
+	}
 
     public Integer getNtpTimestampMostSignificant()
     {

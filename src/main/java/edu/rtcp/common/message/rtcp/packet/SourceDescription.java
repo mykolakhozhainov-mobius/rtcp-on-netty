@@ -1,10 +1,10 @@
-package edu.rtcp.common.message.rtcp.packet;
+package edu.netty.common.message.rtcp.packet;
+
+import edu.netty.common.message.rtcp.header.RtcpBasePacket;
+import edu.netty.common.message.rtcp.header.RtcpHeader;
+import edu.netty.common.message.rtcp.parts.chunk.Chunk;
 
 import java.util.List;
-
-import edu.rtcp.common.message.rtcp.header.RtcpBasePacket;
-import edu.rtcp.common.message.rtcp.header.RtcpHeader;
-import edu.rtcp.common.message.rtcp.parts.chunk.Chunk;
 
 /*
  	6.5 SDES: Source Description RTCP Packet
@@ -33,7 +33,6 @@ public class SourceDescription extends RtcpBasePacket
 	public SourceDescription(RtcpHeader header) 
 	{
 		super(header);
-		header.setSSRCAllowed(false);
 	}
 	
 	public List<Chunk> getChunks()

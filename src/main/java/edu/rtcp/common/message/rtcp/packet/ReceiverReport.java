@@ -1,10 +1,10 @@
-package edu.rtcp.common.message.rtcp.packet;
+package edu.netty.common.message.rtcp.packet;
+
+import edu.netty.common.message.rtcp.header.RtcpBasePacket;
+import edu.netty.common.message.rtcp.header.RtcpHeader;
+import edu.netty.common.message.rtcp.parts.ReportBlock;
 
 import java.util.List;
-
-import edu.rtcp.common.message.rtcp.header.RtcpBasePacket;
-import edu.rtcp.common.message.rtcp.header.RtcpHeader;
-import edu.rtcp.common.message.rtcp.parts.ReportBlock;
 
 
 /*
@@ -41,12 +41,25 @@ import edu.rtcp.common.message.rtcp.parts.ReportBlock;
 
 public class ReceiverReport extends RtcpBasePacket 
 {
+	private Integer ssrc;
+	
     private List<ReportBlock> reportBlocks;
-
-    public ReceiverReport(RtcpHeader header)
+    
+    public ReceiverReport(RtcpHeader header, Integer ssrc)
     {
         super(header);
     }
+    
+
+	public Integer getSSRC()
+	{
+		return this.ssrc;
+	}
+	
+	public void setSSRC(Integer value)
+	{       
+        this.ssrc = value;
+	}
     
     public List<ReportBlock> getReportBlocks()
     {
