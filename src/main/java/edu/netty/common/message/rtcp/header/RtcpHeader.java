@@ -4,16 +4,14 @@ import edu.netty.common.message.rtcp.types.PacketTypeEnum;
 
 public class RtcpHeader 
 {
-	private Short version;
+	private Byte version;
 	private Boolean isPadding;
-	private Short itemCount;
+	private Byte itemCount;
 	private PacketTypeEnum packetType;
-	private Integer length;
-	private Integer ssrc;
+	private Short length;
+
 	
-	private boolean ssrcAllowed = true;
-	
-	public RtcpHeader(Short version, Boolean isPadding, Short itemCount, PacketTypeEnum packetType, Integer length, Integer ssrc)
+	public RtcpHeader(Byte version, Boolean isPadding, Byte itemCount, PacketTypeEnum packetType, Short length)
 	{
 		this.isPadding = isPadding;
 		this.version = version;
@@ -21,20 +19,14 @@ public class RtcpHeader
 		setItemCount(itemCount);
 		setPacketType(packetType);
 	    setLength(length);
-	    setSSRC(ssrc);  
 	 }
-	
-	public void setSSRCAllowed(boolean allowed) 
-	{
-		this.ssrcAllowed = allowed;
-	}
 	
 	public int getVersion() 
 	{
 		return this.version;
 	}
 	
-	public void setVersion(Short value) 
+	public void setVersion(Byte value) 
 	{
 		this.version = value;
 	}
@@ -49,12 +41,12 @@ public class RtcpHeader
 		this.isPadding = value;
 	}
 	
-	public int getItemCount() 
+	public Byte getItemCount() 
 	{
 		return this.itemCount;
 	}
 	
-	public void setItemCount(Short value) 
+	public void setItemCount(Byte value) 
 	{
 		this.itemCount = value;
 	}
@@ -74,24 +66,8 @@ public class RtcpHeader
 		return this.length;
 	}
 	
-	public void setLength(Integer value) 
+	public void setLength(Short value) 
 	{
 		this.length = value;
-	}
-	
-	public Integer getSSRC()
-	{
-		return this.ssrc;
-	}
-	
-	public void setSSRC(Integer value)
-	{
-		//TODO Зробити виключення та продумати валідацію, а можливо й щось типу DiameterOrder
-
-			if(!ssrcAllowed && ssrc!=null)
-				
-            throw new UnsupportedOperationException("SSRC is not allowed for this packet.");
-            
-            this.ssrc = value;
 	}
 }

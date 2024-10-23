@@ -9,7 +9,7 @@ import edu.netty.common.message.rtcp.parts.chunk.SdesItem;
 public class PartsFactory 
 {
 
-    public ReportBlock createReportBlock(Integer ssrc, Short fractionLost, Integer cumulativePacketsLost, Integer extendedHighestSeqNumber, Integer interarrivalJitter, Integer lastSenderReport, Integer delaySinceLastSenderReport)
+    public ReportBlock createReportBlock(Integer ssrc, Byte fractionLost, Integer cumulativePacketsLost, Integer extendedHighestSeqNumber, Integer interarrivalJitter, Integer lastSenderReport, Integer delaySinceLastSenderReport)
     {
         return new ReportBlock(ssrc, fractionLost, cumulativePacketsLost, extendedHighestSeqNumber, interarrivalJitter, lastSenderReport, delaySinceLastSenderReport);
     }

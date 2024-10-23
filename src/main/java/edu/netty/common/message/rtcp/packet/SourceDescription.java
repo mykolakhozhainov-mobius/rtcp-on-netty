@@ -33,7 +33,6 @@ public class SourceDescription extends RtcpBasePacket
 	public SourceDescription(RtcpHeader header) 
 	{
 		super(header);
-		header.setSSRCAllowed(false);
 	}
 	
 	public List<Chunk> getChunks()

@@ -41,12 +41,25 @@ import edu.netty.common.message.rtcp.parts.ReportBlock;
 
 public class ReceiverReport extends RtcpBasePacket 
 {
+	private Integer ssrc;
+	
     private List<ReportBlock> reportBlocks;
-
-    public ReceiverReport(RtcpHeader header)
+    
+    public ReceiverReport(RtcpHeader header, Integer ssrc)
     {
         super(header);
     }
+    
+
+	public Integer getSSRC()
+	{
+		return this.ssrc;
+	}
+	
+	public void setSSRC(Integer value)
+	{       
+        this.ssrc = value;
+	}
     
     public List<ReportBlock> getReportBlocks()
     {

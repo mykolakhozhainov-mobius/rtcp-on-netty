@@ -23,21 +23,59 @@ import edu.netty.common.message.rtcp.header.RtcpHeader;
 
 public class Bye extends RtcpBasePacket 
 {
+	private Integer ssrc;
+	
+	private Integer lengthOfReason;
+	
     private String reason;
 
-    public Bye(RtcpHeader header, String reason)
+    public Bye(RtcpHeader header, Integer ssrc)
     {
         super(header);
-        this.reason = reason;
+        this.ssrc = ssrc;
     }
+    
+
+	public Integer getSSRC()
+	{
+		return this.ssrc;
+	}
+	
+	public void setSSRC(Integer value)
+	{       
+        this.ssrc = value;
+	}
+	
+	public Integer getLengthOfReason()
+	{
+		if(lengthOfReason==null)
+			return null;
+		
+		return this.lengthOfReason;
+	}
+	
+	public void setLengthOfReason(Integer value)
+	{       
+		if(value == null)
+		this.lengthOfReason = null;
+			
+        this.lengthOfReason = value;
+	}
 
     public String getReason() 
     {
-        return reason;
+    	if(reason==null)
+			return null;
+		
+		return this.reason;
+        
     }
 
     public void setReason(String value) 
     {
+    	if(value == null)
+    	this.reason = null;
+    			
         this.reason = value;
     }
 }

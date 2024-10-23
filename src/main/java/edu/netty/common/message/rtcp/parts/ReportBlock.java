@@ -21,14 +21,14 @@ block  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 public class ReportBlock
 {
     private Integer ssrc; 
-    private Short fractionLost; 
+    private Byte fractionLost; 
     private Integer cumulativePacketsLost; 
     private Integer extendedHighestSeqNumber; 
     private Integer interarrivalJitter; 
     private Integer lastSenderReport; 
     private Integer delaySinceLastSenderReport; 
 
-    public ReportBlock(Integer ssrc, Short fractionLost, Integer cumulativePacketsLost, Integer extendedHighestSeqNumber, Integer interarrivalJitter, Integer lastSenderReport, Integer delaySinceLastSenderReport) 
+    public ReportBlock(Integer ssrc, Byte fractionLost, Integer cumulativePacketsLost, Integer extendedHighestSeqNumber, Integer interarrivalJitter, Integer lastSenderReport, Integer delaySinceLastSenderReport) 
     {
         this.ssrc = ssrc;
         this.fractionLost = fractionLost;
@@ -40,7 +40,7 @@ public class ReportBlock
     }
 
    
-    public long getSsrc() 
+    public Integer  getSsrc() 
     {
         return ssrc;
     }
@@ -50,16 +50,16 @@ public class ReportBlock
         this.ssrc = value;
     }
 
-    public int getFractionLost() {
+    public Byte getFractionLost() {
         return fractionLost;
     }
 
-    public void setFractionLost(Short value) 
+    public void setFractionLost(Byte value) 
     {
         this.fractionLost = value;
     }
 
-    public int getCumulativePacketsLost() 
+    public Integer getCumulativePacketsLost() 
     {
         return cumulativePacketsLost;
     }
@@ -69,7 +69,7 @@ public class ReportBlock
         this.cumulativePacketsLost = value;
     }
 
-    public long getExtendedHighestSeqNumber() 
+    public Integer getExtendedHighestSeqNumber() 
     {
         return extendedHighestSeqNumber;
     }
@@ -79,7 +79,7 @@ public class ReportBlock
         this.extendedHighestSeqNumber = value;
     }
 
-    public long getInterarrivalJitter() 
+    public Integer getInterarrivalJitter() 
     {
         return interarrivalJitter;
     }
@@ -89,7 +89,7 @@ public class ReportBlock
         this.interarrivalJitter = value;
     }
 
-    public long getLastSenderReport()
+    public Integer getLastSenderReport()
     {
         return lastSenderReport;
     }
@@ -99,7 +99,7 @@ public class ReportBlock
         this.lastSenderReport = value;
     }
 
-    public long getDelaySinceLastSenderReport() 
+    public Integer getDelaySinceLastSenderReport() 
     {
         return delaySinceLastSenderReport;
     }
