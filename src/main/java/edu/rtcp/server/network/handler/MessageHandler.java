@@ -1,11 +1,9 @@
 package edu.rtcp.server.network.handler;
 
 import edu.rtcp.common.TransportEnum;
-import edu.rtcp.common.message.Message;
 import edu.rtcp.common.message.rtcp.header.RtcpBasePacket;
 import edu.rtcp.RtcpStack;
 import edu.rtcp.server.executor.MessageExecutor;
-import edu.rtcp.server.network.processor.AbstractProcessor;
 import edu.rtcp.server.executor.tasks.MessageProcessingTask;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -27,11 +25,8 @@ public class MessageHandler extends ChannelInboundHandlerAdapter {
 //		if (message.sender == null) {
 //			message.sender = (java.net.InetSocketAddress) ctx.channel().remoteAddress();
 //		}
-
 		System.out.println("[HANDLER] New message content from " + ctx.channel() + ":");
 		System.out.println(message);
-
-//        this.stack.getNetworkManager().getNetworkListener().onMessage(message);
 
 		this.executor.addTaskLast(new MessageProcessingTask(message, this.stack));
 	}

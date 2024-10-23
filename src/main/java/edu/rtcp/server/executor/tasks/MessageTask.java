@@ -12,12 +12,11 @@ public abstract class MessageTask implements Task {
     }
 
     public String getId() {
-        if (this.message.getHeader().getSSRC() != null) {
-            return this.message.getHeader().getSSRC().toString();
+        if (this.message.getSSRC() != -1) {
+            return String.valueOf(this.message.getSSRC());
         }
 
         return String.valueOf(System.currentTimeMillis());
     }
-
     public abstract void execute();
 }

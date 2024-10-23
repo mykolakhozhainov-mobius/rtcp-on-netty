@@ -14,7 +14,7 @@ public class MessageProcessingTask extends MessageTask {
     
     @Override
     public void execute() {
-        System.out.println("[TASK] Starting executing");
+        System.out.println("[PROCESSING-TASK] Executing incoming message");
 
         this.stack.getProvider().onMessage(this.message, new AsyncCallback() {
             @Override

@@ -8,66 +8,96 @@ import edu.rtcp.common.message.rtcp.types.PacketTypeEnum;
 import io.netty.buffer.ByteBuf;
 
 import java.util.List;
+import java.util.Random;
 
-public class PacketFactory 
-{
+public class PacketFactory {
+    private static final byte VERSION = 1;
+    private static final boolean IS_PADDING = false;
+    private static final short PACKET_LENGTH = Short.MAX_VALUE;
 
-    public ApplicationDefined createApplicationDefined(Byte version, Boolean isPadding, Byte itemCount, PacketTypeEnum packetType, Short length, Integer ssrc, String name, Integer applicationDependentData) 
-    {
-        RtcpHeader header = new RtcpHeader(version, isPadding, itemCount, packetType, length);
-        
-        ApplicationDefined appPacket = new ApplicationDefined(header, ssrc, name, applicationDependentData);
-        
-        return appPacket;
+    private static final Random random = new Random();
+
+    private RtcpHeader createHeader(byte itemCount, PacketTypeEnum packetType) {
+        return new RtcpHeader(
+                VERSION,
+                IS_PADDING,
+                itemCount,
+                packetType,
+                PACKET_LENGTH
+        );
     }
 
-    
-    public Bye createBye(Byte version, Boolean isPadding, Byte itemCount, PacketTypeEnum packetType, Short length, Integer ssrc, Integer lengthOfReason, String reason) 
-    {
-        RtcpHeader header = new RtcpHeader(version, isPadding, itemCount, packetType, length);
+    public ApplicationDefined createApplicationDefined(
+            byte itemCount, // if item count == 0 -> this is ACK message
+            int ssrc,
+            String name, // max length = 4 bytes (4 symbols)
+            int applicationDependentData
+    ) {
+        return new ApplicationDefined(
+                this.createHeader(itemCount, PacketTypeEnum.APP),
+                ssrc,
+                name,
+                applicationDependentData
+        );
+    }
+
+    public Bye createBye(
+            byte itemCount, // if item count == 0 -> this is ACK message
+            int ssrc,
+            String reason
+    ) {
+        Bye byePacket = new Bye(
+                this.createHeader(itemCount, PacketTypeEnum.BYE),
+                ssrc
+        );
         
-        Bye byePacket = new Bye(header, ssrc);
-        
-        if (lengthOfReason != null && reason != null && !reason.isEmpty()) 
-        {
-            byePacket.setLengthOfReason(lengthOfReason);
+        if (!reason.isEmpty()) {
+            byePacket.setLengthOfReason(reason.length());
             byePacket.setReason(reason);
         }
         
         return byePacket;
     }
 
-  
-    public ReceiverReport createReceiverReport(Byte version, Boolean isPadding, Byte itemCount, PacketTypeEnum packetType, Short length, Integer ssrc,List<ReportBlock> reportBlocks) 
-    {
-        RtcpHeader header = new RtcpHeader(version, isPadding, itemCount, packetType, length);
+    public ReceiverReport createReceiverReport(
+            byte itemCount, // if item count == 0 -> this is ACK message
+            int ssrc,
+            List<ReportBlock> reportBlocks
+    ) {
+        ReceiverReport rrPacket = new ReceiverReport(
+                this.createHeader(itemCount, PacketTypeEnum.RECEIVER_REPORT),
+                ssrc
+        );
         
-        ReceiverReport rrPacket = new ReceiverReport(header, ssrc);
-        
-        if (reportBlocks != null && !reportBlocks.isEmpty()) 
-        {
+        if (reportBlocks != null && !reportBlocks.isEmpty()) {
             rrPacket.setReportBlocks(reportBlocks);
         }
        
 	
         return rrPacket;
-        
     }
-
    
-    public SenderReport createSenderReport(Byte version, Boolean isPadding, Byte itemCount, PacketTypeEnum packetType, Short length, Integer ssrc, Integer ntpTimestampMostSignificant,Integer ntpTimestampLeastSignificant, Integer rtpTimestamp,Integer senderPacketCount, Integer senderOctetCount,List<ReportBlock> reportBlocks,ByteBuf profileSpecificExtensions)
-    {
-        RtcpHeader header = new RtcpHeader(version, isPadding, itemCount, packetType, length);
+    public SenderReport createSenderReport(
+            byte itemCount, // if item count == 0 -> this is ACK message
+            int ssrc,
+            List<ReportBlock> reportBlocks,
+            ByteBuf profileSpecificExtensions
+    ) {
+        SenderReport srPacket = new SenderReport(
+                this.createHeader(itemCount, PacketTypeEnum.SENDER_REPORT),
+                ssrc,
+                random.nextInt(100),
+                random.nextInt(100),
+                random.nextInt(100),
+                random.nextInt(10),
+                random.nextInt(10)
+        );
         
-        SenderReport srPacket = new SenderReport(header,ssrc, ntpTimestampMostSignificant, ntpTimestampLeastSignificant, rtpTimestamp, senderPacketCount, senderOctetCount);
-        
-        if (reportBlocks != null && !reportBlocks.isEmpty()) 
-        {
+        if (reportBlocks != null && !reportBlocks.isEmpty()) {
             srPacket.setReportBlocks(reportBlocks);
         }
         
-        if (profileSpecificExtensions != null) 
-        {
+        if (profileSpecificExtensions != null) {
             srPacket.setProfileSpecificExtensions(profileSpecificExtensions);
         }
         
@@ -75,15 +105,17 @@ public class PacketFactory
     }
 
   
-    public SourceDescription createSourceDescription(Byte version, Boolean isPadding, Byte itemCount, PacketTypeEnum packetType, Short length, Integer ssrc, List<Chunk> chunks) 
-    {
-        RtcpHeader header = new RtcpHeader(version, isPadding, itemCount, packetType, length);
+    public SourceDescription createSourceDescription(
+            byte itemCount, // if item count == 0 -> this is ACK message
+            short length,
+            int ssrc,
+            List<Chunk> chunks
+    ) {
+        RtcpHeader header = new RtcpHeader(VERSION, IS_PADDING, itemCount, PacketTypeEnum.SOURCE_DESCRIPTION, length);
         
-        SourceDescription sdPacket = new SourceDescription(header);
-        
-    
-        if (chunks != null && !chunks.isEmpty()) 
-        {
+        SourceDescription sdPacket = new SourceDescription(header, ssrc);
+
+        if (chunks != null && !chunks.isEmpty()) {
             sdPacket.setChunks(chunks);
         }
         

@@ -14,7 +14,7 @@ import java.util.List;
 			0                   1                   2                   3
 			0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 			+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-			header |V=2|P|    RC   |   PT=RR=201   |             length     |
+	header	|V=2|P|    RC   |   PT=RR=201   |             length            |
 			+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 			|                     SSRC of packet sender                     |
 			+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
@@ -39,28 +39,14 @@ import java.util.List;
 
 */
 
-public class ReceiverReport extends RtcpBasePacket 
-{
-	private Integer ssrc;
-	
+public class ReceiverReport extends RtcpBasePacket {
     private List<ReportBlock> reportBlocks;
     
-    public ReceiverReport(RtcpHeader header, Integer ssrc)
-    {
+    public ReceiverReport(RtcpHeader header, Integer ssrc) {
         super(header);
+        this.ssrc = ssrc;
     }
-    
 
-	public Integer getSSRC()
-	{
-		return this.ssrc;
-	}
-	
-	public void setSSRC(Integer value)
-	{       
-        this.ssrc = value;
-	}
-    
     public List<ReportBlock> getReportBlocks()
     {
         return reportBlocks; 

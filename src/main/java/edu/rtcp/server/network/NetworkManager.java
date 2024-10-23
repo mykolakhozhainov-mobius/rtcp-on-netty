@@ -3,8 +3,8 @@ package edu.rtcp.server.network;
 import edu.rtcp.RtcpStack;
 import edu.rtcp.common.ServerChannelUtils;
 import edu.rtcp.common.TransportEnum;
-import edu.rtcp.common.message.Message;
 import edu.rtcp.common.message.rtcp.header.RtcpBasePacket;
+import edu.rtcp.common.message.rtcp.parser.RtcpParser;
 import edu.rtcp.server.callback.AsyncCallback;
 import edu.rtcp.server.network.processor.transport.DatagramChannelInitializer;
 import edu.rtcp.server.network.processor.transport.StreamChannelInitializer;
@@ -186,12 +186,12 @@ public class NetworkManager {
 		link.getChannel().close();
 	}
 
-	public void sendMessage(Message message, int port, AsyncCallback callback) {
+	public void sendMessage(RtcpBasePacket message, int port, AsyncCallback callback) {
 		NetworkLink link = getLinkByPort(port);
 		if (link == null) {
 			return;
 		}
-		link.getChannel().writeAndFlush(message.toByteBuf());
+		link.getChannel().writeAndFlush(RtcpParser.encode(message));
 	}
 
 	public void stop() {

@@ -1,7 +1,7 @@
 package edu.rtcp.server.network.processor.transport;
 
 import edu.rtcp.RtcpStack;
-import edu.rtcp.common.decoder.DatagramMessageDecoder;
+import edu.rtcp.server.network.decoder.RtcpDatagramDecoder;
 import edu.rtcp.server.network.handler.MessageHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
@@ -21,7 +21,7 @@ public class DatagramChannelInitializer extends ChannelInitializer<DatagramChann
         ChannelPipeline pipeline = ch.pipeline();
 
         // Decoder
-        pipeline.addLast("decoder", new DatagramMessageDecoder());
+        pipeline.addLast("decoder", new RtcpDatagramDecoder());
 
         // Encoder
         pipeline.addLast("byteEncoder", new ByteArrayEncoder());

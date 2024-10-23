@@ -20,51 +20,31 @@ import edu.rtcp.common.message.rtcp.header.RtcpHeader;
 
 */
 
-public class ApplicationDefined extends RtcpBasePacket 
-{
-	private Integer ssrc;
-	
+public class ApplicationDefined extends RtcpBasePacket {
 	public String name;
-	
 	public Integer applicationDependentData;   
 
-	public ApplicationDefined(RtcpHeader header, Integer ssrc, String name, Integer applicationDependentData) 
-	{
+	public ApplicationDefined(
+			RtcpHeader header,
+			int ssrc,
+			String name,
+			int applicationDependentData
+	) {
 		super(header);
-		
-		setSSRC(ssrc);
-		setName(name);
-		setApplicationDependentData(applicationDependentData);
+
+		this.ssrc = ssrc;
+		this.name = name;
+		this.applicationDependentData = applicationDependentData;
 	}
-	
-	public Integer getSSRC()
-	{
-		return this.ssrc;
-	}
-	
-	public void setSSRC(Integer value)
-	{       
-        this.ssrc = value;
-	}
+
 	
 	public String getName() 
 	{
 		return name;
 	}
 	
-	public void setName(String value) 
-	{
-		this.name = value;
-	}
-	
 	public Integer getApplicationDependentData()
 	{
 		return applicationDependentData;
 	}
-	
-	public void setApplicationDependentData(Integer value) 
-	{
-		this.applicationDependentData = value;
-	}
-
 }

@@ -18,8 +18,7 @@ block  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
        +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
 */
 
-public class ReportBlock
-{
+public class ReportBlock {
     private Integer ssrc; 
     private Byte fractionLost; 
     private Integer cumulativePacketsLost; 
@@ -28,8 +27,7 @@ public class ReportBlock
     private Integer lastSenderReport; 
     private Integer delaySinceLastSenderReport; 
 
-    public ReportBlock(Integer ssrc, Byte fractionLost, Integer cumulativePacketsLost, Integer extendedHighestSeqNumber, Integer interarrivalJitter, Integer lastSenderReport, Integer delaySinceLastSenderReport) 
-    {
+    public ReportBlock(Integer ssrc, Byte fractionLost, Integer cumulativePacketsLost, Integer extendedHighestSeqNumber, Integer interarrivalJitter, Integer lastSenderReport, Integer delaySinceLastSenderReport) {
         this.ssrc = ssrc;
         this.fractionLost = fractionLost;
         this.cumulativePacketsLost = cumulativePacketsLost;

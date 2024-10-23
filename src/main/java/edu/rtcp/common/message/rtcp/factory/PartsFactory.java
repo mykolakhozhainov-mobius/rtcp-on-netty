@@ -6,15 +6,28 @@ import edu.rtcp.common.message.rtcp.parts.chunk.SdesItem;
 
 import java.util.List;
 
-public class PartsFactory 
-{
-
-    public ReportBlock createReportBlock(Integer ssrc, Byte fractionLost, Integer cumulativePacketsLost, Integer extendedHighestSeqNumber, Integer interarrivalJitter, Integer lastSenderReport, Integer delaySinceLastSenderReport)
-    {
-        return new ReportBlock(ssrc, fractionLost, cumulativePacketsLost, extendedHighestSeqNumber, interarrivalJitter, lastSenderReport, delaySinceLastSenderReport);
+public class PartsFactory {
+    public ReportBlock createReportBlock(
+            int ssrc,
+            byte fractionLost,
+            int cumulativePacketsLost,
+            int extendedHighestSeqNumber,
+            int interarrivalJitter,
+            int lastSenderReport,
+            int delaySinceLastSenderReport
+    ) {
+        return new ReportBlock(
+                ssrc,
+                fractionLost,
+                cumulativePacketsLost,
+                extendedHighestSeqNumber,
+                interarrivalJitter,
+                lastSenderReport,
+                delaySinceLastSenderReport
+        );
     }
     
-    public Chunk createChunk(Integer ssrc,List<SdesItem> items) 
+    public Chunk createChunk(int ssrc, List<SdesItem> items)
     {
         return new Chunk(ssrc,items);
     }

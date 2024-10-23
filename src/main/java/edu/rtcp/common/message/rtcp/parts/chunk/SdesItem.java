@@ -53,27 +53,20 @@ import edu.rtcp.common.message.rtcp.types.ItemsTypeEnum;
    
  */
 
-public class SdesItem 
-{
+public class SdesItem {
     private ItemsTypeEnum itemsType;
-   
-    private Integer length;
-    
+    private int length;
     private String data;
-    
-    private Integer prefixLength;
-    
+    private int prefixLength;
     private String prefix;
     
-    public SdesItem(ItemsTypeEnum itemsType, Integer length, String data) 
+    public SdesItem(ItemsTypeEnum itemsType, int length, String data)
     {
         this.itemsType = itemsType;
         this.data = data;
     }
     
-    public SdesItem(ItemsTypeEnum itemsType, Integer length, Integer prefixLength, String prefix, String data) 
-    {
-
+    public SdesItem(ItemsTypeEnum itemsType, int length, int prefixLength, String prefix, String data) {
         this.itemsType = itemsType;
         this.data = data;
         this.prefix = prefix;
@@ -84,15 +77,13 @@ public class SdesItem
         return itemsType;
     }
 
-    public void setType(ItemsTypeEnum value) throws RtcpException 
-    {
-    	if (value == null) 
-            throw new RtcpException("Type cannot be null");
+    public void setType(ItemsTypeEnum value) throws RtcpException {
+    	if (value == null) throw new RtcpException("Type cannot be null");
         
         this.itemsType = value;
     }
     
-    public Integer getLength() 
+    public int getLength()
     {
         return length;
     }
@@ -107,44 +98,21 @@ public class SdesItem
         return data;
     }
 
-    public void setData(String value) throws RtcpException 
-    {
-    	if (value == null) 
-            throw new RtcpException("Data cannot be null");
+    public void setData(String value) throws RtcpException {
+    	if (value == null) throw new RtcpException("Data cannot be null");
         
         this.data = value;
     }
     
-    public Integer getPrefixLength() 
-    {
-    	if(prefixLength == null)
-			return null;
-    	
+    public int getPrefixLength() {
         return prefixLength;
     }
-
-    public void setPrefixLength(Integer value) throws RtcpException 
-    {
-    	if (value == null) 
-    		this.prefixLength = null;
-    	
-        this.prefixLength = value;
-    }
     
-    
-    public String getPrefix() 
-    {
-    	if(prefix == null)
-			return null;
-    	
+    public String getPrefix() {
         return prefix;
     }
 
-    public void setPrefix(String value) throws RtcpException 
-    {
-    	if (value == null) 
-    		this.prefix = null;
-    	
+    public void setPrefix(String value) {
         this.prefix = value;
     }
     

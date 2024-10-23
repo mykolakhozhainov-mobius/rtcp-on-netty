@@ -1,4 +1,4 @@
-package edu.rtcp.common.decoder;
+package edu.rtcp.server.network.decoder;
 
 import io.netty.util.CharsetUtil;
 import java.nio.charset.Charset;

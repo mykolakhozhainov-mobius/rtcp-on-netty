@@ -56,6 +56,7 @@ public class ServerSession extends Session {
         ServerSessionListener listener = this.provider.getServerListener();
 
         if (request instanceof Bye) {
+            System.out.println("[SERVER-SESSION] Bye message received");
             if (this.state == SessionStateEnum.CLOSED) {
                 callback.onError(new RuntimeException("Closed session can not be closed"));
                 return;
@@ -65,6 +66,7 @@ public class ServerSession extends Session {
                 listener.onTerminationRequest(request, this, callback);
             }
         } else if (isNewSession) {
+            System.out.println("[SERVER-SESSION] SR (Open) message received");
             if (this.state == SessionStateEnum.OPEN) {
                 callback.onError(new RuntimeException("Opened session can not be opened"));
                 return;
@@ -74,6 +76,7 @@ public class ServerSession extends Session {
                 listener.onInitialRequest(request, this, callback);
             }
         } else {
+            System.out.println("[SERVER-SESSION] Data message received");
             if (this.state == SessionStateEnum.IDLE) {
                 callback.onError(new RuntimeException("Unknown message type is passed to session"));
                 return;

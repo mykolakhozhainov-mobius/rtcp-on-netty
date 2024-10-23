@@ -14,25 +14,22 @@ import java.util.List;
  
 public class RtcpDecoder 
 {
-    public RtcpHeader decodeHeader(ByteBuf headerInBuf) 
-    {
-       
+    public RtcpHeader decodeHeader(ByteBuf headerInBuf) {
         byte firstByte = headerInBuf.readByte();
-        
-        Byte version = (byte) ((firstByte >> 6) & 0x03); 
-        Boolean isPadding = (firstByte & 0x20) != 0; 
-        Byte itemCount = (byte) (firstByte & 0x1F);
+
+        byte version = (byte) ((firstByte >> 6) & 0x03);
+        boolean isPadding = (firstByte & 0x20) != 0;
+        byte itemCount = (byte) (firstByte & 0x1F);
  
-        Byte packetTypeValueByte = headerInBuf.readByte();
-        PacketTypeEnum packetTypeValue = PacketTypeEnum.fromInt((int) packetTypeValueByte);
+        int typeInInt = ((int) headerInBuf.readByte()) & 0xFF;
+        PacketTypeEnum packetTypeValue = PacketTypeEnum.fromInt(typeInInt);
  
-        Short length = headerInBuf.readShort();
+        short length = headerInBuf.readShort();
         
         return new RtcpHeader(version, isPadding, itemCount, packetTypeValue, length);
     }
     
-    public ApplicationDefined decodeApp(ByteBuf appInBuf)
-    {
+    public ApplicationDefined decodeApp(ByteBuf appInBuf) {
         RtcpHeader header = decodeHeader(appInBuf);
         int ssrc = appInBuf.readInt();
       
@@ -46,110 +43,102 @@ public class RtcpDecoder
         return new ApplicationDefined(header, ssrc, name, applicationDependentData);
     }
     
-    public Bye decodeBye(ByteBuf byeInBuf) 
-    {
-        RtcpHeader header = decodeHeader(byeInBuf);
+    public Bye decodeBye(ByteBuf byeInBuf) {
+        RtcpHeader header = this.decodeHeader(byeInBuf);
         int ssrc = byeInBuf.readInt();
 
-        Integer reasonLength = null;
+        int reasonLength = 0;
         String reasonString = null;
 
-        if (byeInBuf.isReadable()) 
-        {
-            reasonLength = byeInBuf.readInt();
+        if (byeInBuf.isReadable()) {
+            reasonLength = ((int) byeInBuf.readByte() & 0xFF);
 
             if (reasonLength > 0) {
                 byte[] reasonBytes = new byte[reasonLength]; 
-                byeInBuf.readBytes(reasonBytes); 
+                byeInBuf.readBytes(reasonBytes);
+
                 reasonString = new String(reasonBytes);
             }
         }
         
         Bye bye = new Bye(header, ssrc);
         
-        if (reasonLength != null && reasonLength > 0) 
+        if (reasonLength > 0)
         {
-            bye.setLengthOfReason((int) reasonLength);
+            bye.setLengthOfReason(reasonLength);
             bye.setReason(reasonString);
         }
 
         return bye;
     }
     
-    public ReceiverReport decodeReceiverReport(ByteBuf rrBuf) 
-    {
-        
-        RtcpHeader header = decodeHeader(rrBuf);
-        
-        int ssrc = rrBuf.readInt();
+    public ReceiverReport decodeReceiverReport(ByteBuf rrInBuf) {
+        RtcpHeader header = decodeHeader(rrInBuf);
+        int ssrc = rrInBuf.readInt();
         
         int itemCount = header.getItemCount(); 
         
         ReceiverReport rr = new ReceiverReport(header, ssrc);
         
-        if(itemCount>0)
-        {
-        	
-        List<ReportBlock> reportBlocks = new ArrayList<>(itemCount);
-        
-        
-        for (int i = 0; i < itemCount; i++) 
-        {
-            reportBlocks.add(decodeReportBlock(rrBuf));
-            rr.setReportBlocks(reportBlocks);
+        if (itemCount > 0) {
+            List<ReportBlock> reportBlocks = new ArrayList<>(itemCount);
+
+            for (int i = 0; i < itemCount; i++) {
+                reportBlocks.add(decodeReportBlock(rrInBuf));
+                rr.setReportBlocks(reportBlocks);
+            }
         }
-        
-        }
-        
-        
+
         return rr;
     }
     
-    public SenderReport decodeSenderReport(ByteBuf srBuf) 
-    {
+    public SenderReport decodeSenderReport(ByteBuf srInBuf) {
+        RtcpHeader header = decodeHeader(srInBuf.readBytes(4));
         
-        RtcpHeader header = decodeHeader(srBuf.readBytes(4));
-        
-        int ssrc = srBuf.readInt();
-        int ntpTimestampMostSignificant = srBuf.readInt();
-        int ntpTimestampLeastSignificant = srBuf.readInt();
-        int rtpTimestamp = srBuf.readInt();
-        int senderPacketCount = srBuf.readInt();
-        int senderOctetCount = srBuf.readInt();
+        int ssrc = srInBuf.readInt();
+        int ntpTimestampMostSignificant = srInBuf.readInt();
+        int ntpTimestampLeastSignificant = srInBuf.readInt();
+        int rtpTimestamp = srInBuf.readInt();
+        int senderPacketCount = srInBuf.readInt();
+        int senderOctetCount = srInBuf.readInt();
 
         int itemCount = header.getItemCount();
         
-        SenderReport sr = new SenderReport(header, ssrc, ntpTimestampMostSignificant, ntpTimestampLeastSignificant, rtpTimestamp, senderPacketCount, senderOctetCount);
+        SenderReport sr = new SenderReport(
+                header,
+                ssrc,
+                ntpTimestampMostSignificant,
+                ntpTimestampLeastSignificant,
+                rtpTimestamp,
+                senderPacketCount,
+                senderOctetCount
+        );
+
+        if (itemCount > 0) {
+            List<ReportBlock> reportBlocks = new ArrayList<>(itemCount);
         
-        if(itemCount>0)
-        {
-        	
-        List<ReportBlock> reportBlocks = new ArrayList<>(itemCount);
-        
-        for (int i = 0; i < itemCount; i++)
-        {
-            reportBlocks.add(decodeReportBlock(srBuf.readBytes(24)));
-            sr.setReportBlocks(reportBlocks);
-        }
-        
+            for (int i = 0; i < itemCount; i++) {
+                reportBlocks.add(decodeReportBlock(srInBuf.readBytes(24)));
+                sr.setReportBlocks(reportBlocks);
+            }
         }
         
         return sr;
     }
     
-    public SourceDescription decodeSourceDescription(ByteBuf sdInBuf) 
-    {
+    public SourceDescription decodeSourceDescription(ByteBuf sdInBuf) {
         RtcpHeader header = decodeHeader(sdInBuf.readBytes(4));
-        
-        SourceDescription sd = new SourceDescription(header);
-        
+
+        int ssrc = sdInBuf.readInt();
+        SourceDescription sd = new SourceDescription(header, ssrc);
+
         int itemCount = header.getItemCount(); 
         List<Chunk> chunks = new ArrayList<>(itemCount);
 
-        for (int i = 0; i < itemCount; i++) 
-        {
+        for (int i = 0; i < itemCount; i++) {
             chunks.add(decodeChunk(sdInBuf.readBytes(8))); 
         }
+
         return sd;
     }
     

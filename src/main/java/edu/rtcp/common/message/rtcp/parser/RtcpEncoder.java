@@ -8,10 +8,11 @@ import edu.rtcp.common.message.rtcp.parts.chunk.SdesItem;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 
-public class RtcpEncoder 
-{
-	 public ByteBuf encodeHeader(RtcpHeader header) 
-	 {
+import java.util.Arrays;
+import java.util.List;
+
+public class RtcpEncoder {
+	 public ByteBuf encodeHeader(RtcpHeader header) {
 	        ByteBuf headerInBuf = Unpooled.buffer(4); 
 	        
 	        headerInBuf.writeByte((header.getVersion() << 6) | (header.getIsPadding() ? 0x20 : 0) | (header.getItemCount() & 0x1F));  
@@ -21,8 +22,7 @@ public class RtcpEncoder
 	        return headerInBuf;
 	  }
 	 
-	 public ByteBuf encodeApp(ApplicationDefined app)
-	 {
+	 public ByteBuf encodeApp(ApplicationDefined app) {
 		 ByteBuf appInBuf = Unpooled.buffer(16);
 		 
 		 RtcpHeader header = app.getHeader();
@@ -31,23 +31,22 @@ public class RtcpEncoder
 		 appInBuf.writeInt(app.getSSRC());
 		 
 		 byte[] nameBytes = app.getName().getBytes();
-		 appInBuf.writeBytes(nameBytes);
+		 appInBuf.writeBytes(Arrays.copyOfRange(nameBytes, 0, 4));
 		 
 		 appInBuf.writeInt(app.getApplicationDependentData());
 
 		 return appInBuf;
 	 }
 	 
-	 public ByteBuf encodeBye(Bye bye)
-	 {
-		 int baseSize = 8;
-		 int optReasonSize = 4;
+	 public ByteBuf encodeBye(Bye bye) {
+		 final int baseSize = 8;
+		 final int optReasonSize = 4;
+
 		 int totalSize = baseSize;
 		 
-		 if (bye.getLengthOfReason() != null && bye.getReason() != null && !bye.getReason().isEmpty()) 
-		    {
-		        totalSize += optReasonSize; 
-		    }
+		 if (bye.getReason() != null && !bye.getReason().isEmpty()) {
+			 totalSize += optReasonSize;
+		 }
 		 
 		 ByteBuf byeInBuf = Unpooled.buffer(totalSize);
 		 
@@ -55,25 +54,22 @@ public class RtcpEncoder
 		 byeInBuf.writeBytes(encodeHeader(header));
 		 byeInBuf.writeInt(bye.getSSRC());
 		 
-		 if (bye.getLengthOfReason() != null && bye.getReason() != null && !bye.getReason().isEmpty()) 
-		    {
-		        byeInBuf.writeByte(bye.getLengthOfReason());
-		        byeInBuf.writeBytes(bye.getReason().getBytes());
-		    }
+		 if (bye.getReason() != null && !bye.getReason().isEmpty()) {
+			 byeInBuf.writeByte(bye.getLengthOfReason() & 0xFF);
+		     byeInBuf.writeBytes(bye.getReason().getBytes());
+		 }
 		 
 		 return byeInBuf;
 	 }
 	 
-	 public ByteBuf encodeReceiverReport(ReceiverReport rr)
-	 {
-		
-		int baseSize = 8;
-		    
-		int reportBlockSize = 24;
-		
-		int ItemCount = rr.getReportBlocks().size();
-		    
-		int totalSize = baseSize + (ItemCount * reportBlockSize);
+	 public ByteBuf encodeReceiverReport(ReceiverReport rr) {
+		final int baseSize = 8;
+		final int reportBlockSize = 24;
+
+		List<ReportBlock> reportBlocks = rr.getReportBlocks();
+
+		int itemCount = reportBlocks != null ? rr.getReportBlocks().size() : 0;
+		int totalSize = baseSize + (itemCount * reportBlockSize);
 		    
 		ByteBuf rrInBuf = Unpooled.buffer(totalSize);
 		    
@@ -81,33 +77,26 @@ public class RtcpEncoder
 		rrInBuf.writeBytes(encodeHeader(header));
 		rrInBuf.writeInt(rr.getSSRC());
 		 
-		if(ItemCount>0) 
-		{
-			
-		for (int i = 0; i < ItemCount; i++) 
-		{
-		    rrInBuf.writeBytes(encodeReportBlock(rr.getReportBlocks().get(i))); 
+		if (itemCount>0) {
+			for (int i = 0; i < itemCount; i++) {
+		    	rrInBuf.writeBytes(encodeReportBlock(rr.getReportBlocks().get(i)));
+			}
 		}
-		
-		}
-		    return rrInBuf;
+
+		return rrInBuf;
 	 }		
 	 
-	 public ByteBuf encodeSenderReport(SenderReport sr)
-	 {
+	 public ByteBuf encodeSenderReport(SenderReport sr) {
+		final int baseSize = 8 + 20 ;
+		final int reportBlockSize = 24;
 		
-		int baseSize = 8 + 20 ;
-		    
-		int reportBlockSize = 24;
+		int itemCount = sr.getReportBlocks() == null ? 0 : sr.getReportBlocks().size();
 		
-		int ItemCount = sr.getReportBlocks().size();
-		
-		int totalSize = baseSize + (ItemCount * reportBlockSize);
+		int totalSize = baseSize + (itemCount * reportBlockSize);
 		
 		ByteBuf profileSpecificExtensions = sr.getProfileSpecificExtensions();
 		
-		if (profileSpecificExtensions != null) 
-		{
+		if (profileSpecificExtensions != null) {
 		   totalSize += profileSpecificExtensions.readableBytes(); 
 		} 
 		
@@ -115,7 +104,7 @@ public class RtcpEncoder
 		    
 		RtcpHeader header = sr.getHeader(); 
 		srInBuf.writeBytes(encodeHeader(header));
-		
+
 		srInBuf.writeInt(sr.getSSRC());
 		srInBuf.writeInt(sr.getNtpTimestampMostSignificant());
 		srInBuf.writeInt(sr.getNtpTimestampLeastSignificant());
@@ -123,75 +112,64 @@ public class RtcpEncoder
 		srInBuf.writeInt(sr.getSenderPacketCount());
 		srInBuf.writeInt(sr.getSenderOctetCount());
 		 
-		if(ItemCount>0)
-		{
-		for (int i = 0; i < ItemCount; i++) 
-		{
-		    srInBuf.writeBytes(encodeReportBlock(sr.getReportBlocks().get(i))); 
+		if (itemCount > 0) {
+			for (int i = 0; i < itemCount; i++) {
+		    	srInBuf.writeBytes(encodeReportBlock(sr.getReportBlocks().get(i)));
+			}
 		}
 		
-		}
-		
-		if (profileSpecificExtensions != null) 
-		{
+		if (profileSpecificExtensions != null) {
 		     srInBuf.writeBytes(profileSpecificExtensions); 
 		}
 		    
-		    return srInBuf;
-	 	}	
+		return srInBuf;
+	 }
 	 
-	 public ByteBuf encodeSourceDescription(SourceDescription sd)
-	 {
-		 int baseSize = 4;
-		 int ChunkSize = 8;
+	 public ByteBuf encodeSourceDescription(SourceDescription sd) {
+		 final int baseSize = 4;
+		 final int ChunkSize = 8;
 		 
-		 int ItemCount = sd.getChunks().size();
+		 int itemCount = sd.getChunks() != null ? sd.getChunks().size() : 0;
 		 
-		 int totalSize = baseSize + (ItemCount * ChunkSize);
+		 int totalSize = baseSize + (itemCount * ChunkSize);
 				 
 		 ByteBuf sdInBuf = Unpooled.buffer(totalSize);
 		    
 		 RtcpHeader header = sd.getHeader(); 
 		 
 		 sdInBuf.writeBytes(encodeHeader(header));
+		 sdInBuf.writeInt(sd.getSSRC());
 		 
-		 if(ItemCount>0)
-		 {
-			 for (int i = 0; i < ItemCount; i++) 
-			 {
+		 if (itemCount > 0) {
+			 for (int i = 0; i < itemCount; i++) {
 				 sdInBuf.writeBytes(encodeChunk(sd.getChunks().get(i))); 
 			 }
-			
 		 }
 		 
 		 return sdInBuf;
 	 }
 	 
 	 public ByteBuf encodeChunk(Chunk chunk) {
-		   
-		    int totalSdesSize = 4;
+		 int totalSdesSize = 4;
 		    
-		    for (SdesItem item : chunk.getItems()) 
-		    {
-		        totalSdesSize += encodeSdesItem(item).readableBytes(); 
-		    }
+		 for (SdesItem item : chunk.getItems()) {
+			 totalSdesSize += encodeSdesItem(item).readableBytes();
+		 }
 		  
-		    ByteBuf chunkInBuf = Unpooled.buffer(totalSdesSize);
+		 ByteBuf chunkInBuf = Unpooled.buffer(totalSdesSize);
 		    
-		    chunkInBuf.writeInt(chunk.getSsrc());
+		 chunkInBuf.writeInt(chunk.getSsrc());
 
-		    for (SdesItem item : chunk.getItems()) 
-		    {
-		        ByteBuf sdesItemInBuf = encodeSdesItem(item);
-		        chunkInBuf.writeBytes(sdesItemInBuf); 
-		    }
+		 for (SdesItem item : chunk.getItems()) {
+		    ByteBuf sdesItemInBuf = encodeSdesItem(item);
+		    chunkInBuf.writeBytes(sdesItemInBuf);
+		 }
 
-		    return chunkInBuf;
-		}
+		 return chunkInBuf;
+	 }
 	 
-	 public ByteBuf encodeReportBlock(ReportBlock reportBlock) 
-	 {
-	     ByteBuf reportBlockInBuf = Unpooled.buffer(24); 
+	 public ByteBuf encodeReportBlock(ReportBlock reportBlock) {
+		 ByteBuf reportBlockInBuf = Unpooled.buffer(24);
 
 	     reportBlockInBuf.writeInt(reportBlock.getSsrc());
 	     reportBlockInBuf.writeByte(reportBlock.getFractionLost());
@@ -206,31 +184,26 @@ public class RtcpEncoder
 	     return reportBlockInBuf;
 	 }
 	 
-	 public ByteBuf encodeSdesItem(SdesItem item) 
-	 {
-		    int totalLength = item.getLength(); 
+	 public ByteBuf encodeSdesItem(SdesItem item) {
+		 int totalLength = item.getLength();
 		    
-		    if (item.getPrefix() != null && !item.getPrefix().isEmpty()) 
-		    {
-		        totalLength += item.getPrefix().length() + item.getPrefixLength(); 
-		       
-		    }
+		 if (item.getPrefix() != null && !item.getPrefix().isEmpty()) {
+			 totalLength += item.getPrefix().length() + item.getPrefixLength();
+		 }
 
-		    ByteBuf SdesitemInBuf = Unpooled.buffer(1 + 1 + totalLength); 
+		 ByteBuf SdesItemInBuf = Unpooled.buffer(1 + 1 + totalLength);
 
-		    SdesitemInBuf.writeByte(item.getType().getValue());
+		 SdesItemInBuf.writeByte(item.getType().getValue());
 
-		    SdesitemInBuf.writeByte(totalLength);
+		 SdesItemInBuf.writeByte(totalLength);
 		 
-		    if (item.getPrefix() != null && !item.getPrefix().isEmpty()) 
-		    {
-		    	SdesitemInBuf.writeInt(item.getPrefixLength());
-		        SdesitemInBuf.writeBytes(item.getPrefix().getBytes()); 
-		    }
+		 if (item.getPrefix() != null && !item.getPrefix().isEmpty()) {
+			 SdesItemInBuf.writeInt(item.getPrefixLength());
+			 SdesItemInBuf.writeBytes(item.getPrefix().getBytes());
+		 }
 
-		    SdesitemInBuf.writeBytes(item.getData().getBytes());
+		 SdesItemInBuf.writeBytes(item.getData().getBytes());
 		    
-		    return SdesitemInBuf;
-	  }
-	 
- 	}
+		 return SdesItemInBuf;
+	 }
+}

@@ -13,23 +13,21 @@ chunk     |                          SSRC/CSRC_1                          |
 	      +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
  */
 
-public class Chunk 
-{
-    private Integer ssrc;
+public class Chunk {
+    private int ssrc;
     private List<SdesItem> items;
 
-    public Chunk(Integer ssrc,List<SdesItem> items) 
-    {
+    public Chunk(int ssrc, List<SdesItem> items) {
     	this.ssrc = ssrc;
     	this.items = items;
     }
 
-    public Integer getSsrc() 
+    public int getSsrc()
     {
         return ssrc;
     }
 
-    public void setSsrc(Integer value) 
+    public void setSsrc(int value)
     {
         this.ssrc = value;
     }

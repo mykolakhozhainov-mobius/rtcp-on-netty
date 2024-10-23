@@ -2,71 +2,54 @@ package edu.rtcp.common.message.rtcp.header;
 
 import edu.rtcp.common.message.rtcp.types.PacketTypeEnum;
 
-public class RtcpHeader 
-{
-	private Byte version;
-	private Boolean isPadding;
-	private Byte itemCount;
-	private PacketTypeEnum packetType;
-	private Short length;
+public class RtcpHeader {
+	private final byte version;
+	private final boolean isPadding;
+	private final byte itemCount;
+	private final PacketTypeEnum packetType;
+	private short length;
 
-	
-	public RtcpHeader(Byte version, Boolean isPadding, Byte itemCount, PacketTypeEnum packetType, Short length)
-	{
+	public RtcpHeader(
+			byte version,
+			boolean isPadding,
+			byte itemCount,
+			PacketTypeEnum packetType,
+			short length
+	) {
 		this.isPadding = isPadding;
 		this.version = version;
-		
-		setItemCount(itemCount);
-		setPacketType(packetType);
-	    setLength(length);
+
+		this.itemCount = itemCount;
+		this.packetType = packetType;
+		this.length = length;
 	 }
 	
 	public int getVersion() 
 	{
 		return this.version;
 	}
-	
-	public void setVersion(Byte value) 
-	{
-		this.version = value;
-	}
-	
-	public Boolean getIsPadding()
+
+	public boolean getIsPadding()
 	{
 		return this.isPadding;
 	}
-	
-	public void setIsPadding(Boolean value)
-	{
-		this.isPadding = value;
-	}
-	
-	public Byte getItemCount() 
+
+	public byte getItemCount()
 	{
 		return this.itemCount;
 	}
-	
-	public void setItemCount(Byte value) 
-	{
-		this.itemCount = value;
-	}
-	
+
 	public PacketTypeEnum getPacketType() 
 	{
 		return this.packetType;
 	}
-	
-	public void setPacketType(PacketTypeEnum value) 
-	{
-		this.packetType = value;
-	}
-	
+
 	public int getLength() 
 	{
 		return this.length;
 	}
 	
-	public void setLength(Short value) 
+	public void setLength(short value)
 	{
 		this.length = value;
 	}

@@ -62,17 +62,9 @@ public class SessionTest {
         PacketFactory factory = this.stack.getProvider().getPacketFactory();
 
         SenderReport openPacket = factory.createSenderReport(
-                (short) 1,
-                false,
-                (short) 1,
-                PacketTypeEnum.SENDER_REPORT,
-                10,
-                1,
+                (byte) 1,
                 0,
-                0,
-                0,
-                0,
-                0,
+                null,
                 null
         );
 
@@ -179,13 +171,9 @@ public class SessionTest {
         PacketFactory factory = this.stack.getProvider().getPacketFactory();
 
         Bye byePacket = factory.createBye(
-                (short) 1,
-                false,
-                (short) 1,
-                PacketTypeEnum.BYE,
-                10,
-                1,
-                null
+                (byte) 0,
+                0,
+                "Just for test"
         );
 
 

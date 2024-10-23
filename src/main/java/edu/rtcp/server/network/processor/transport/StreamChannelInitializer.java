@@ -1,12 +1,12 @@
 package edu.rtcp.server.network.processor.transport;
 
 import edu.rtcp.RtcpStack;
-import edu.rtcp.common.decoder.StreamMessageDecoder;
+import edu.rtcp.server.network.decoder.RtcpStreamDecoder;
+import edu.rtcp.server.network.encoder.RtcpMessageEncoder;
 import edu.rtcp.server.network.handler.MessageHandler;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.socket.SocketChannel;
-import io.netty.handler.codec.bytes.ByteArrayEncoder;
 
 public class StreamChannelInitializer extends ChannelInitializer<SocketChannel> {
     private final RtcpStack stack;
@@ -20,10 +20,10 @@ public class StreamChannelInitializer extends ChannelInitializer<SocketChannel> 
         ChannelPipeline pipeline = ch.pipeline();
 
         // Decoder
-        pipeline.addLast("decoder", new StreamMessageDecoder());
+        pipeline.addLast("decoder", new RtcpStreamDecoder());
 
         // Encoder
-        pipeline.addLast("byteEncoder", new ByteArrayEncoder());
+        pipeline.addLast("encoder", new RtcpMessageEncoder());
 
         // Message handler
         pipeline.addLast("messageHandler", new MessageHandler(stack));

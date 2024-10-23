@@ -68,14 +68,15 @@ public class Provider {
     // Message request has come to onMessage() function
     // So, as a result, created session is Server session
     private Session createNewSession(RtcpBasePacket message) {
-        int sessionId = message.getHeader().getSSRC();
+        int sessionId = message.getSSRC();
 
         return new ServerSession(sessionId, this);
     }
 
     // Event handling -----------------------------
     public void onMessage(RtcpBasePacket message, AsyncCallback callback) {
-        int sessionId = message.getHeader().getSSRC();
+        System.out.println("[PROVIDER] Incoming message is handled by provider");
+        int sessionId = message.getSSRC();
 
         boolean isAnswer = message instanceof ReceiverReport && message.getHeader().getItemCount() == 0;
         boolean isNewSession = false;
@@ -84,7 +85,9 @@ public class Provider {
         if (session == null && !isAnswer) {
             session = this.createNewSession(message);
             this.sessionStorage.store(session);
+
             isNewSession = true;
+            System.out.println("[PROVIDER] Session " + sessionId + " created (Item Count = 0 and Type = SR)");
         }
 
         if (session == null) {
@@ -93,8 +96,10 @@ public class Provider {
         }
 
         if (isAnswer) {
+            System.out.println("[PROVIDER] Answer will be processed by session");
             session.processAnswer(message, callback);
         } else {
+            System.out.println("[PROVIDER] Request will be processed by session");
             session.processRequest(message, isNewSession, callback);
         }
     }

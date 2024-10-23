@@ -39,17 +39,9 @@ public class PerformanceTest extends NetworkTestBase {
         
         for (int i = 0; i < numberOfSessions; i++) {
             SenderReport packet = this.packetFactory.createSenderReport(
-                    (short) 1,
-                    false,
-                    (short) 1,
-                    PacketTypeEnum.SENDER_REPORT,
-                    10,
-                    1,
+                    (byte) 1,
                     0,
-                    0,
-                    0,
-                    0,
-                    0,
+                    null,
                     null
             );
 
