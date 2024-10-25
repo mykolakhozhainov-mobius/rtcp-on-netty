@@ -13,6 +13,7 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
+//import io.netty.channel.ServerChannel;
 import io.netty.channel.epoll.EpollChannelOption;
 import io.netty.channel.epoll.EpollDatagramChannel;
 import io.netty.channel.epoll.EpollEventLoopGroup;
@@ -24,7 +25,6 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -34,6 +34,8 @@ public class NetworkManager {
 
 	EventLoopGroup bossGroup;
 	EventLoopGroup workerGroup;
+	
+	Boolean isServerStarted = false;
 
 	public NetworkManager(RtcpStack stack) {
 		this.stack = stack;
@@ -68,23 +70,34 @@ public class NetworkManager {
 		if (link == null) {
 			return;
 		}
-
 		if (stack.isServer) {
-			if (stack.transport.equals(TransportEnum.TCP)) {
-				try {
+			if (!isServerStarted) {
+				if (stack.transport.equals(TransportEnum.TCP)) {
 					ServerBootstrap bootstrap = new ServerBootstrap();
-
+	 
 					bootstrap.group(bossGroup, workerGroup);
-
+	 
 					bootstrap.channel(ServerChannelUtils.getSocketChannel())
-							.childHandler(new StreamChannelInitializer(stack))
+							.childHandler(new ChannelInitializer<SocketChannel>() {
+								@Override
+								protected void initChannel(SocketChannel socketChannel) {
+									NetworkLink foundLink = getLinkByPort(socketChannel.remoteAddress().getPort());
+									if(foundLink != null) {
+										foundLink.setChannel(socketChannel);
+									} else {
+										socketChannel.close();
+									}
+									socketChannel.pipeline().addLast(new StreamChannelInitializer(stack));
+								}
+							})
 							.childOption(ChannelOption.SO_KEEPALIVE, true);
-
-					link.setChannel(bootstrap.bind(link.getLocalPort()).await().channel());
-
+	 
+					ChannelFuture future = bootstrap.bind(link.getLocalPort()).syncUninterruptibly();
+					future.awaitUninterruptibly();
+	 
 					new Thread(() -> {
-						try {
-							link.getChannel().closeFuture().sync();
+						try {							
+							future.channel().closeFuture().sync();
 						} catch (InterruptedException e) {
 							System.out.println(e);
 						} finally {
@@ -92,36 +105,27 @@ public class NetworkManager {
 							bossGroup.shutdownGracefully();
 						}
 					}).start();
+					
 					System.out.println("[TCP-PROCESSOR] Server started on port " + link.getLocalPort());
-				} catch (InterruptedException e) {
-					System.out.println(e);
-				}
-			} else if (stack.transport.equals(TransportEnum.UDP)) {
-				Bootstrap connectionlessBootstrap = new Bootstrap();
-				EventLoopGroup group = ServerChannelUtils.createEventLoopGroup();
-				connectionlessBootstrap.group(group).option(EpollChannelOption.SO_REUSEPORT, true)
-						.option(EpollChannelOption.IP_RECVORIGDSTADDR, true)
-						.option(EpollChannelOption.IP_FREEBIND, true);
-
-				connectionlessBootstrap.channel(ServerChannelUtils.getDatagramChannel())
-						.handler(new DatagramChannelInitializer(stack));
-
-				ChannelFuture future = connectionlessBootstrap.bind(link.getLocalAddress(), link.getLocalPort());
-				future.awaitUninterruptibly();
-
-				// Do we need this?
-				for (int i = 0; i < stack.getThreadPoolSize(); ++i) {
-					future = connectionlessBootstrap.bind(new InetSocketAddress("0.0.0.0", link.getLocalPort()));
-
+					isServerStarted = true;
+				} else if (stack.transport.equals(TransportEnum.UDP)) {
+					Bootstrap connectionlessBootstrap = new Bootstrap();
+					EventLoopGroup group = ServerChannelUtils.createEventLoopGroup();
+					connectionlessBootstrap.channel(ServerChannelUtils.getDatagramChannel());
+					connectionlessBootstrap.group(group).option(EpollChannelOption.SO_REUSEPORT, true)
+							.option(EpollChannelOption.IP_RECVORIGDSTADDR, true);
+					connectionlessBootstrap
+					.handler(new ChannelInitializer<DatagramChannel>() {
+						@Override
+						protected void initChannel(DatagramChannel datagramChannel) {
+							System.out.println("Found link: " + datagramChannel);
+								link.setChannel(datagramChannel);
+							datagramChannel.pipeline().addLast(new DatagramChannelInitializer(stack));
+						}
+					});
+	 
+					ChannelFuture future = connectionlessBootstrap.bind(link.getLocalAddress(), link.getLocalPort()).syncUninterruptibly();
 					future.awaitUninterruptibly();
-
-					if (future.isSuccess()) {
-						System.out.println("[UDP-PROCESSOR] Channel started on port " + link.getLocalPort());
-					} else {
-						System.out.println("[UDP-PROCESSOR] Channel not connected: " + future.cause());
-					}
-
-					link.setChannel(future.channel());
 				}
 			}
 		} else {
@@ -143,7 +147,7 @@ public class NetworkManager {
 					System.out.println(future.cause());
 					return;
 				}
-
+ 
 				new Thread(() -> {
 					try {
 						link.getChannel().closeFuture().syncUninterruptibly();
@@ -188,11 +192,11 @@ public class NetworkManager {
 
 	public void sendMessage(RtcpBasePacket message, int port, AsyncCallback callback) {
 		NetworkLink link = getLinkByPort(port);
-
-		if (link == null) {
-			callback.onError(new RuntimeException("Link is not found"));
-			return;
+		
+		if (stack.isServer && stack.transport == TransportEnum.UDP && link.getChannel().remoteAddress() == null) {
+			link.getChannel().connect(new InetSocketAddress(link.getRemoteAddress(), link.getRemotePort()));
 		}
+
 		link.getChannel().writeAndFlush(RtcpParser.encode(message));
 		callback.onSuccess();
 	}
