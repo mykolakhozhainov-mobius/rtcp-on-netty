@@ -19,11 +19,11 @@ public class StreamChannelInitializer extends ChannelInitializer<SocketChannel> 
     public void initChannel(SocketChannel ch) {
         ChannelPipeline pipeline = ch.pipeline();
 
-        // Decoder
-        pipeline.addLast("decoder", new RtcpStreamDecoder());
-
         // Encoder
         pipeline.addLast("encoder", new RtcpMessageEncoder());
+
+        // Decoder
+        pipeline.addLast("decoder", new RtcpStreamDecoder());
 
         // Message handler
         pipeline.addLast("messageHandler", new MessageHandler(stack));

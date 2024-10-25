@@ -16,5 +16,8 @@ public class SessionStorage {
 
     public void remove(Session session) {
         sessionsMap.remove(session.getId());
+        System.out.println("Removed session " + session.getId());
     }
+
+    public int size() { return this.sessionsMap.size(); }
 }

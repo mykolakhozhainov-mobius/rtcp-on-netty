@@ -6,6 +6,10 @@ import edu.rtcp.common.message.rtcp.header.RtcpBasePacket;
 public abstract class MessageTask implements Task {
     protected RtcpBasePacket message;
 
+    public MessageTask(RtcpBasePacket message) {
+        this.message = message;
+    }
+
     @Override
     public long getStartTime() {
         return System.currentTimeMillis();
@@ -18,5 +22,10 @@ public abstract class MessageTask implements Task {
 
         return String.valueOf(System.currentTimeMillis());
     }
+
+    public final RtcpBasePacket getMessage() {
+        return this.message;
+    }
+
     public abstract void execute();
 }

@@ -8,7 +8,8 @@ public class MessageProcessingTask extends MessageTask {
     private final RtcpStack stack;
 
     public MessageProcessingTask(RtcpBasePacket message, RtcpStack stack) {
-        this.message = message;
+        super(message);
+
         this.stack = stack;
     }
     
@@ -28,22 +29,5 @@ public class MessageProcessingTask extends MessageTask {
                 System.out.println(e.getMessage());
             }
         });
-
-//        this.stack.getNetworkManager()
-//                .getNetworkListener()
-//                .onMessage(
-//                        this.message,
-//                        this.stack.getProvider().getSessionStorage().get(message.getHeader().getSSRC()),
-//                        new AsyncCallback() {
-//            @Override
-//            public void onSuccess() {
-//                System.out.println("[TASK] Message is gone through network listener");
-//            }
-//
-//            @Override
-//            public void onError(Exception e) {
-//
-//            }
-//        });
     }
 }

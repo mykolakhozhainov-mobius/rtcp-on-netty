@@ -22,9 +22,6 @@ public class MessageHandler extends ChannelInboundHandlerAdapter {
 	public void channelRead(ChannelHandlerContext ctx, Object msg) {
 		RtcpBasePacket message = (RtcpBasePacket) msg;
 
-//		if (message.sender == null) {
-//			message.sender = (java.net.InetSocketAddress) ctx.channel().remoteAddress();
-//		}
 		System.out.println("[HANDLER] New message content from " + ctx.channel() + ":");
 		System.out.println(message);
 

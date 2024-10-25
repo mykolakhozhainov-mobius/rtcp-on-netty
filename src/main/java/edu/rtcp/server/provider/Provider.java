@@ -5,9 +5,12 @@ import edu.rtcp.common.message.rtcp.factory.PacketFactory;
 import edu.rtcp.common.message.rtcp.header.RtcpBasePacket;
 import edu.rtcp.common.message.rtcp.packet.ReceiverReport;
 import edu.rtcp.server.callback.AsyncCallback;
+import edu.rtcp.server.executor.tasks.MessageTask;
+import edu.rtcp.server.network.PendingStorage;
 import edu.rtcp.server.provider.listeners.ClientSessionListener;
 import edu.rtcp.server.provider.listeners.ServerSessionListener;
 import edu.rtcp.server.session.SessionFactory;
+import edu.rtcp.server.session.SessionStateEnum;
 import edu.rtcp.server.session.SessionStorage;
 import edu.rtcp.server.session.types.ServerSession;
 import edu.rtcp.server.session.Session;
@@ -74,6 +77,18 @@ public class Provider {
     }
 
     // Event handling -----------------------------
+    public void executeFromPending(Session session) {
+        int sessionId = session.getId();
+
+        PendingStorage pendingStorage = this.getStack().getNetworkManager().getPendingStorage();
+        if (!pendingStorage.isSessionEmpty(sessionId)) {
+            MessageTask task = pendingStorage.removeTask(sessionId);
+
+            this.stack.getMessageExecutor().addTaskLast(task);
+            session.setSessionState(SessionStateEnum.WAITING);
+        }
+    }
+
     public void onMessage(RtcpBasePacket message, AsyncCallback callback) {
         System.out.println("[PROVIDER] Incoming message is handled by provider");
         int sessionId = message.getSSRC();
@@ -82,6 +97,7 @@ public class Provider {
         boolean isNewSession = false;
 
         Session session = sessionStorage.get(sessionId);
+        System.out.println("Session: " + session);
         if (session == null && !isAnswer) {
             session = this.createNewSession(message);
             this.sessionStorage.store(session);
@@ -102,5 +118,7 @@ public class Provider {
             System.out.println("[PROVIDER] Request will be processed by session");
             session.processRequest(message, isNewSession, callback);
         }
+
+        this.executeFromPending(session);
     }
 }
