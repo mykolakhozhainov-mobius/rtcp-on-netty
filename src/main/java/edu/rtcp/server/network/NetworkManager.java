@@ -35,16 +35,11 @@ public class NetworkManager {
 	private final EventLoopGroup workerGroup;
 
 	private boolean isServerStarted = false;
-	private final PendingStorage pendingStorage = new PendingStorage();
 
 	public NetworkManager(RtcpStack stack) {
 		this.stack = stack;
 		bossGroup = ServerChannelUtils.createEventLoopGroup();
 		workerGroup = ServerChannelUtils.createEventLoopGroup();
-	}
-
-	public PendingStorage getPendingStorage() {
-		return this.pendingStorage;
 	}
 
 	public void addLink(String linkId, InetAddress remoteAddress, int remotePort, InetAddress localAddress,

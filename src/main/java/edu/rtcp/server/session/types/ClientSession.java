@@ -10,8 +10,12 @@ import edu.rtcp.server.provider.listeners.ClientSessionListener;
 import edu.rtcp.server.session.Session;
 import edu.rtcp.server.session.SessionStateEnum;
 
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
 public class ClientSession extends Session {
-    private RtcpBasePacket lastSentMessage;
+    private final Queue<RtcpBasePacket> lastSentMessages = new ConcurrentLinkedQueue<>();
+    private final Queue<MessageTask> pendingTasks = new ConcurrentLinkedQueue<>();
 
     public ClientSession(int id, Provider provider) {
         this.id = id;
@@ -25,16 +29,22 @@ public class ClientSession extends Session {
             return;
         }
 
-        // Sending Sender Report (Session opening message)
-        this.sendMessageAsTask(new MessageTask(request) {
+        MessageTask initialRequestTask = new MessageTask(request) {
             @Override
             public void execute() {
-                lastSentMessage = request;
-
                 setSessionState(SessionStateEnum.WAITING);
                 provider.getStack().getNetworkManager().sendMessage(message, port, callback);
             }
-        });
+        };
+
+        // Sending Sender Report (Session opening message)
+        if (!this.lastSentMessages.isEmpty()) {
+            this.pendingTasks.add(initialRequestTask);
+        } else {
+            this.sendMessageAsTask(initialRequestTask);
+        }
+
+        lastSentMessages.add(request);
     }
 
     public void sendTerminationRequest(Bye request, int port, AsyncCallback callback) {
@@ -44,15 +54,45 @@ public class ClientSession extends Session {
         }
 
         // Sending Bye (Session closing message)
-        this.sendMessageAsTask(new MessageTask(request) {
+        MessageTask terminationTask = new MessageTask(request) {
             @Override
             public void execute() {
-                lastSentMessage = request;
-
                 setSessionState(SessionStateEnum.WAITING);
                 provider.getStack().getNetworkManager().sendMessage(message, port, callback);
             }
-        });
+        };
+
+        if (!this.lastSentMessages.isEmpty()) {
+            this.pendingTasks.add(terminationTask);
+        } else {
+            this.sendMessageAsTask(terminationTask);
+        }
+
+        lastSentMessages.add(request);
+    }
+
+    public void sendDataRequest(RtcpBasePacket request, int port, AsyncCallback callback) {
+        if (this.state == SessionStateEnum.CLOSED) {
+            callback.onError(new RuntimeException("Client session can not send data request cause session is closed"));
+            return;
+        }
+
+        // Sending Bye (Session closing message)
+        MessageTask dataTask = new MessageTask(request) {
+            @Override
+            public void execute() {
+                setSessionState(SessionStateEnum.WAITING);
+                provider.getStack().getNetworkManager().sendMessage(message, port, callback);
+            }
+        };
+
+        if (!this.lastSentMessages.isEmpty()) {
+            this.pendingTasks.add(dataTask);
+        } else {
+            this.sendMessageAsTask(dataTask);
+        }
+
+        lastSentMessages.add(request);
     }
 
     @Override
@@ -70,6 +110,8 @@ public class ClientSession extends Session {
             return;
         }
 
+        RtcpBasePacket lastSentMessage = lastSentMessages.poll();
+
         if (lastSentMessage instanceof SenderReport && lastSentMessage.getHeader().getItemCount() == 0) {
             this.setSessionState(SessionStateEnum.OPEN);
 
@@ -84,21 +126,14 @@ public class ClientSession extends Session {
                 listener.onTerminationAnswer(answer, this, callback);
             }
         } else {
-            this.setSessionState(SessionStateEnum.OPEN);
             if (listener != null) {
                 listener.onDataAnswer(answer, this, callback);
             }
         }
-    }
 
-    public void sendMessageAndWaitForAck(RtcpBasePacket packet, int port, AsyncCallback callback) {
-        this.sendMessageAsTask(new MessageTask(packet) {
-            @Override
-            public void execute() {
-                setSessionState(SessionStateEnum.WAITING);
-                provider.getStack().getNetworkManager().sendMessage(message, port, callback);
-            }
-        });
+        if (!this.pendingTasks.isEmpty()) {
+            super.sendMessageAsTask(this.pendingTasks.poll());
+        }
     }
 
     @Override

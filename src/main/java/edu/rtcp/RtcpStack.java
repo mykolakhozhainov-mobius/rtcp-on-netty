@@ -3,17 +3,15 @@ package edu.rtcp;
 import edu.rtcp.common.TransportEnum;
 import edu.rtcp.server.executor.MessageExecutor;
 import edu.rtcp.server.network.NetworkManager;
-import edu.rtcp.server.network.processor.AbstractProcessor;
-import edu.rtcp.server.network.processor.transport.StreamProcessor;
 import edu.rtcp.server.provider.Provider;
 
 public class RtcpStack {
     // Executor and it's constants ---------------------
     private final MessageExecutor messageExecutor;
-    private static int threadPoolSize;
+    private final int threadPoolSize;
 
-    private static final int WORKERS_NUMBER = 4;
-    private static final int TASK_INTERVAL = 100;
+    private static final int WORKERS_NUMBER = 16;
+    private static final int TASK_INTERVAL = 1000;
 
     // Message processing ------------------------------
 //    private final AbstractProcessor processor;

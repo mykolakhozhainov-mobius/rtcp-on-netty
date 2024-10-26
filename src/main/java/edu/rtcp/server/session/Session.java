@@ -3,7 +3,6 @@ package edu.rtcp.server.session;
 import edu.rtcp.common.message.rtcp.header.RtcpBasePacket;
 import edu.rtcp.server.callback.AsyncCallback;
 import edu.rtcp.server.executor.tasks.MessageTask;
-import edu.rtcp.server.network.PendingStorage;
 import edu.rtcp.server.provider.Provider;
 
 public abstract class Session {
@@ -44,12 +43,6 @@ public abstract class Session {
 	}
 
 	public void sendMessageAsTask(MessageTask task) {
-		PendingStorage pendingStorage = this.provider.getStack().getNetworkManager().getPendingStorage();
-
-		if (this.state == SessionStateEnum.WAITING) {
-			pendingStorage.addTask(task.getMessage().getSSRC(), task);
-		} else {
-			this.provider.getStack().getMessageExecutor().addTaskLast(task);
-		}
+		this.provider.getStack().getMessageExecutor().addTaskLast(task);
 	}
 }

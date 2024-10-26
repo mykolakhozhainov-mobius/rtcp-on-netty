@@ -42,7 +42,6 @@ public class ServerSession extends Session {
         super.sendMessageAsTask(new MessageTask(answer) {
             @Override
             public void execute() {
-                setSessionState(SessionStateEnum.OPEN);
                 provider.getStack().getNetworkManager().sendMessage(answer, port, callback);
 
                 System.out.println("[SERVER-SESSION] ACK (RR) on data message is sent");
