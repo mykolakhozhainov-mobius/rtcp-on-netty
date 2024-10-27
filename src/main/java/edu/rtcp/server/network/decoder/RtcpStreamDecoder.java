@@ -19,6 +19,8 @@ public class RtcpStreamDecoder extends ByteToMessageDecoder {
             return;
         }
 
+        copied.release();
+
         in.readInt();
         out.add(RtcpParser.decode(in));
     }

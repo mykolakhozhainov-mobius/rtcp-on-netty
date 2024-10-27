@@ -8,8 +8,12 @@ import edu.rtcp.server.provider.Provider;
 import edu.rtcp.server.provider.listeners.ServerSessionListener;
 import edu.rtcp.server.session.Session;
 import edu.rtcp.server.session.SessionStateEnum;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class ServerSession extends Session {
+    public static Logger logger = LogManager.getLogger(ServerSession.class);
+
     public ServerSession(int id, Provider provider) {
         this.id = id;
         this.state = SessionStateEnum.IDLE;
@@ -28,7 +32,9 @@ public class ServerSession extends Session {
                 setSessionState(SessionStateEnum.OPEN);
                 provider.getStack().getNetworkManager().sendMessage(answer, port, callback);
 
-                System.out.println("[SERVER-SESSION] ACK (RR) on initial message is sent");
+                if (provider.getStack().isLogging) {
+                    logger.info("ACK on initial in session {} sent", ServerSession.this.id);
+                }
             }
         });
     }
@@ -44,7 +50,9 @@ public class ServerSession extends Session {
             public void execute() {
                 provider.getStack().getNetworkManager().sendMessage(answer, port, callback);
 
-                System.out.println("[SERVER-SESSION] ACK (RR) on data message is sent");
+                if (provider.getStack().isLogging) {
+                    logger.info("ACK on data in session {} sent", ServerSession.this.id);
+                }
             }
         });
     }
@@ -63,7 +71,9 @@ public class ServerSession extends Session {
 
                 provider.getStack().getNetworkManager().sendMessage(answer, port, callback);
 
-                System.out.println("[SERVER-SESSION] ACK (RR) on termination message is sent");
+                if (provider.getStack().isLogging) {
+                    logger.info("ACK on termination in session {} sent", ServerSession.this.id);
+                }
             }
         });
     }
@@ -72,8 +82,11 @@ public class ServerSession extends Session {
     public void processRequest(RtcpBasePacket request, boolean isNewSession, AsyncCallback callback) {
         ServerSessionListener listener = this.provider.getServerListener();
 
+        boolean isLogging = this.provider.getStack().isLogging;
+
         if (request instanceof Bye) {
-            System.out.println("[SERVER-SESSION] Bye message received");
+            if (isLogging) logger.info("Message [Bye] is in process");
+
             if (this.state == SessionStateEnum.CLOSED) {
                 callback.onError(new RuntimeException("Closed session can not be closed"));
                 return;
@@ -83,7 +96,8 @@ public class ServerSession extends Session {
                 listener.onTerminationRequest(request, this, callback);
             }
         } else if (isNewSession) {
-            System.out.println("[SERVER-SESSION] SR (Open) message received");
+            if (isLogging) logger.info("Message [SR] is in process");
+
             if (this.state == SessionStateEnum.OPEN) {
                 callback.onError(new RuntimeException("Opened session can not be opened"));
                 return;
@@ -93,7 +107,8 @@ public class ServerSession extends Session {
                 listener.onInitialRequest(request, this, callback);
             }
         } else {
-            System.out.println("[SERVER-SESSION] Data message received");
+            if (isLogging) logger.info("Data message [APP, SD, RR] is in process");
+
             if (this.state == SessionStateEnum.IDLE) {
                 callback.onError(new RuntimeException("Unknown message type is passed to session"));
                 return;

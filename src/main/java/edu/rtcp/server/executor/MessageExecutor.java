@@ -12,15 +12,13 @@ public class MessageExecutor {
     private int workersNumber;
 
     public void start(int workersNumber, long taskInterval) {
-        System.out.println("[EXECUTOR] Started with " + workersNumber + " workers");
-
         this.workersNumber = workersNumber;
         workerPool = new WorkerPool(taskInterval);
+
         workerPool.start(workersNumber);
     }
 
     public void stop() {
-        System.out.println("[EXECUTOR] Stopped");
         workerPool.stop();
         workerPool = null;
     }
@@ -29,7 +27,6 @@ public class MessageExecutor {
         CountableQueue<Task> queue = getQueue(task.getId());
         if (queue != null) {
             queue.offerFirst(task);
-            System.out.println("[EXECUTOR] Task " + task.getId() + " added to BEGIN [Q: " + queue.size() + "]");
         }
     }
 
@@ -38,7 +35,6 @@ public class MessageExecutor {
 
         if (queue != null) {
             queue.offerLast(task);
-            System.out.println("[EXECUTOR] Task " + task.getId() + " added to END [Q: " + queue.size() + "]");
         }
     }
 

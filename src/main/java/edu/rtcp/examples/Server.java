@@ -8,7 +8,6 @@ import edu.rtcp.server.callback.AsyncCallback;
 import edu.rtcp.server.provider.Provider;
 import edu.rtcp.server.provider.listeners.ServerSessionListener;
 import edu.rtcp.server.session.Session;
-import edu.rtcp.server.session.SessionStateEnum;
 import edu.rtcp.server.session.types.ServerSession;
 
 import java.net.InetAddress;
@@ -20,7 +19,8 @@ public class Server {
         RtcpStack serverStack = new RtcpStack(
                 32,
                 true,
-                TransportEnum.TCP
+                TransportEnum.TCP,
+                false
         );
 
         Provider serverProvider = new Provider(serverStack);
@@ -38,13 +38,11 @@ public class Server {
 
                 serverSession.sendInitialAnswer(answer, 8081, new AsyncCallback() {
                     @Override
-                    public void onSuccess() {
-                        System.out.println("[SERVER-LISTENER] Session opened");
-                    }
+                    public void onSuccess() {}
 
                     @Override
                     public void onError(Exception e) {
-                        System.out.println(e);
+                        throw new RuntimeException(e);
                     }
                 });
             }
@@ -62,21 +60,17 @@ public class Server {
 
                 serverSession.sendTerminationAnswer(answer, 8081, new AsyncCallback() {
                     @Override
-                    public void onSuccess() {
-
-                    }
+                    public void onSuccess() {}
 
                     @Override
                     public void onError(Exception e) {
-
+                        throw new RuntimeException(e);
                     }
                 });
             }
 
             @Override
             public void onDataRequest(RtcpBasePacket request, Session session, AsyncCallback callback) {
-                System.out.println("[SERVER-LISTENER] Received data request");
-
                 ServerSession serverSession = (ServerSession) session;
 
                 ReceiverReport answer = serverProvider.getPacketFactory().
@@ -88,13 +82,11 @@ public class Server {
 
                 serverSession.sendDataAnswer(answer, 8081, new AsyncCallback() {
                     @Override
-                    public void onSuccess() {
-
-                    }
+                    public void onSuccess() {}
 
                     @Override
                     public void onError(Exception e) {
-
+                        throw new RuntimeException(e);
                     }
                 });
             }

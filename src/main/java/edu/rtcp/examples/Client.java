@@ -19,6 +19,9 @@ import java.util.Random;
 public class Client {
     private static final String localLinkID = "1";
 
+    private static final int SESSION_NUMBER = 1000;
+    private static final int DATA_MESSAGES = 3;
+
     private final HashSet<Integer> usedIds = new HashSet<>();
 
     private int generateId() {
@@ -37,7 +40,8 @@ public class Client {
         RtcpStack localStack = new RtcpStack(
                 32,
                 false,
-                TransportEnum.TCP);
+                TransportEnum.TCP,
+                true);
 
         Provider localProvider = new Provider(localStack);
 
@@ -62,24 +66,21 @@ public class Client {
         clientStack.getProvider().setClientListener(new ClientSessionListener() {
             @Override
             public void onDataAnswer(RtcpBasePacket response, Session session, AsyncCallback callback) {
-                System.out.println("[CLIENT-LISTENER] Data ACK from session " + response.getSSRC() + " received");
                 callback.onSuccess();
             }
 
             @Override
             public void onInitialAnswer(RtcpBasePacket response, Session session, AsyncCallback callback) {
-                System.out.println("[CLIENT-LISTENER] Client session state is now OPEN");
                 callback.onSuccess();
             }
 
             @Override
             public void onTerminationAnswer(RtcpBasePacket response, Session session, AsyncCallback callback) {
-                System.out.println("[CLIENT-LISTENER] Client session state is now CLOSED");
                 callback.onSuccess();
             }
         });
 
-        for (int k = 0; k < 10000; k++) {
+        for (int k = 0; k < SESSION_NUMBER; k++) {
             int sessionId = client.generateId();
 
             SenderReport packet = clientStack.getProvider().getPacketFactory().createSenderReport(
@@ -96,7 +97,7 @@ public class Client {
             clientSession.sendInitialRequest(packet, 8080, new AsyncCallback() {
                 @Override
                 public void onSuccess() {
-                    System.out.println("[CLIENT] Initial message sent successfully");
+
                 }
 
                 @Override
@@ -114,7 +115,7 @@ public class Client {
                             0
                     );
 
-            for (int i = 0; i < 3; i++) {
+            for (int i = 0; i < DATA_MESSAGES; i++) {
                 clientSession.sendDataRequest(dataPacket, 8080, new AsyncCallback() {
                     @Override
                     public void onSuccess() {

@@ -5,8 +5,8 @@ import edu.rtcp.common.ServerChannelUtils;
 import edu.rtcp.common.TransportEnum;
 import edu.rtcp.common.message.rtcp.header.RtcpBasePacket;
 import edu.rtcp.server.callback.AsyncCallback;
-import edu.rtcp.server.network.processor.transport.DatagramChannelInitializer;
-import edu.rtcp.server.network.processor.transport.StreamChannelInitializer;
+import edu.rtcp.server.network.channel.DatagramChannelInitializer;
+import edu.rtcp.server.network.channel.StreamChannelInitializer;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
@@ -21,6 +21,8 @@ import io.netty.channel.socket.DatagramChannel;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -28,6 +30,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class NetworkManager {
+	public static Logger logger = LogManager.getLogger(NetworkManager.class);
+
 	private final RtcpStack stack;
 	private final ConcurrentHashMap<String, NetworkLink> links = new ConcurrentHashMap<String, NetworkLink>();
 
@@ -38,12 +42,12 @@ public class NetworkManager {
 
 	public NetworkManager(RtcpStack stack) {
 		this.stack = stack;
-		bossGroup = ServerChannelUtils.createEventLoopGroup();
-		workerGroup = ServerChannelUtils.createEventLoopGroup();
+
+		this.bossGroup = ServerChannelUtils.createEventLoopGroup();
+		this.workerGroup = ServerChannelUtils.createEventLoopGroup();
 	}
 
-	public void addLink(String linkId, InetAddress remoteAddress, int remotePort, InetAddress localAddress,
-						int localPort) {
+	public void addLink(String linkId, InetAddress remoteAddress, int remotePort, InetAddress localAddress, int localPort) {
 		NetworkLink link = getLinkByLinkId(linkId);
 		if (link == null) {
 			link = new NetworkLink(linkId, remoteAddress, remotePort, localAddress, localPort, this);
@@ -105,8 +109,11 @@ public class NetworkManager {
 						}
 					}).start();
 
-					System.out.println("[TCP-PROCESSOR] Server started on port " + link.getLocalPort());
-					isServerStarted = true;
+					this.isServerStarted = true;
+
+					if (this.stack.isLogging) {
+						logger.info("Server [TCP] started on port {}", link.getLocalPort());
+					}
 				} else if (stack.transport.equals(TransportEnum.UDP)) {
 					Bootstrap connectionlessBootstrap = new Bootstrap();
 					EventLoopGroup group = ServerChannelUtils.createEventLoopGroup();
@@ -197,6 +204,11 @@ public class NetworkManager {
 		}
 
 		link.getChannel().writeAndFlush(message);
+
+		if (this.stack.isLogging) {
+			logger.info("Message {} from session {} is sent", message.getHeader().getPacketType(), message.getSSRC());
+		}
+
 		callback.onSuccess();
 	}
 

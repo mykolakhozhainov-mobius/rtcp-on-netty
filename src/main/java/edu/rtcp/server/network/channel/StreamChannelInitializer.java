@@ -1,4 +1,4 @@
-package edu.rtcp.server.network.processor.transport;
+package edu.rtcp.server.network.channel;
 
 import edu.rtcp.RtcpStack;
 import edu.rtcp.server.network.decoder.RtcpStreamDecoder;
