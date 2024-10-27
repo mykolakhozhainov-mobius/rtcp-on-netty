@@ -63,11 +63,14 @@ public class SdesItem {
     public SdesItem(ItemsTypeEnum itemsType, int length, String data)
     {
         this.itemsType = itemsType;
+        this.length = length;
         this.data = data;
     }
     
     public SdesItem(ItemsTypeEnum itemsType, int length, int prefixLength, String prefix, String data) {
         this.itemsType = itemsType;
+        this.length = length;
+        this.prefixLength = prefixLength;
         this.data = data;
         this.prefix = prefix;
     }
@@ -88,9 +91,9 @@ public class SdesItem {
         return length;
     }
 
-    public void setLength(Integer length) 
+    public void setLength(int value) 
     {
-        this.length = length;
+        this.length = value;
     }
     
     public String getData() 

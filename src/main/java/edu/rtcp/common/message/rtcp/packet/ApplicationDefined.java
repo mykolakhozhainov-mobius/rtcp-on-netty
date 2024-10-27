@@ -43,7 +43,7 @@ public class ApplicationDefined extends RtcpBasePacket {
 		return name;
 	}
 	
-	public Integer getApplicationDependentData()
+	public int getApplicationDependentData()
 	{
 		return applicationDependentData;
 	}
