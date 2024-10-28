@@ -2,18 +2,16 @@ package edu.rtcp.examples;
 
 import edu.rtcp.RtcpStack;
 import edu.rtcp.common.TransportEnum;
-import edu.rtcp.common.message.rtcp.header.RtcpBasePacket;
-import edu.rtcp.common.message.rtcp.packet.ReceiverReport;
-import edu.rtcp.server.callback.AsyncCallback;
 import edu.rtcp.server.provider.Provider;
-import edu.rtcp.server.provider.listeners.ServerSessionListener;
-import edu.rtcp.server.session.Session;
-import edu.rtcp.server.session.types.ServerSession;
 
 import java.net.InetAddress;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Server {
     private static final String localLinkID = "1";
+
+    private static final AtomicInteger received = new AtomicInteger(0);
+    private static final AtomicInteger sent = new AtomicInteger(0);
 
     public RtcpStack setupServer() throws Exception {
         RtcpStack serverStack = new RtcpStack(
@@ -24,75 +22,8 @@ public class Server {
         );
 
         Provider serverProvider = new Provider(serverStack);
-        serverProvider.setServerListener(new ServerSessionListener() {
-            @Override
-            public void onInitialRequest(RtcpBasePacket request, Session session, AsyncCallback callback) {
-                ServerSession serverSession = (ServerSession) session;
-
-                ReceiverReport answer = serverProvider.getPacketFactory().
-                        createReceiverReport(
-                                (byte) 0,
-                                request.getSSRC(),
-                                null
-                        );
-
-                serverSession.sendInitialAnswer(answer, 8081, new AsyncCallback() {
-                    @Override
-                    public void onSuccess() {}
-
-                    @Override
-                    public void onError(Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                });
-            }
-
-            @Override
-            public void onTerminationRequest(RtcpBasePacket request, Session session, AsyncCallback callback) {
-                ServerSession serverSession = (ServerSession) session;
-
-                ReceiverReport answer = serverProvider.getPacketFactory().
-                        createReceiverReport(
-                                (byte) 0,
-                                request.getSSRC(),
-                                null
-                        );
-
-                serverSession.sendTerminationAnswer(answer, 8081, new AsyncCallback() {
-                    @Override
-                    public void onSuccess() {}
-
-                    @Override
-                    public void onError(Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                });
-            }
-
-            @Override
-            public void onDataRequest(RtcpBasePacket request, Session session, AsyncCallback callback) {
-                ServerSession serverSession = (ServerSession) session;
-
-                ReceiverReport answer = serverProvider.getPacketFactory().
-                        createReceiverReport(
-                                (byte) 0,
-                                request.getSSRC(),
-                                null
-                        );
-
-                serverSession.sendDataAnswer(answer, 8081, new AsyncCallback() {
-                    @Override
-                    public void onSuccess() {}
-
-                    @Override
-                    public void onError(Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                });
-            }
-        });
-
         serverStack.registerProvider(serverProvider);
+
         serverStack.getNetworkManager()
                 .addLink(
                         localLinkID,
@@ -103,14 +34,5 @@ public class Server {
 
         serverStack.getNetworkManager().startLink(localLinkID);
         return serverStack;
-    }
-
-    public static void main(String[] args) throws Exception {
-        Server server = new Server();
-        RtcpStack serverStack = server.setupServer();
-
-        Thread.sleep(15000);
-
-        System.out.println("Open server sessions: " + serverStack.getProvider().getSessionStorage().size());
     }
 }

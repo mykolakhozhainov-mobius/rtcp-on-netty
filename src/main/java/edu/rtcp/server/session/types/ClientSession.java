@@ -15,7 +15,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class ClientSession extends Session {
     private final Queue<RtcpBasePacket> lastSentMessages = new ConcurrentLinkedQueue<>();
-    private final Queue<MessageTask> pendingTasks = new ConcurrentLinkedQueue<>();
 
     public ClientSession(int id, Provider provider) {
         this.id = id;
@@ -38,11 +37,7 @@ public class ClientSession extends Session {
         };
 
         // Sending Sender Report (Session opening message)
-        if (!this.lastSentMessages.isEmpty()) {
-            this.pendingTasks.add(initialRequestTask);
-        } else {
-            this.sendMessageAsTask(initialRequestTask);
-        }
+        this.sendMessageAsTask(initialRequestTask);
 
         lastSentMessages.add(request);
     }
@@ -62,11 +57,7 @@ public class ClientSession extends Session {
             }
         };
 
-        if (!this.lastSentMessages.isEmpty()) {
-            this.pendingTasks.add(terminationTask);
-        } else {
-            this.sendMessageAsTask(terminationTask);
-        }
+        this.sendMessageAsTask(terminationTask);
 
         lastSentMessages.add(request);
     }
@@ -86,11 +77,7 @@ public class ClientSession extends Session {
             }
         };
 
-        if (!this.lastSentMessages.isEmpty()) {
-            this.pendingTasks.add(dataTask);
-        } else {
-            this.sendMessageAsTask(dataTask);
-        }
+        this.sendMessageAsTask(dataTask);
 
         lastSentMessages.add(request);
     }
@@ -105,7 +92,6 @@ public class ClientSession extends Session {
         ClientSessionListener listener = this.provider.getClientListener();
 
         if (this.state != SessionStateEnum.WAITING) {
-            System.out.println(this.state);
             callback.onError(new RuntimeException("ACK response received while session status is not WAITING"));
             return;
         }
@@ -129,10 +115,6 @@ public class ClientSession extends Session {
             if (listener != null) {
                 listener.onDataAnswer(answer, this, callback);
             }
-        }
-
-        if (!this.pendingTasks.isEmpty()) {
-            super.sendMessageAsTask(this.pendingTasks.poll());
         }
     }
 

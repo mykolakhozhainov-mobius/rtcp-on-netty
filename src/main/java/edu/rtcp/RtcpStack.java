@@ -16,7 +16,7 @@ public class RtcpStack {
     private final int threadPoolSize;
 
     private static final int WORKERS_NUMBER = 16;
-    private static final int TASK_INTERVAL = 1000;
+    private static final int TASK_INTERVAL = 100;
 
     // Message processing ------------------------------
 //    private final AbstractProcessor processor;
