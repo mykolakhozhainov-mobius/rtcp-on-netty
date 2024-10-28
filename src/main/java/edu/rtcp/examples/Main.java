@@ -1,6 +1,7 @@
 package edu.rtcp.examples;
 
 import edu.rtcp.RtcpStack;
+import edu.rtcp.common.TransportEnum;
 import edu.rtcp.common.message.rtcp.header.RtcpBasePacket;
 import edu.rtcp.common.message.rtcp.packet.ApplicationDefined;
 import edu.rtcp.common.message.rtcp.packet.Bye;
@@ -32,10 +33,14 @@ public class Main {
         }
 
         @Override
-        public void onError(Exception e) {}
+        public void onError(Exception e) {
+            throw new RuntimeException(e);
+        }
     };
 
-    private static final int SESSION_NUMBER = 10000;
+    private static final int SESSION_NUMBER = 5000;
+    private static final TransportEnum TRANSPORT = TransportEnum.UDP;
+    private static final boolean LOGGING = true;
 
     private static final HashSet<Integer> usedIds = new HashSet<>();
 
@@ -182,11 +187,11 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
         Server server = new Server();
-        RtcpStack serverStack = server.setupServer();
+        RtcpStack serverStack = server.setupServer(TRANSPORT, LOGGING);
         setServerListener(serverStack);
 
         Client client = new Client();
-        RtcpStack clientStack = client.setupLocal();
+        RtcpStack clientStack = client.setupLocal(TRANSPORT, LOGGING);
         setClientListener(clientStack);
 
         for (int k = 0; k < SESSION_NUMBER; k++) {
@@ -203,6 +208,7 @@ public class Main {
                     .getSessionFactory()
                     .createClientSession(initialPacket);
 
+//            Thread.sleep(1);
             clientSession.sendInitialRequest(initialPacket, 8080, new AsyncCallback() {
                 @Override
                 public void onSuccess() {
@@ -210,11 +216,13 @@ public class Main {
                 }
 
                 @Override
-                public void onError(Exception e) {}
+                public void onError(Exception e) {
+                    throw new RuntimeException(e);
+                }
             });
         }
 
-        Thread.sleep(3000);
+        Thread.sleep(5000);
 
         serverStack.stop();
         clientStack.stop();

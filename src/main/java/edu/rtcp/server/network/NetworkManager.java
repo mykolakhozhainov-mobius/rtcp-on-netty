@@ -4,6 +4,7 @@ import edu.rtcp.RtcpStack;
 import edu.rtcp.common.ServerChannelUtils;
 import edu.rtcp.common.TransportEnum;
 import edu.rtcp.common.message.rtcp.header.RtcpBasePacket;
+import edu.rtcp.common.message.rtcp.parser.RtcpParser;
 import edu.rtcp.server.callback.AsyncCallback;
 import edu.rtcp.server.network.channel.DatagramChannelInitializer;
 import edu.rtcp.server.network.channel.StreamChannelInitializer;
@@ -18,11 +19,10 @@ import io.netty.channel.epoll.EpollDatagramChannel;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.DatagramChannel;
+import io.netty.channel.socket.DatagramPacket;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -30,24 +30,22 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class NetworkManager {
-	public static Logger logger = LogManager.getLogger(NetworkManager.class);
-
 	private final RtcpStack stack;
 	private final ConcurrentHashMap<String, NetworkLink> links = new ConcurrentHashMap<String, NetworkLink>();
 
-	private final EventLoopGroup bossGroup;
-	private final EventLoopGroup workerGroup;
+	EventLoopGroup bossGroup;
+	EventLoopGroup workerGroup;
 
-	private boolean isServerStarted = false;
+	Boolean isServerStarted = false;
 
 	public NetworkManager(RtcpStack stack) {
 		this.stack = stack;
-
-		this.bossGroup = ServerChannelUtils.createEventLoopGroup();
-		this.workerGroup = ServerChannelUtils.createEventLoopGroup();
+		bossGroup = ServerChannelUtils.createEventLoopGroup();
+		workerGroup = ServerChannelUtils.createEventLoopGroup();
 	}
 
-	public void addLink(String linkId, InetAddress remoteAddress, int remotePort, InetAddress localAddress, int localPort) {
+	public void addLink(String linkId, InetAddress remoteAddress, int remotePort, InetAddress localAddress,
+						int localPort) {
 		NetworkLink link = getLinkByLinkId(linkId);
 		if (link == null) {
 			link = new NetworkLink(linkId, remoteAddress, remotePort, localAddress, localPort, this);
@@ -92,8 +90,8 @@ public class NetworkManager {
 									}
 									socketChannel.pipeline().addLast(new StreamChannelInitializer(stack));
 								}
-							})
-							.childOption(ChannelOption.SO_KEEPALIVE, true);
+							});
+//							.childOption(ChannelOption.SO_KEEPALIVE, true);
 
 					ChannelFuture future = bootstrap.bind(link.getLocalPort()).syncUninterruptibly();
 					future.awaitUninterruptibly();
@@ -109,17 +107,37 @@ public class NetworkManager {
 						}
 					}).start();
 
-					this.isServerStarted = true;
+					for (int i = 0; i < stack.getThreadPoolSize(); ++i) {
+						ChannelFuture futures = bootstrap.bind(new InetSocketAddress("0.0.0.0", link.getLocalPort()));
 
-					if (this.stack.isLogging) {
-						logger.info("Server [TCP] started on port {}", link.getLocalPort());
+						futures.awaitUninterruptibly();
+
+						if (futures.isSuccess()) {
+							System.out.println("[UDP-PROCESSOR] Channel started on port " + link.getLocalPort());
+						} else {
+							System.out.println("[UDP-PROCESSOR] Channel not connected: " + future.cause());
+						}
+						try {
+							futures.channel().closeFuture().sync();
+						} catch (InterruptedException e) {
+							System.out.println(e);
+						}
 					}
+
+
+
+					System.out.println("[TCP-PROCESSOR] Server started on port " + link.getLocalPort());
+					isServerStarted = true;
 				} else if (stack.transport.equals(TransportEnum.UDP)) {
 					Bootstrap connectionlessBootstrap = new Bootstrap();
 					EventLoopGroup group = ServerChannelUtils.createEventLoopGroup();
 					connectionlessBootstrap.channel(ServerChannelUtils.getDatagramChannel());
-					connectionlessBootstrap.group(group).option(EpollChannelOption.SO_REUSEPORT, true)
-							.option(EpollChannelOption.IP_RECVORIGDSTADDR, true);
+					connectionlessBootstrap.group(group)
+							.option(EpollChannelOption.SO_REUSEPORT, true)
+							.option(EpollChannelOption.IP_RECVORIGDSTADDR, true)
+							.option(ChannelOption.SO_SNDBUF, 256*1024)
+							.option(ChannelOption.SO_RCVBUF, 256*1024)
+							.option(EpollChannelOption.IP_FREEBIND, true);
 					connectionlessBootstrap
 							.handler(new ChannelInitializer<DatagramChannel>() {
 								@Override
@@ -200,13 +218,10 @@ public class NetworkManager {
 		NetworkLink link = getLinkByPort(port);
 
 		if (stack.isServer && stack.transport == TransportEnum.UDP && link.getChannel().remoteAddress() == null) {
-			link.getChannel().connect(new InetSocketAddress(link.getRemoteAddress(), link.getRemotePort()));
+			link.getChannel().writeAndFlush(new DatagramPacket(RtcpParser.encode(message), new InetSocketAddress(link.getRemoteAddress(), link.getRemotePort())));
 		}
-
-		link.getChannel().writeAndFlush(message);
-
-		if (this.stack.isLogging) {
-			logger.info("Message {} from session {} is sent", message.getHeader().getPacketType(), message.getSSRC());
+		else {
+			link.getChannel().writeAndFlush((RtcpParser.encode(message)));
 		}
 
 		callback.onSuccess();

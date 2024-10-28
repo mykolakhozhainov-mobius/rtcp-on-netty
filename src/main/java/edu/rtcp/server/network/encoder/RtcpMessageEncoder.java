@@ -13,9 +13,6 @@ public class RtcpMessageEncoder extends MessageToByteEncoder<RtcpBasePacket> {
             RtcpBasePacket msg,
             ByteBuf out
     ) {
-        ByteBuf encoded = RtcpParser.encode(msg);
-
-        out.writeInt(encoded.readableBytes());
-        out.writeBytes(encoded);
+        out.writeBytes(RtcpParser.encode(msg));
     }
 }

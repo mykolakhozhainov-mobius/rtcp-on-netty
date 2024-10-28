@@ -1,6 +1,5 @@
 package edu.rtcp.common.message.rtcp.parser;
 
-import edu.rtcp.common.message.rtcp.exception.RtcpException;
 import edu.rtcp.common.message.rtcp.header.RtcpBasePacket;
 import edu.rtcp.common.message.rtcp.packet.*;
 import edu.rtcp.common.message.rtcp.types.PacketTypeEnum;
@@ -41,19 +40,33 @@ public class RtcpParser {
         final RtcpEncoder encoder = new RtcpEncoder();
         PacketTypeEnum type = packet.getHeader().getPacketType();
 
+        ByteBuf encoded;
+
         switch (type) {
             case SENDER_REPORT:
-                return encoder.encodeSenderReport((SenderReport) packet);
+                encoded = encoder.encodeSenderReport((SenderReport) packet);
+                break;
             case RECEIVER_REPORT:
-                return encoder.encodeReceiverReport((ReceiverReport) packet);
+                encoded = encoder.encodeReceiverReport((ReceiverReport) packet);
+                break;
             case APP:
-                return encoder.encodeApp((ApplicationDefined) packet);
+                encoded = encoder.encodeApp((ApplicationDefined) packet);
+                break;
             case BYE:
-                return encoder.encodeBye((Bye) packet);
+                encoded = encoder.encodeBye((Bye) packet);
+                break;
             case SOURCE_DESCRIPTION:
-                return encoder.encodeSourceDescription((SourceDescription) packet);
+                encoded = encoder.encodeSourceDescription((SourceDescription) packet);
+                break;
+            default:
+                encoded = Unpooled.buffer();
+                break;
         }
 
-        return Unpooled.buffer();
+        ByteBuf result = Unpooled.buffer();
+        result.writeInt(encoded.readableBytes());
+        result.writeBytes(encoded);
+
+        return result;
     }
 }

@@ -9,12 +9,12 @@ import java.net.InetAddress;
 public class Server {
     private static final String localLinkID = "1";
 
-    public RtcpStack setupServer() throws Exception {
+    public RtcpStack setupServer(TransportEnum transport, boolean logging) throws Exception {
         RtcpStack serverStack = new RtcpStack(
                 32,
                 true,
-                TransportEnum.TCP,
-                false
+                transport,
+                logging
         );
 
         Provider serverProvider = new Provider(serverStack);
