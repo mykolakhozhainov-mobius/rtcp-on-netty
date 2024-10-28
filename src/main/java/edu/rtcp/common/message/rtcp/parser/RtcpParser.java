@@ -17,46 +17,44 @@ public class RtcpParser {
     }
 
     public static RtcpBasePacket decode(ByteBuf message) {
-        final RtcpDecoder decoder = new RtcpDecoder();
         PacketTypeEnum type = decodePacketType(message);
 
         switch (type) {
             case SENDER_REPORT:
-                return decoder.decodeSenderReport(message);
+                return RtcpDecoder.decodeSenderReport(message);
             case RECEIVER_REPORT:
-                return decoder.decodeReceiverReport(message);
+                return RtcpDecoder.decodeReceiverReport(message);
             case APP:
-                return decoder.decodeApp(message);
+                return RtcpDecoder.decodeApp(message);
             case BYE:
-                return decoder.decodeBye(message);
+                return RtcpDecoder.decodeBye(message);
             case SOURCE_DESCRIPTION:
-                return decoder.decodeSourceDescription(message);
+                return RtcpDecoder.decodeSourceDescription(message);
         }
 
         return null;
     }
 
     public static ByteBuf encode(RtcpBasePacket packet) {
-        final RtcpEncoder encoder = new RtcpEncoder();
         PacketTypeEnum type = packet.getHeader().getPacketType();
 
         ByteBuf encoded;
 
         switch (type) {
             case SENDER_REPORT:
-                encoded = encoder.encodeSenderReport((SenderReport) packet);
+                encoded = RtcpEncoder.encodeSenderReport((SenderReport) packet);
                 break;
             case RECEIVER_REPORT:
-                encoded = encoder.encodeReceiverReport((ReceiverReport) packet);
+                encoded = RtcpEncoder.encodeReceiverReport((ReceiverReport) packet);
                 break;
             case APP:
-                encoded = encoder.encodeApp((ApplicationDefined) packet);
+                encoded = RtcpEncoder.encodeApp((ApplicationDefined) packet);
                 break;
             case BYE:
-                encoded = encoder.encodeBye((Bye) packet);
+                encoded = RtcpEncoder.encodeBye((Bye) packet);
                 break;
             case SOURCE_DESCRIPTION:
-                encoded = encoder.encodeSourceDescription((SourceDescription) packet);
+                encoded = RtcpEncoder.encodeSourceDescription((SourceDescription) packet);
                 break;
             default:
                 encoded = Unpooled.buffer();

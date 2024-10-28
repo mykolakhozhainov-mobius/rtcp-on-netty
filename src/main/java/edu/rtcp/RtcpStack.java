@@ -18,9 +18,6 @@ public class RtcpStack {
     private static final int WORKERS_NUMBER = 16;
     private static final int TASK_INTERVAL = 100;
 
-    // Message processing ------------------------------
-//    private final AbstractProcessor processor;
-
     // Networking --------------------------------------
     public final boolean isServer;
     public final TransportEnum transport;
@@ -57,6 +54,7 @@ public class RtcpStack {
     }
 
     public void stop() {
+        this.messageExecutor.stop();
         this.networkManager.stop();
     }
     

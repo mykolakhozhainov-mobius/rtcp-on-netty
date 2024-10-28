@@ -38,7 +38,7 @@ public class Main {
         }
     };
 
-    private static final int SESSION_NUMBER = 5000;
+    private static final int SESSION_NUMBER = 1000;
     private static final TransportEnum TRANSPORT = TransportEnum.UDP;
     private static final boolean LOGGING = true;
 
@@ -208,7 +208,7 @@ public class Main {
                     .getSessionFactory()
                     .createClientSession(initialPacket);
 
-//            Thread.sleep(1);
+            //Thread.sleep(1);
             clientSession.sendInitialRequest(initialPacket, 8080, new AsyncCallback() {
                 @Override
                 public void onSuccess() {
