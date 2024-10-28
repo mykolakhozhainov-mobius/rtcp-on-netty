@@ -4,7 +4,7 @@ import edu.rtcp.common.message.rtcp.header.RtcpBasePacket;
 import edu.rtcp.common.message.rtcp.packet.Bye;
 import edu.rtcp.common.message.rtcp.packet.SenderReport;
 import edu.rtcp.server.callback.AsyncCallback;
-import edu.rtcp.server.executor.tasks.MessageTask;
+import edu.rtcp.server.executor.tasks.MessageOutgoingTask;
 import edu.rtcp.server.provider.Provider;
 import edu.rtcp.server.provider.listeners.ClientSessionListener;
 import edu.rtcp.server.session.Session;
@@ -28,16 +28,8 @@ public class ClientSession extends Session {
             return;
         }
 
-        MessageTask initialRequestTask = new MessageTask(request) {
-            @Override
-            public void execute() {
-                setSessionState(SessionStateEnum.WAITING);
-                provider.getStack().getNetworkManager().sendMessage(message, port, callback);
-            }
-        };
-
         // Sending Sender Report (Session opening message)
-        this.sendMessageAsTask(initialRequestTask);
+        this.sendMessageAsTask(new MessageOutgoingTask(this, request, port, callback));
 
         lastSentMessages.add(request);
     }
@@ -49,15 +41,7 @@ public class ClientSession extends Session {
         }
 
         // Sending Bye (Session closing message)
-        MessageTask terminationTask = new MessageTask(request) {
-            @Override
-            public void execute() {
-                setSessionState(SessionStateEnum.WAITING);
-                provider.getStack().getNetworkManager().sendMessage(message, port, callback);
-            }
-        };
-
-        this.sendMessageAsTask(terminationTask);
+        this.sendMessageAsTask(new MessageOutgoingTask(this, request, port, callback));
 
         lastSentMessages.add(request);
     }
@@ -68,16 +52,8 @@ public class ClientSession extends Session {
             return;
         }
 
-        // Sending Bye (Session closing message)
-        MessageTask dataTask = new MessageTask(request) {
-            @Override
-            public void execute() {
-                setSessionState(SessionStateEnum.WAITING);
-                provider.getStack().getNetworkManager().sendMessage(message, port, callback);
-            }
-        };
-
-        this.sendMessageAsTask(dataTask);
+        // Sending Data
+        this.sendMessageAsTask(new MessageOutgoingTask(this, request, port, callback));
 
         lastSentMessages.add(request);
     }
