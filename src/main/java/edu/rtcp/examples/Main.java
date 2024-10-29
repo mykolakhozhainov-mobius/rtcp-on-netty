@@ -70,9 +70,6 @@ public class Main {
                                 request.getSSRC(),
                                 null
                         );
-
-                System.out.println("ANSWER:");
-                System.out.println(System.currentTimeMillis());
 //
 //                serverSession.sendInitialAnswer(answer, 8081, new AsyncCallback() {
 //                    @Override
@@ -214,7 +211,6 @@ public class Main {
             clientSession.sendInitialRequest(initialPacket, 8080, new AsyncCallback() {
                 @Override
                 public void onSuccess() {
-                    System.out.println(System.currentTimeMillis());
                     clientSent.incrementAndGet();
                 }
 
@@ -225,7 +221,7 @@ public class Main {
             });
         }
 
-        Thread.sleep(800);
+        Thread.sleep(2000);
 
         serverStack.stop();
         clientStack.stop();

@@ -1,4 +1,4 @@
-package edu.rtcp;
+package edu.rtcp.parser;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;

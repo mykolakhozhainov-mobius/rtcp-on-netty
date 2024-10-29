@@ -1,4 +1,4 @@
-package edu.rtcp.simple;
+package edu.rtcp.parser;
 
 import edu.rtcp.common.message.rtcp.factory.PacketFactory;
 import edu.rtcp.common.message.rtcp.header.RtcpBasePacket;

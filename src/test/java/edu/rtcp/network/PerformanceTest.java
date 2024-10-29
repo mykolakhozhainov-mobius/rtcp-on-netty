@@ -1,4 +1,4 @@
-package edu.rtcp.simple;
+package edu.rtcp.network;
 
 import edu.rtcp.RtcpStack;
 import edu.rtcp.common.TransportEnum;
@@ -14,8 +14,8 @@ import edu.rtcp.server.provider.listeners.ServerSessionListener;
 import edu.rtcp.server.session.Session;
 import edu.rtcp.server.session.types.ClientSession;
 import edu.rtcp.server.session.types.ServerSession;
-import edu.rtcp.simple.stack.DefaultStackSetup;
-import edu.rtcp.simple.stack.StackSetup;
+import edu.rtcp.network.stack.DefaultStackSetup;
+import edu.rtcp.network.stack.StackSetup;
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
