@@ -205,7 +205,7 @@ public class Main {
 
             PacketFactory factory = clientStack.getProvider().getPacketFactory();
 
-            SenderReport initialPacket = createCustomSenderReport(factory, 0, sessionId, 5);
+            SenderReport initialPacket = createCustomSenderReport(factory, 0, sessionId, 0);
 
             ClientSession clientSession = clientStack.getProvider()
                     .getSessionFactory()

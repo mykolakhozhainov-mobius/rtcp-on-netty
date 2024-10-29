@@ -18,7 +18,7 @@ public class Configuration {
     public static final int TIME_LIMIT = 5000;
     public static final int THREAD_POOL_SIZE = 8;
 
-    public static final TransportEnum TRANSPORT = TransportEnum.UDP;
+    public static final TransportEnum TRANSPORT = TransportEnum.TCP;
     public static final boolean LOGGING = false;
 
     private static final HashSet<Integer> usedIds = new HashSet<>();
