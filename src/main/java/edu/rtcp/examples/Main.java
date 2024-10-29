@@ -44,6 +44,7 @@ public class Main {
     private static final int SESSION_NUMBER = 10000;
     private static final TransportEnum TRANSPORT = TransportEnum.UDP;
     private static final boolean LOGGING = true;
+    private static final int THREAD_POOL_SIZE = 4;
 
     private static final HashSet<Integer> usedIds = new HashSet<>();
 
@@ -167,24 +168,7 @@ public class Main {
 
                 PacketFactory factory = clientStack.getProvider().getPacketFactory();
 
-                List<ReportBlock> blocks = new ArrayList<>();
-                blocks.add(factory.createReportBlock(session.getId(), (byte) 0));
-                blocks.add(factory.createReportBlock(session.getId(), (byte) 1));
-                blocks.add(factory.createReportBlock(session.getId(), (byte) 2));
-                blocks.add(factory.createReportBlock(session.getId(), (byte) 3));
-                blocks.add(factory.createReportBlock(session.getId(), (byte) 4));
-                blocks.add(factory.createReportBlock(session.getId(), (byte) 5));
-                blocks.add(factory.createReportBlock(session.getId(), (byte) 6));
-
-                SenderReport dataPacket = factory
-                        .createSenderReport(
-                                (byte) blocks.size(),
-                                session.getId(),
-                                blocks,
-                                null
-                        );
-
-                System.out.println("dddwsfef");
+                SenderReport dataPacket = createCustomSenderReport(factory, 7, session.getId(), 7);
 
                 ClientSession clientSession = (ClientSession) session;
 
@@ -200,33 +184,48 @@ public class Main {
         });
     }
 
+    private static SenderReport createCustomSenderReport(PacketFactory factory, int itemCount, int ssrc, int numberOfBlocks) {
+        List<ReportBlock> blocks = new ArrayList<>();
+
+        for (int i = 0; i < numberOfBlocks; i++) {
+            blocks.add(factory.createReportBlock(ssrc, (byte) i));
+        }
+
+        return factory.createSenderReport(
+                (byte) itemCount,
+                ssrc,
+                blocks,
+                null
+        );
+    }
+
     public static void main(String[] args) throws Exception {
         Server server = new Server();
-        RtcpStack serverStack = server.setupServer(TRANSPORT, LOGGING);
+        RtcpStack serverStack = server.setupServer(
+                8080,
+                8081,
+                TRANSPORT,
+                THREAD_POOL_SIZE,
+                LOGGING
+        );
         setServerListener(serverStack);
 
         Client client = new Client();
-        RtcpStack clientStack = client.setupLocal(TRANSPORT, LOGGING);
+        RtcpStack clientStack = client.setupLocal(
+                8081,
+                8080,
+                TRANSPORT,
+                THREAD_POOL_SIZE,
+                LOGGING
+        );
         setClientListener(clientStack);
 
         for (int k = 0; k < SESSION_NUMBER; k++) {
             int sessionId = generateId();
 
             PacketFactory factory = clientStack.getProvider().getPacketFactory();
-            List<ReportBlock> blocks = new ArrayList<>();
-            blocks.add(factory.createReportBlock(sessionId, (byte) 0));
-            blocks.add(factory.createReportBlock(sessionId, (byte) 1));
-            blocks.add(factory.createReportBlock(sessionId, (byte) 2));
-            blocks.add(factory.createReportBlock(sessionId, (byte) 3));
-            blocks.add(factory.createReportBlock(sessionId, (byte) 4));
-            blocks.add(factory.createReportBlock(sessionId, (byte) 5));
 
-            SenderReport initialPacket = clientStack.getProvider().getPacketFactory().createSenderReport(
-                    (byte) 0,
-                    sessionId,
-                    blocks,
-                    null
-            );
+            SenderReport initialPacket = createCustomSenderReport(factory, 0, sessionId, 5);
 
             ClientSession clientSession = clientStack.getProvider()
                     .getSessionFactory()

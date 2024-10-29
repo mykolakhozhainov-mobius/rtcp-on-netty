@@ -8,15 +8,19 @@ import java.net.InetAddress;
 
 public class Server {
     private static final String localLinkID = "1";
-    private static final int THREAD_POOL_SIZE = 4;
 
-    public RtcpStack setupServer(TransportEnum transport, boolean logging) throws Exception {
+    public RtcpStack setupServer(
+            int port,
+            int remotePort,
+            TransportEnum transport,
+            int threadPoolSize,
+            boolean logging
+    ) throws Exception {
         RtcpStack serverStack = new RtcpStack(
-                THREAD_POOL_SIZE,
+                threadPoolSize,
                 true,
                 transport,
-                logging
-        );
+                logging);
 
         Provider serverProvider = new Provider(serverStack);
         serverStack.registerProvider(serverProvider);
@@ -25,9 +29,9 @@ public class Server {
                 .addLink(
                         localLinkID,
                         InetAddress.getByName("127.0.0.1"),
-                        8081,
+                        remotePort,
                         InetAddress.getByName("127.0.0.1"),
-                        8080);
+                        port);
 
         serverStack.getNetworkManager().startLink(localLinkID);
         return serverStack;
