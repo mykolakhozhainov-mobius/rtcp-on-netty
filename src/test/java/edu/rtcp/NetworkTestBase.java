@@ -16,9 +16,8 @@ public class NetworkTestBase {
 	protected RtcpStack serverStack;
 	protected RtcpStack localStack;
 	private WorkerPool workerPool;
-
-	final AtomicLong answerReceived = new AtomicLong(0L);
-	final AtomicLong requestReceived = new AtomicLong(0L);
+    private static final TransportEnum TRANSPORT = TransportEnum.UDP;
+    private static final boolean LOGGING = true;
 
 	protected Long idleTimeout = 1000L;
 	protected Long responseTimeout = 1000L;
@@ -33,17 +32,12 @@ public class NetworkTestBase {
 			workerPool = new WorkerPool();
 			workerPool.start(4);
 		}
-		serverStack = new RtcpStack(4, true, TransportEnum.UDP);
-		Provider serverProvider = new Provider(serverStack) {
-			@Override
-			public void onMessage(RtcpBasePacket message, AsyncCallback callback) {
-				requestReceived.incrementAndGet();
-			}
-		};
+		serverStack = new RtcpStack(8, true, TRANSPORT, LOGGING);
+		Provider serverProvider = new Provider(serverStack);
 		serverStack.registerProvider(serverProvider);
 		serverStack.getNetworkManager().addLink(localLinkID, InetAddress.getByName("127.0.0.1"), 8081,
 				InetAddress.getByName("127.0.0.1"), 8080);
-		serverStack.getNetworkManager().startLink(localLinkID);
+//		serverStack.getNetworkManager().startLink(localLinkID);
 	}
 
 	public void setupLocal() throws Exception {
@@ -52,18 +46,13 @@ public class NetworkTestBase {
 			workerPool.start(4);
 		}
 
-		localStack = new RtcpStack(4, false, TransportEnum.UDP);
-		Provider localProvider = new Provider(localStack) {
-			@Override
-			public void onMessage(RtcpBasePacket message, AsyncCallback callback) {
-				answerReceived.incrementAndGet();
-			}
-		};
+		localStack = new RtcpStack(8, false, TRANSPORT, LOGGING);
+		Provider localProvider = new Provider(localStack);
 		;
 		localStack.registerProvider(localProvider);
 		localStack.getNetworkManager().addLink(localLinkID, InetAddress.getByName("127.0.0.1"), 8080,
 				InetAddress.getByName("127.0.0.1"), 8081);
-		localStack.getNetworkManager().startLink(localLinkID);
+//		localStack.getNetworkManager().startLink(localLinkID);
 	}
 
 	public void stopRemote() {
