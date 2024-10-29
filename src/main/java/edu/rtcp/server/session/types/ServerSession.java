@@ -3,12 +3,17 @@ package edu.rtcp.server.session.types;
 import edu.rtcp.common.message.rtcp.header.RtcpBasePacket;
 import edu.rtcp.common.message.rtcp.packet.Bye;
 import edu.rtcp.server.callback.AsyncCallback;
+import edu.rtcp.server.executor.tasks.MessageTask;
 import edu.rtcp.server.provider.Provider;
 import edu.rtcp.server.provider.listeners.ServerSessionListener;
 import edu.rtcp.server.session.Session;
 import edu.rtcp.server.session.SessionStateEnum;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class ServerSession extends Session {
+    public static Logger logger = LogManager.getLogger(ServerSession.class);
+
     public ServerSession(int id, Provider provider) {
         this.id = id;
         this.state = SessionStateEnum.IDLE;
@@ -21,11 +26,35 @@ public class ServerSession extends Session {
             return;
         }
 
-        System.out.println("[SERVER-SESSION] Session state is now WAITING");
-        setSessionState(SessionStateEnum.WAITING);
+        super.sendMessageAsTask(new MessageTask(answer) {
+            @Override
+            public void execute() {
+                setSessionState(SessionStateEnum.OPEN);
+                provider.getStack().getNetworkManager().sendMessage(answer, port, callback);
 
-        sendMessage(answer, port, callback);
-        System.out.println("[SERVER-SESSION] ACK (RR) message is sent");
+                if (provider.getStack().isLogging) {
+                    logger.info("ACK on initial in session {} sent", ServerSession.this.id);
+                }
+            }
+        });
+    }
+
+    public void sendDataAnswer(RtcpBasePacket answer, int port, AsyncCallback callback) {
+        if (this.state != SessionStateEnum.OPEN) {
+            callback.onError(new RuntimeException("Can not send data answer cause session is idle, waiting or closed"));
+            return;
+        }
+
+        super.sendMessageAsTask(new MessageTask(answer) {
+            @Override
+            public void execute() {
+                provider.getStack().getNetworkManager().sendMessage(answer, port, callback);
+
+                if (provider.getStack().isLogging) {
+                    logger.info("ACK on data in session {} sent", ServerSession.this.id);
+                }
+            }
+        });
     }
 
     public void sendTerminationAnswer(RtcpBasePacket answer, int port, AsyncCallback callback) {
@@ -34,19 +63,30 @@ public class ServerSession extends Session {
             return;
         }
 
-        System.out.println("[SERVER-LISTENER] Session state is now CLOSED");
-        setSessionState(SessionStateEnum.CLOSED);
-        provider.getSessionStorage().remove(this);
+        super.sendMessageAsTask(new MessageTask(answer) {
+            @Override
+            public void execute() {
+                setSessionState(SessionStateEnum.CLOSED);
+                provider.getSessionStorage().remove(ServerSession.this);
 
-        sendMessage(answer, port, callback);
+                provider.getStack().getNetworkManager().sendMessage(answer, port, callback);
+
+                if (provider.getStack().isLogging) {
+                    logger.info("ACK on termination in session {} sent", ServerSession.this.id);
+                }
+            }
+        });
     }
 
     @Override
     public void processRequest(RtcpBasePacket request, boolean isNewSession, AsyncCallback callback) {
         ServerSessionListener listener = this.provider.getServerListener();
 
+        boolean isLogging = this.provider.getStack().isLogging;
+
         if (request instanceof Bye) {
-            System.out.println("[SERVER-SESSION] Bye message received");
+            if (isLogging) logger.info("Message [Bye] is in process");
+
             if (this.state == SessionStateEnum.CLOSED) {
                 callback.onError(new RuntimeException("Closed session can not be closed"));
                 return;
@@ -56,7 +96,8 @@ public class ServerSession extends Session {
                 listener.onTerminationRequest(request, this, callback);
             }
         } else if (isNewSession) {
-            System.out.println("[SERVER-SESSION] SR (Open) message received");
+            if (isLogging) logger.info("Message [SR] is in process");
+
             if (this.state == SessionStateEnum.OPEN) {
                 callback.onError(new RuntimeException("Opened session can not be opened"));
                 return;
@@ -66,7 +107,8 @@ public class ServerSession extends Session {
                 listener.onInitialRequest(request, this, callback);
             }
         } else {
-            System.out.println("[SERVER-SESSION] Data message received");
+            if (isLogging) logger.info("Data message [APP, SD, RR] is in process");
+
             if (this.state == SessionStateEnum.IDLE) {
                 callback.onError(new RuntimeException("Unknown message type is passed to session"));
                 return;

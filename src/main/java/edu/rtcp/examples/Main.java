@@ -1,5 +1,6 @@
-package edu.rtcp;
+package edu.rtcp.examples;
 
+import edu.rtcp.RtcpStack;
 import edu.rtcp.common.TransportEnum;
 import edu.rtcp.common.message.rtcp.header.RtcpBasePacket;
 import edu.rtcp.common.message.rtcp.packet.ApplicationDefined;
@@ -13,38 +14,33 @@ import edu.rtcp.server.provider.listeners.ServerSessionListener;
 import edu.rtcp.server.session.Session;
 import edu.rtcp.server.session.types.ClientSession;
 import edu.rtcp.server.session.types.ServerSession;
-import edu.rtcp.stack.DefaultStackSetup;
-import edu.rtcp.stack.StackSetup;
-import org.junit.After;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 import java.util.HashSet;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.junit.Assert.assertEquals;
-
-public class PerformanceTest {
-    // Configurable values ------------------------------------------
-    private static final int SESSION_NUMBER = 10000;
-    private static final int TIME_LIMIT = 3000;
-    private static final TransportEnum TRANSPORT = TransportEnum.TCP;
-    private static final int THREAD_POOL_SIZE = 32;
-
-    // Message counters ----------------------------------------------
+public class Main {
     private static final AtomicInteger serverReceived = new AtomicInteger(0);
     private static final AtomicInteger serverSent = new AtomicInteger(0);
+
     private static final AtomicInteger clientSent = new AtomicInteger(0);
     private static final AtomicInteger clientAcks = new AtomicInteger(0);
 
-    // Stacks container -----------------------------------------------
-    private static StackSetup stackSetup;
+    private static final AsyncCallback SENT_CALLBACK = new AsyncCallback() {
+        @Override
+        public void onSuccess() {
+            clientSent.incrementAndGet();
+        }
 
-    @BeforeClass
-    public static void setUpStack() throws Exception {
-        stackSetup = new DefaultStackSetup(TRANSPORT, THREAD_POOL_SIZE);
-    }
+        @Override
+        public void onError(Exception e) {
+            throw new RuntimeException(e);
+        }
+    };
+
+    private static final int SESSION_NUMBER = 1000;
+    private static final TransportEnum TRANSPORT = TransportEnum.UDP;
+    private static final boolean LOGGING = true;
 
     private static final HashSet<Integer> usedIds = new HashSet<>();
 
@@ -75,7 +71,7 @@ public class PerformanceTest {
                                 null
                         );
 
-                serverSession.sendInitialAnswer(answer, stackSetup.getClientPort(), new AsyncCallback() {
+                serverSession.sendInitialAnswer(answer, 8081, new AsyncCallback() {
                     @Override
                     public void onSuccess() {
                         serverSent.incrementAndGet();
@@ -101,7 +97,7 @@ public class PerformanceTest {
                                 null
                         );
 
-                serverSession.sendTerminationAnswer(answer, stackSetup.getClientPort(), new AsyncCallback() {
+                serverSession.sendTerminationAnswer(answer, 8081, new AsyncCallback() {
                     @Override
                     public void onSuccess() {
                         serverSent.incrementAndGet();
@@ -127,7 +123,7 @@ public class PerformanceTest {
                                 null
                         );
 
-                serverSession.sendDataAnswer(answer, stackSetup.getClientPort(), new AsyncCallback() {
+                serverSession.sendDataAnswer(answer, 8081, new AsyncCallback() {
                     @Override
                     public void onSuccess() {
                         serverSent.incrementAndGet();
@@ -158,17 +154,7 @@ public class PerformanceTest {
 
                 ClientSession clientSession = (ClientSession) session;
 
-                clientSession.sendTerminationRequest(byeMessage, stackSetup.getServerPort(), new AsyncCallback() {
-                    @Override
-                    public void onSuccess() {
-                        clientSent.incrementAndGet();
-                    }
-
-                    @Override
-                    public void onError(Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                });
+                clientSession.sendTerminationRequest(byeMessage, 8080, SENT_CALLBACK);
                 callback.onSuccess();
             }
 
@@ -187,17 +173,7 @@ public class PerformanceTest {
 
                 ClientSession clientSession = (ClientSession) session;
 
-                clientSession.sendDataRequest(dataPacket, stackSetup.getServerPort(), new AsyncCallback() {
-                    @Override
-                    public void onSuccess() {
-                        clientSent.incrementAndGet();
-                    }
-
-                    @Override
-                    public void onError(Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                });
+                clientSession.sendDataRequest(dataPacket, 8080, SENT_CALLBACK);
                 callback.onSuccess();
             }
 
@@ -209,29 +185,31 @@ public class PerformanceTest {
         });
     }
 
-    @Test
-    public void testStreamMessageHandling() throws Exception {
-        RtcpStack server = stackSetup.setupServer();
-        setServerListener(server);
+    public static void main(String[] args) throws Exception {
+        Server server = new Server();
+        RtcpStack serverStack = server.setupServer(TRANSPORT, LOGGING);
+        setServerListener(serverStack);
 
-        RtcpStack client = stackSetup.setupClient();
-        setClientListener(client);
+        Client client = new Client();
+        RtcpStack clientStack = client.setupLocal(TRANSPORT, LOGGING);
+        setClientListener(clientStack);
 
         for (int k = 0; k < SESSION_NUMBER; k++) {
             int sessionId = generateId();
 
-            SenderReport initialPacket = client.getProvider().getPacketFactory().createSenderReport(
+            SenderReport initialPacket = clientStack.getProvider().getPacketFactory().createSenderReport(
                     (byte) 0,
                     sessionId,
                     null,
                     null
             );
 
-            ClientSession clientSession = client.getProvider()
+            ClientSession clientSession = clientStack.getProvider()
                     .getSessionFactory()
                     .createClientSession(initialPacket);
 
-            clientSession.sendInitialRequest(initialPacket, stackSetup.getServerPort(), new AsyncCallback() {
+            //Thread.sleep(1);
+            clientSession.sendInitialRequest(initialPacket, 8080, new AsyncCallback() {
                 @Override
                 public void onSuccess() {
                     clientSent.incrementAndGet();
@@ -244,21 +222,21 @@ public class PerformanceTest {
             });
         }
 
-        Thread.sleep(TIME_LIMIT);
+        Thread.sleep(5000);
 
-        assertEquals(SESSION_NUMBER * 3, serverReceived.get());
-        assertEquals(SESSION_NUMBER * 3, serverSent.get());
+        serverStack.stop();
+        clientStack.stop();
 
-        assertEquals(SESSION_NUMBER * 3, clientSent.get());
-        assertEquals(SESSION_NUMBER * 3, clientAcks.get());
+        System.out.println("===== SERVER STATS =====");
+        System.out.println("RECEIVED: " + serverReceived.get());
+        System.out.println("SENT: " + serverSent.get());
+        System.out.println("OPEN SESSIONS: " + serverStack.getProvider().getSessionStorage().size());
 
-        assertEquals(0, stackSetup.getServerStack().getProvider().getSessionStorage().size());
-        assertEquals(0, stackSetup.getClientStack().getProvider().getSessionStorage().size());
-    }
+        System.out.println("===== CLIENT STATS =====");
+        System.out.println("SENT: " + clientSent.get());
+        System.out.println("ACKS: " + clientAcks.get());
 
-    @After
-    public void stopStacks() {
-        stackSetup.getServerStack().stop();
-        stackSetup.getClientStack().stop();
+        System.out.println("OPEN SESSIONS: " + clientStack.getProvider().getSessionStorage().size());
+        System.exit(0);
     }
 }
