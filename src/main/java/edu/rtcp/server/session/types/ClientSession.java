@@ -14,7 +14,9 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class ClientSession extends Session {
+
     private final Queue<RtcpBasePacket> lastSentMessages = new ConcurrentLinkedQueue<>();
+
 
     public ClientSession(int id, Provider provider) {
         this.id = id;
@@ -28,8 +30,10 @@ public class ClientSession extends Session {
             return;
         }
 
+
         // Sending Sender Report (Session opening message)
         this.sendMessageAsTask(new MessageOutgoingTask(this, request, port, callback));
+
 
         lastSentMessages.add(request);
     }
@@ -39,6 +43,7 @@ public class ClientSession extends Session {
             callback.onError(new RuntimeException("Client session can not send termination request cause it is already opened"));
             return;
         }
+
 
         // Sending Bye (Session closing message)
         this.sendMessageAsTask(new MessageOutgoingTask(this, request, port, callback));
@@ -77,10 +82,12 @@ public class ClientSession extends Session {
         if (lastSentMessage instanceof SenderReport && lastSentMessage.getHeader().getItemCount() == 0) {
             this.setSessionState(SessionStateEnum.OPEN);
 
+        if (lastSentMessage instanceof SenderReport && lastSentMessage.getHeader().getItemCount() == 0) {
             if (listener != null) {
                 listener.onInitialAnswer(answer, this, callback);
             }
         } else if (lastSentMessage instanceof Bye) {
+
             this.setSessionState(SessionStateEnum.CLOSED);
             this.provider.getSessionStorage().remove(this);
 
@@ -88,9 +95,11 @@ public class ClientSession extends Session {
                 listener.onTerminationAnswer(answer, this, callback);
             }
         } else {
+
             if (listener != null) {
                 listener.onDataAnswer(answer, this, callback);
             }
+
         }
     }
 

@@ -19,15 +19,15 @@ block  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 */
 
 public class ReportBlock {
-    private Integer ssrc; 
-    private Byte fractionLost; 
-    private Integer cumulativePacketsLost; 
-    private Integer extendedHighestSeqNumber; 
-    private Integer interarrivalJitter; 
-    private Integer lastSenderReport; 
-    private Integer delaySinceLastSenderReport; 
+    private int ssrc; 
+    private byte fractionLost; 
+    private int cumulativePacketsLost; 
+    private int extendedHighestSeqNumber; 
+    private int interarrivalJitter; 
+    private int lastSenderReport; 
+    private int delaySinceLastSenderReport; 
 
-    public ReportBlock(Integer ssrc, Byte fractionLost, Integer cumulativePacketsLost, Integer extendedHighestSeqNumber, Integer interarrivalJitter, Integer lastSenderReport, Integer delaySinceLastSenderReport) {
+    public ReportBlock(int ssrc, byte fractionLost, int cumulativePacketsLost, int extendedHighestSeqNumber, int interarrivalJitter, int lastSenderReport, int delaySinceLastSenderReport) {
         this.ssrc = ssrc;
         this.fractionLost = fractionLost;
         this.cumulativePacketsLost = cumulativePacketsLost;
@@ -38,71 +38,71 @@ public class ReportBlock {
     }
 
    
-    public Integer  getSsrc() 
+    public int  getSsrc() 
     {
         return ssrc;
     }
 
-    public void setSsrc(Integer value) 
+    public void setSsrc(int value) 
     {
         this.ssrc = value;
     }
 
-    public Byte getFractionLost() {
+    public byte getFractionLost() {
         return fractionLost;
     }
 
-    public void setFractionLost(Byte value) 
+    public void setFractionLost(byte value) 
     {
         this.fractionLost = value;
     }
 
-    public Integer getCumulativePacketsLost() 
+    public int getCumulativePacketsLost() 
     {
         return cumulativePacketsLost;
     }
 
-    public void setCumulativePacketsLost(Integer value) 
+    public void setCumulativePacketsLost(int value) 
     {
         this.cumulativePacketsLost = value;
     }
 
-    public Integer getExtendedHighestSeqNumber() 
+    public int getExtendedHighestSeqNumber() 
     {
         return extendedHighestSeqNumber;
     }
 
-    public void setExtendedHighestSeqNumber(Integer value) 
+    public void setExtendedHighestSeqNumber(int value) 
     {
         this.extendedHighestSeqNumber = value;
     }
 
-    public Integer getInterarrivalJitter() 
+    public int getInterarrivalJitter() 
     {
         return interarrivalJitter;
     }
 
-    public void setInterarrivalJitter(Integer value) 
+    public void setInterarrivalJitter(int value) 
     {
         this.interarrivalJitter = value;
     }
 
-    public Integer getLastSenderReport()
+    public int getLastSenderReport()
     {
         return lastSenderReport;
     }
 
-    public void setLastSenderReport(Integer value) 
+    public void setLastSenderReport(int value) 
     {
         this.lastSenderReport = value;
     }
 
-    public Integer getDelaySinceLastSenderReport() 
+    public int getDelaySinceLastSenderReport() 
     {
         return delaySinceLastSenderReport;
     }
 
-    public void setDelaySinceLastSenderReport(Integer value) {
+    public void setDelaySinceLastSenderReport(int value) {
     	
         this.delaySinceLastSenderReport = value;
     }

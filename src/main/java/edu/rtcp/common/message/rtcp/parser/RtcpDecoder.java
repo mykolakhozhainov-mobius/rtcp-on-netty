@@ -9,6 +9,7 @@ import edu.rtcp.common.message.rtcp.types.ItemsTypeEnum;
 import edu.rtcp.common.message.rtcp.types.PacketTypeEnum;
 import io.netty.buffer.ByteBuf;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
  
@@ -103,17 +104,10 @@ public class RtcpDecoder {
 
         int itemCount = header.getItemCount();
         
-        SenderReport sr = new SenderReport(
-                header,
-                ssrc,
-                ntpTimestampMostSignificant,
-                ntpTimestampLeastSignificant,
-                rtpTimestamp,
-                senderPacketCount,
-                senderOctetCount
-        );
+        SenderReport sr = new SenderReport(header,ssrc,ntpTimestampMostSignificant,ntpTimestampLeastSignificant,rtpTimestamp,senderPacketCount,senderOctetCount);
 
-        if (itemCount > 0) {
+        if (itemCount > 0) 
+        {
             List<ReportBlock> reportBlocks = new ArrayList<>(itemCount);
         
             for (int i = 0; i < itemCount; i++) {
@@ -122,23 +116,31 @@ public class RtcpDecoder {
             }
         }
         
+        
+        
         return sr;
     }
     
-    public static SourceDescription decodeSourceDescription(ByteBuf sdInBuf) {
+
+    public SourceDescription decodeSourceDescription(ByteBuf sdInBuf) 
+    {
         RtcpHeader header = decodeHeader(sdInBuf.readBytes(4));
 
-        int ssrc = sdInBuf.readInt();
-        SourceDescription sd = new SourceDescription(header, ssrc);
+        SourceDescription sd = new SourceDescription(header);
 
-        int itemCount = header.getItemCount(); 
+        int itemCount = header.getItemCount();
         List<Chunk> chunks = new ArrayList<>(itemCount);
 
-        for (int i = 0; i < itemCount; i++) {
-            chunks.add(decodeChunk(sdInBuf.readBytes(8))); 
+        for (int i = 0; i < itemCount; i++) 
+        {
+           
+            if (sdInBuf.isReadable(8)) 
+            {
+                chunks.add(decodeChunk(sdInBuf.readBytes(sdInBuf.readableBytes()))); 
+            }
         }
 
-        sd.setChunks(chunks);
+        sd.setChunks(chunks);  
 
         return sd;
     }
@@ -146,37 +148,63 @@ public class RtcpDecoder {
     public static Chunk decodeChunk(ByteBuf chunkBuf)
     {
         int ssrc = chunkBuf.readInt();
-        
         List<SdesItem> items = new ArrayList<>();
 
         while (chunkBuf.isReadable()) 
         {
-            items.add(decodeSdesItem(chunkBuf)); 
+            items.add(decodeSdesItem(chunkBuf));
         }
 
         return new Chunk(ssrc, items);
     }
     
-    public static SdesItem decodeSdesItem(ByteBuf sdesItemInBuf) {
-        ItemsTypeEnum type = ItemsTypeEnum.fromInt((int) sdesItemInBuf.readByte());
-    	    
-        int totalLength = sdesItemInBuf.readByte();
 
-        int prefixLength = 0;
-        String prefix = null;
-
-        if (type == ItemsTypeEnum.PRIV && sdesItemInBuf.isReadable(1)) {
-            prefixLength = sdesItemInBuf.readByte();
-            prefix = sdesItemInBuf.readBytes(prefixLength).toString();
-            totalLength += (prefixLength + 1);
+    public SdesItem decodeSdesItem(ByteBuf sdesItemInBuf) 
+    {
+        if (!sdesItemInBuf.isReadable(2)) 
+        {
+            return null; 
         }
 
-        String data = sdesItemInBuf.readBytes(totalLength).toString();
+        ItemsTypeEnum type = ItemsTypeEnum.fromInt((int) sdesItemInBuf.readByte());
+        int length = sdesItemInBuf.readByte(); 
+        
+        //System.out.println("Decoded type: " + type + ", initial length: " + length);
 
-        return type == ItemsTypeEnum.PRIV ?
-                new SdesItem(type, totalLength, prefixLength, prefix, data) :
-                new SdesItem(type, totalLength, data);
-    }
+        Integer prefixLength = null;
+        String prefix = null;
+
+        if (type == ItemsTypeEnum.fromInt(8) && sdesItemInBuf.isReadable(1)) 
+        {
+            prefixLength = (int) sdesItemInBuf.readByte();
+
+            if (sdesItemInBuf.isReadable(prefixLength)) 
+            {
+                prefix = sdesItemInBuf.readBytes(prefixLength).toString(StandardCharsets.UTF_8);
+                length += (prefixLength + 1);  
+            }
+        }
+
+        int dataLength = length - 2 - (prefixLength != null ? prefixLength + 1 : 0);
+
+        if (!sdesItemInBuf.isReadable(dataLength)) 
+        {
+            return null; 
+        }
+
+        byte[] dataBytes = new byte[dataLength];
+        sdesItemInBuf.readBytes(dataBytes);
+        String data = new String(dataBytes, StandardCharsets.UTF_8); 
+
+        if (type == ItemsTypeEnum.fromInt(8)) 
+        {
+            return new SdesItem(type, length, prefixLength, prefix, data);
+        } 
+        else 
+        {
+            return new SdesItem(type, length, data);
+        }
+
     
     public static ReportBlock decodeReportBlock(ByteBuf buf) {
         int ssrc = buf.readInt();
