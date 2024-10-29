@@ -14,7 +14,7 @@ import java.util.List;
 
 public class RtcpEncoder 
 {
-	 public ByteBuf encodeHeader(RtcpHeader header) 
+	 public static ByteBuf encodeHeader(RtcpHeader header) 
 	 {
 	        ByteBuf headerInBuf = Unpooled.buffer(4); 
 	        
@@ -26,7 +26,7 @@ public class RtcpEncoder
 	  }
 	 
 
-	 public ByteBuf encodeApp(ApplicationDefined app) 
+	 public static ByteBuf encodeApp(ApplicationDefined app) 
 	 {
 		 ByteBuf appInBuf = Unpooled.buffer(16);
 		 
@@ -48,7 +48,7 @@ public class RtcpEncoder
 	 }
 	 
 
-	 public ByteBuf encodeBye(Bye bye) 
+	 public static ByteBuf encodeBye(Bye bye) 
 	 {
 		 final int baseSize = 8;
 		 final int optReasonSize = 4;
@@ -81,7 +81,7 @@ public class RtcpEncoder
 	 }
 	 
 
-	 public ByteBuf encodeReceiverReport(ReceiverReport rr) 
+	 public static ByteBuf encodeReceiverReport(ReceiverReport rr) 
 	 {
 
 		final int baseSize = 8;
@@ -111,7 +111,7 @@ public class RtcpEncoder
 		return rrInBuf;
 	 }		
 	 
-	 public ByteBuf encodeSenderReport(SenderReport sr) 
+	 public static ByteBuf encodeSenderReport(SenderReport sr) 
 	 {
      
 		final int baseSize = 8 + 20 ;
@@ -161,7 +161,7 @@ public class RtcpEncoder
 	 }
 	 
 
-	 public ByteBuf encodeSourceDescription(SourceDescription sd)
+	 public static ByteBuf encodeSourceDescription(SourceDescription sd)
 	 {
 		 final int baseSize = 4;
 		 final int chunkSize = 8;
@@ -190,7 +190,7 @@ public class RtcpEncoder
 	 }
 	 
 
-	 public ByteBuf encodeChunk(Chunk chunk)
+	 public static ByteBuf encodeChunk(Chunk chunk)
 	 {
 
 		 int totalSdesSize = 4;
@@ -214,7 +214,7 @@ public class RtcpEncoder
 	 }
 	 
 
-	 public ByteBuf encodeReportBlock(ReportBlock reportBlock) 
+	 public static ByteBuf encodeReportBlock(ReportBlock reportBlock) 
 	 {
 
 		 ByteBuf reportBlockInBuf = Unpooled.buffer(24);
@@ -232,7 +232,7 @@ public class RtcpEncoder
 	     return reportBlockInBuf;
 	 }
 
-	 public ByteBuf encodeSdesItem(SdesItem item) 
+	 public static ByteBuf encodeSdesItem(SdesItem item) 
 	 {
 		    int totalLength = 2 + item.getData().length(); 
 

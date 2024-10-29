@@ -122,7 +122,7 @@ public class RtcpDecoder {
     }
     
 
-    public SourceDescription decodeSourceDescription(ByteBuf sdInBuf) 
+    public static SourceDescription decodeSourceDescription(ByteBuf sdInBuf) 
     {
         RtcpHeader header = decodeHeader(sdInBuf.readBytes(4));
 
@@ -159,7 +159,7 @@ public class RtcpDecoder {
     }
     
 
-    public SdesItem decodeSdesItem(ByteBuf sdesItemInBuf) 
+    public static SdesItem decodeSdesItem(ByteBuf sdesItemInBuf) 
     {
         if (!sdesItemInBuf.isReadable(2)) 
         {
@@ -205,7 +205,7 @@ public class RtcpDecoder {
             return new SdesItem(type, length, data);
         }
 
-    
+    }
     public static ReportBlock decodeReportBlock(ByteBuf buf) {
         int ssrc = buf.readInt();
         byte fractionLost = buf.readByte();

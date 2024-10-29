@@ -102,7 +102,7 @@ public class ClientSession extends Session {
 
         }
     }
-
+   }
     @Override
     public boolean isServer() {
         return false;
