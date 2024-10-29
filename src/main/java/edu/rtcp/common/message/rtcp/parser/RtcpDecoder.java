@@ -93,7 +93,7 @@ public class RtcpDecoder {
     }
     
     public static SenderReport decodeSenderReport(ByteBuf srInBuf) {
-        RtcpHeader header = decodeHeader(srInBuf.readBytes(4));
+        RtcpHeader header = decodeHeader(srInBuf);
         
         int ssrc = srInBuf.readInt();
         int ntpTimestampMostSignificant = srInBuf.readInt();
@@ -119,7 +119,7 @@ public class RtcpDecoder {
     }
 
     public static SourceDescription decodeSourceDescription(ByteBuf sdInBuf) {
-        RtcpHeader header = decodeHeader(sdInBuf.readBytes(4));
+        RtcpHeader header = decodeHeader(sdInBuf);
 
         SourceDescription sd = new SourceDescription(header);
 

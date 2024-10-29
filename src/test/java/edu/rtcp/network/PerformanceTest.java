@@ -29,7 +29,6 @@ import static org.junit.Assert.assertEquals;
 
 public class PerformanceTest {
     // Configurable values ------------------------------------------
-    private static final int SESSION_NUMBER = 10;
     private static final int TIME_LIMIT = 5000;
     private static final int THREAD_POOL_SIZE = 4;
 
@@ -220,8 +219,8 @@ public class PerformanceTest {
         });
     }
 
-    public static void startMessageWorkflow(StackSetup setup, RtcpStack client) {
-        for (int k = 0; k < SESSION_NUMBER; k++) {
+    public static void startMessageWorkflow(StackSetup setup, RtcpStack client, int sessionNumber) {
+        for (int k = 0; k < sessionNumber; k++) {
             int sessionId = generateId();
 
             SenderReport initialPacket = client.getProvider().getPacketFactory().createSenderReport(
@@ -257,15 +256,17 @@ public class PerformanceTest {
         RtcpStack client = streamStackSetup.setupClient();
         setClientListener(streamStackSetup, client);
 
-        startMessageWorkflow(streamStackSetup, client);
+        final int numberOfSessions = 10000;
+
+        startMessageWorkflow(streamStackSetup, client, numberOfSessions);
 
         Thread.sleep(TIME_LIMIT);
 
-        assertEquals(SESSION_NUMBER * 3, serverReceived.get());
-        assertEquals(SESSION_NUMBER * 3, serverSent.get());
+        assertEquals(numberOfSessions * 3, serverReceived.get());
+        assertEquals(numberOfSessions * 3, serverSent.get());
 
-        assertEquals(SESSION_NUMBER * 3, clientSent.get());
-        assertEquals(SESSION_NUMBER * 3, clientAcks.get());
+        assertEquals(numberOfSessions * 3, clientSent.get());
+        assertEquals(numberOfSessions * 3, clientAcks.get());
 
         assertEquals(0, streamStackSetup.getServerStack().getProvider().getSessionStorage().size());
         assertEquals(0, streamStackSetup.getClientStack().getProvider().getSessionStorage().size());
@@ -279,15 +280,17 @@ public class PerformanceTest {
         RtcpStack client = datagramStackSetup.setupClient();
         setClientListener(datagramStackSetup, client);
 
-        startMessageWorkflow(datagramStackSetup, client);
+        final int numberOfSessions = 10000;
+
+        startMessageWorkflow(datagramStackSetup, client, numberOfSessions);
 
         Thread.sleep(TIME_LIMIT);
 
-        assertEquals(SESSION_NUMBER * 3, serverReceived.get());
-        assertEquals(SESSION_NUMBER * 3, serverSent.get());
+        assertEquals(numberOfSessions * 3, serverReceived.get());
+        assertEquals(numberOfSessions * 3, serverSent.get());
 
-        assertEquals(SESSION_NUMBER * 3, clientSent.get());
-        assertEquals(SESSION_NUMBER * 3, clientAcks.get());
+        assertEquals(numberOfSessions * 3, clientSent.get());
+        assertEquals(numberOfSessions * 3, clientAcks.get());
 
         assertEquals(0, datagramStackSetup.getServerStack().getProvider().getSessionStorage().size());
         assertEquals(0, datagramStackSetup.getClientStack().getProvider().getSessionStorage().size());
