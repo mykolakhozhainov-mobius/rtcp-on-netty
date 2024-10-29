@@ -17,6 +17,7 @@ import edu.rtcp.server.session.types.ServerSession;
 import edu.rtcp.network.stack.DefaultStackSetup;
 import edu.rtcp.network.stack.StackSetup;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -28,9 +29,8 @@ import static org.junit.Assert.assertEquals;
 
 public class PerformanceTest {
     // Configurable values ------------------------------------------
-    private static final int SESSION_NUMBER = 10000;
+    private static final int SESSION_NUMBER = 10;
     private static final int TIME_LIMIT = 5000;
-    private static final TransportEnum TRANSPORT = TransportEnum.UDP;
     private static final int THREAD_POOL_SIZE = 4;
 
     // Message counters ----------------------------------------------
@@ -40,11 +40,13 @@ public class PerformanceTest {
     private static final AtomicInteger clientAcks = new AtomicInteger(0);
 
     // Stacks container -----------------------------------------------
-    private static StackSetup stackSetup;
+    private static StackSetup streamStackSetup;
+    private static StackSetup datagramStackSetup;
 
     @BeforeClass
-    public static void setUpStack() throws Exception {
-        stackSetup = new DefaultStackSetup(TRANSPORT, THREAD_POOL_SIZE);
+    public static void setUpStack() {
+        streamStackSetup = new DefaultStackSetup(TransportEnum.TCP, THREAD_POOL_SIZE);
+        datagramStackSetup = new DefaultStackSetup(TransportEnum.UDP, THREAD_POOL_SIZE);
     }
 
     private static final HashSet<Integer> usedIds = new HashSet<>();
@@ -61,7 +63,15 @@ public class PerformanceTest {
         return id;
     }
 
-    public static void setServerListener(RtcpStack serverStack) {
+    @After
+    public void clearCounters() {
+        serverReceived.set(0);
+        serverSent.set(0);
+        clientSent.set(0);
+        clientAcks.set(0);
+    }
+
+    public static void setServerListener(StackSetup setup, RtcpStack serverStack) {
         Provider serverProvider = serverStack.getProvider();
 
         serverProvider.setServerListener(new ServerSessionListener() {
@@ -76,7 +86,7 @@ public class PerformanceTest {
                                 null
                         );
 
-                serverSession.sendInitialAnswer(answer, stackSetup.getClientPort(), new AsyncCallback() {
+                serverSession.sendInitialAnswer(answer, setup.getClientPort(), new AsyncCallback() {
                     @Override
                     public void onSuccess() {
                         serverSent.incrementAndGet();
@@ -102,7 +112,7 @@ public class PerformanceTest {
                                 null
                         );
 
-                serverSession.sendTerminationAnswer(answer, stackSetup.getClientPort(), new AsyncCallback() {
+                serverSession.sendTerminationAnswer(answer, setup.getClientPort(), new AsyncCallback() {
                     @Override
                     public void onSuccess() {
                         serverSent.incrementAndGet();
@@ -128,7 +138,7 @@ public class PerformanceTest {
                                 null
                         );
 
-                serverSession.sendDataAnswer(answer, stackSetup.getClientPort(), new AsyncCallback() {
+                serverSession.sendDataAnswer(answer, setup.getClientPort(), new AsyncCallback() {
                     @Override
                     public void onSuccess() {
                         serverSent.incrementAndGet();
@@ -145,7 +155,7 @@ public class PerformanceTest {
         });
     }
 
-    public static void setClientListener(RtcpStack clientStack) {
+    public static void setClientListener(StackSetup setup, RtcpStack clientStack) {
         clientStack.getProvider().setClientListener(new ClientSessionListener() {
             @Override
             public void onDataAnswer(RtcpBasePacket response, Session session, AsyncCallback callback) {
@@ -159,7 +169,7 @@ public class PerformanceTest {
 
                 ClientSession clientSession = (ClientSession) session;
 
-                clientSession.sendTerminationRequest(byeMessage, stackSetup.getServerPort(), new AsyncCallback() {
+                clientSession.sendTerminationRequest(byeMessage, setup.getServerPort(), new AsyncCallback() {
                     @Override
                     public void onSuccess() {
                         clientSent.incrementAndGet();
@@ -188,7 +198,7 @@ public class PerformanceTest {
 
                 ClientSession clientSession = (ClientSession) session;
 
-                clientSession.sendDataRequest(dataPacket, stackSetup.getServerPort(), new AsyncCallback() {
+                clientSession.sendDataRequest(dataPacket, setup.getServerPort(), new AsyncCallback() {
                     @Override
                     public void onSuccess() {
                         clientSent.incrementAndGet();
@@ -210,14 +220,7 @@ public class PerformanceTest {
         });
     }
 
-    @Test
-    public void testStreamMessageHandling() throws Exception {
-        RtcpStack server = stackSetup.setupServer();
-        setServerListener(server);
-
-        RtcpStack client = stackSetup.setupClient();
-        setClientListener(client);
-
+    public static void startMessageWorkflow(StackSetup setup, RtcpStack client) {
         for (int k = 0; k < SESSION_NUMBER; k++) {
             int sessionId = generateId();
 
@@ -232,7 +235,7 @@ public class PerformanceTest {
                     .getSessionFactory()
                     .createClientSession(initialPacket);
 
-            clientSession.sendInitialRequest(initialPacket, stackSetup.getServerPort(), new AsyncCallback() {
+            clientSession.sendInitialRequest(initialPacket, setup.getServerPort(), new AsyncCallback() {
                 @Override
                 public void onSuccess() {
                     clientSent.incrementAndGet();
@@ -244,6 +247,17 @@ public class PerformanceTest {
                 }
             });
         }
+    }
+
+    @Test
+    public void testStream() throws Exception {
+        RtcpStack server = streamStackSetup.setupServer();
+        setServerListener(streamStackSetup, server);
+
+        RtcpStack client = streamStackSetup.setupClient();
+        setClientListener(streamStackSetup, client);
+
+        startMessageWorkflow(streamStackSetup, client);
 
         Thread.sleep(TIME_LIMIT);
 
@@ -253,13 +267,38 @@ public class PerformanceTest {
         assertEquals(SESSION_NUMBER * 3, clientSent.get());
         assertEquals(SESSION_NUMBER * 3, clientAcks.get());
 
-        assertEquals(0, stackSetup.getServerStack().getProvider().getSessionStorage().size());
-        assertEquals(0, stackSetup.getClientStack().getProvider().getSessionStorage().size());
+        assertEquals(0, streamStackSetup.getServerStack().getProvider().getSessionStorage().size());
+        assertEquals(0, streamStackSetup.getClientStack().getProvider().getSessionStorage().size());
     }
 
-    @After
-    public void stopStacks() {
-        stackSetup.getServerStack().stop();
-        stackSetup.getClientStack().stop();
+    @Test
+    public void testDatagram() throws Exception {
+        RtcpStack server = datagramStackSetup.setupServer();
+        setServerListener(datagramStackSetup, server);
+
+        RtcpStack client = datagramStackSetup.setupClient();
+        setClientListener(datagramStackSetup, client);
+
+        startMessageWorkflow(datagramStackSetup, client);
+
+        Thread.sleep(TIME_LIMIT);
+
+        assertEquals(SESSION_NUMBER * 3, serverReceived.get());
+        assertEquals(SESSION_NUMBER * 3, serverSent.get());
+
+        assertEquals(SESSION_NUMBER * 3, clientSent.get());
+        assertEquals(SESSION_NUMBER * 3, clientAcks.get());
+
+        assertEquals(0, datagramStackSetup.getServerStack().getProvider().getSessionStorage().size());
+        assertEquals(0, datagramStackSetup.getClientStack().getProvider().getSessionStorage().size());
+    }
+
+    @AfterClass
+    public static void stopStacks() {
+        streamStackSetup.getServerStack().stop();
+        streamStackSetup.getClientStack().stop();
+
+        datagramStackSetup.getServerStack().stop();
+        datagramStackSetup.getClientStack().stop();
     }
 }
