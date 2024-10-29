@@ -27,7 +27,15 @@ public class ReportBlock {
     private int lastSenderReport; 
     private int delaySinceLastSenderReport; 
 
-    public ReportBlock(int ssrc, byte fractionLost, int cumulativePacketsLost, int extendedHighestSeqNumber, int interarrivalJitter, int lastSenderReport, int delaySinceLastSenderReport) {
+    public ReportBlock(
+            int ssrc,
+            byte fractionLost,
+            int cumulativePacketsLost,
+            int extendedHighestSeqNumber,
+            int interarrivalJitter,
+            int lastSenderReport,
+            int delaySinceLastSenderReport
+    ) {
         this.ssrc = ssrc;
         this.fractionLost = fractionLost;
         this.cumulativePacketsLost = cumulativePacketsLost;

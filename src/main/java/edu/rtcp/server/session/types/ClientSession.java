@@ -81,13 +81,13 @@ public class ClientSession extends Session {
 
         if (lastSentMessage instanceof SenderReport && lastSentMessage.getHeader().getItemCount() == 0) {
             this.setSessionState(SessionStateEnum.OPEN);
+        }
 
         if (lastSentMessage instanceof SenderReport && lastSentMessage.getHeader().getItemCount() == 0) {
             if (listener != null) {
                 listener.onInitialAnswer(answer, this, callback);
             }
         } else if (lastSentMessage instanceof Bye) {
-
             this.setSessionState(SessionStateEnum.CLOSED);
             this.provider.getSessionStorage().remove(this);
 
@@ -102,7 +102,7 @@ public class ClientSession extends Session {
 
         }
     }
-   }
+
     @Override
     public boolean isServer() {
         return false;

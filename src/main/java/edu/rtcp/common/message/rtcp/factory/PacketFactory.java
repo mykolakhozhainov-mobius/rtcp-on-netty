@@ -121,4 +121,16 @@ public class PacketFactory {
         
         return sdPacket;
     }
+
+    public ReportBlock createReportBlock(int ssrc, byte fractionLost) {
+        return new ReportBlock(
+                ssrc,
+                fractionLost,
+                random.nextInt(),
+                random.nextInt(),
+                random.nextInt(),
+                random.nextInt(),
+                random.nextInt()
+        );
+    }
 }
