@@ -106,8 +106,7 @@ public class RtcpDecoder {
         
         SenderReport sr = new SenderReport(header,ssrc,ntpTimestampMostSignificant,ntpTimestampLeastSignificant,rtpTimestamp,senderPacketCount,senderOctetCount);
 
-        if (itemCount > 0) 
-        {
+        if (itemCount > 0) {
             List<ReportBlock> reportBlocks = new ArrayList<>(itemCount);
         
             for (int i = 0; i < itemCount; i++) {
@@ -115,15 +114,11 @@ public class RtcpDecoder {
                 sr.setReportBlocks(reportBlocks);
             }
         }
-        
-        
-        
+
         return sr;
     }
-    
 
-    public static SourceDescription decodeSourceDescription(ByteBuf sdInBuf) 
-    {
+    public static SourceDescription decodeSourceDescription(ByteBuf sdInBuf) {
         RtcpHeader header = decodeHeader(sdInBuf.readBytes(4));
 
         SourceDescription sd = new SourceDescription(header);
@@ -131,22 +126,18 @@ public class RtcpDecoder {
         int itemCount = header.getItemCount();
         List<Chunk> chunks = new ArrayList<>(itemCount);
 
-        for (int i = 0; i < itemCount; i++) 
-        {
-           
-            if (sdInBuf.isReadable(8)) 
-            {
-                chunks.add(decodeChunk(sdInBuf.readBytes(sdInBuf.readableBytes()))); 
+        for (int i = 0; i < itemCount; i++) {
+            if (sdInBuf.isReadable(8)) {
+                chunks.add(decodeChunk(sdInBuf.readBytes(sdInBuf.readableBytes())));
             }
         }
 
-        sd.setChunks(chunks);  
+        sd.setChunks(chunks.isEmpty() ? null : chunks);
 
         return sd;
     }
     
-    public static Chunk decodeChunk(ByteBuf chunkBuf)
-    {
+    public static Chunk decodeChunk(ByteBuf chunkBuf) {
         int ssrc = chunkBuf.readInt();
         List<SdesItem> items = new ArrayList<>();
 

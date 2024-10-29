@@ -1,4 +1,4 @@
-package edu.rtcp.examples;
+package edu.rtcp.examples.stack;
 
 import edu.rtcp.RtcpStack;
 import edu.rtcp.common.TransportEnum;

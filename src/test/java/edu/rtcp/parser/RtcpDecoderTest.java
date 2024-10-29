@@ -1,8 +1,5 @@
 package edu.rtcp.parser;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
@@ -24,14 +21,11 @@ import edu.rtcp.common.message.rtcp.types.PacketTypeEnum;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 
+import static org.junit.Assert.*;
+
 public class RtcpDecoderTest {
-
-    private RtcpDecoder decoder = new RtcpDecoder();
-    private RtcpEncoder encoder = new RtcpEncoder();
-
     @Test
-    public void testDecodeHeader() 
-    {
+    public void testDecodeHeader() {
         ByteBuf buf = Unpooled.buffer();
         
         buf.writeByte(0x81);  // version = 2, padding = 0, itemCount = 1
@@ -40,13 +34,13 @@ public class RtcpDecoderTest {
         
         int bytesRead = buf.readableBytes();
         
-        RtcpHeader header = decoder.decodeHeader(buf);
+        RtcpHeader header = RtcpDecoder.decodeHeader(buf);
 
         System.out.println("Header = " +bytesRead);
         
         assertNotNull(header);
         assertEquals(2, header.getVersion());
-        assertEquals(false, header.getIsPadding());
+        assertFalse(header.getIsPadding());
         assertEquals(1, header.getItemCount());
         assertEquals(PacketTypeEnum.fromInt(200), header.getPacketType());
         assertEquals(4, header.getLength());
@@ -54,8 +48,7 @@ public class RtcpDecoderTest {
     }
 
     @Test
-    public void testDecodeApp() 
-    {
+    public void testDecodeApp() {
         ByteBuf buf = Unpooled.buffer();
         buf.writeByte(0x80);  // version = 2, padding = 0, itemCount = 0
         buf.writeByte(PacketTypeEnum.APP.getValue());
@@ -66,7 +59,7 @@ public class RtcpDecoderTest {
         
         int bytesRead = buf.readableBytes();
         
-        ApplicationDefined app = decoder.decodeApp(buf);
+        ApplicationDefined app = RtcpDecoder.decodeApp(buf);
 
         System.out.println("App = " +bytesRead);
         
@@ -88,7 +81,7 @@ public class RtcpDecoderTest {
         
         int bytesRead = buf.readableBytes();
         
-        Bye bye = decoder.decodeBye(buf);
+        Bye bye = RtcpDecoder.decodeBye(buf);
         
         System.out.println("Bye = " +bytesRead);
 
@@ -99,8 +92,7 @@ public class RtcpDecoderTest {
     }
 
     @Test
-    public void testDecodeReceiverReport() 
-    {
+    public void testDecodeReceiverReport() {
         ByteBuf buf = Unpooled.buffer();
         buf.writeByte(0x81);  // version = 2, padding = 0, itemCount = 1
         buf.writeByte(PacketTypeEnum.RECEIVER_REPORT.getValue());
@@ -118,7 +110,7 @@ public class RtcpDecoderTest {
 
         int bytesRead = buf.readableBytes();
         
-        ReceiverReport rr = decoder.decodeReceiverReport(buf);
+        ReceiverReport rr = RtcpDecoder.decodeReceiverReport(buf);
         
         System.out.println("Bye = " +bytesRead);
         
@@ -170,7 +162,7 @@ public class RtcpDecoderTest {
         buf.readerIndex(0);
  
         
-        SenderReport sr = decoder.decodeSenderReport(buf);
+        SenderReport sr = RtcpDecoder.decodeSenderReport(buf);
         
         assertEquals(52, sr.getHeader().getLength());
         assertNotNull(sr);
@@ -195,8 +187,7 @@ public class RtcpDecoderTest {
     }
 
     @Test
-    public void testDecodeSourceDescription() 
-    {
+    public void testDecodeSourceDescription() {
         ByteBuf buf = Unpooled.buffer();
         buf.writeByte(0x81);  // version = 2, padding = 0, itemCount = 1
         buf.writeByte(PacketTypeEnum.SOURCE_DESCRIPTION.getValue());
@@ -214,7 +205,7 @@ public class RtcpDecoderTest {
         int bytesRead = buf.readableBytes();
         System.out.println("SD = " + bytesRead); 
 
-        SourceDescription sd = decoder.decodeSourceDescription(buf);
+        SourceDescription sd = RtcpDecoder.decodeSourceDescription(buf);
 
         assertNotNull(sd);
         List<Chunk> chunks = sd.getChunks();
@@ -232,20 +223,19 @@ public class RtcpDecoderTest {
     }
     
     @Test
-    public void testDecodeSdesItem() 
-    {
+    public void testDecodeSdesItem() {
         ItemsTypeEnum type = ItemsTypeEnum.CNAME;
         String data = "re";
         int length = 2 + data.length();
         
         SdesItem cname = new SdesItem(type, length, data);
         
-        ByteBuf result = encoder.encodeSdesItem(cname);
+        ByteBuf result = RtcpEncoder.encodeSdesItem(cname);
 
         int bytesRead = result.readableBytes();
         System.out.println("SdesItem = " + bytesRead);
 
-        SdesItem item = decoder.decodeSdesItem(result);
+        SdesItem item = RtcpDecoder.decodeSdesItem(result);
         
         assertNotNull(item);
         assertEquals(type, item.getType());

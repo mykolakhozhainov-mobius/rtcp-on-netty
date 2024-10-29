@@ -5,6 +5,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.Test;
@@ -23,15 +24,9 @@ import edu.rtcp.common.message.rtcp.types.ItemsTypeEnum;
 import edu.rtcp.common.message.rtcp.types.PacketTypeEnum;
 import io.netty.buffer.ByteBuf;
 
-public class RtcpEncoderTest 
-{
-    private RtcpEncoder encoder;
-    
+public class RtcpEncoderTest {
     @Test
-    public void testEncodeHeader() 
-    {
-    	encoder = new RtcpEncoder();
-    	
+    public void testEncodeHeader() {
         byte version = 2;
         boolean isPadding = false;
         byte itemCount = 1;
@@ -40,7 +35,7 @@ public class RtcpEncoderTest
 
         RtcpHeader header = new RtcpHeader(version, isPadding, itemCount, packetTypeValue, length);
 
-        ByteBuf result = encoder.encodeHeader(header);
+        ByteBuf result = RtcpEncoder.encodeHeader(header);
 
         assertNotNull(result);
         assertEquals(4, result.readableBytes());
@@ -48,14 +43,10 @@ public class RtcpEncoderTest
         int expectedFirstByte = 0x80 | (itemCount & 0x1F);
         assertEquals(expectedFirstByte, result.getByte(0) & 0xFF);
         assertEquals(200, result.getByte(1) & 0xFF);
-
     }
     
     @Test
-    public void testEncodeApp() 
-    {
-    	encoder = new RtcpEncoder();
-    	
+    public void testEncodeApp() {
         byte version = 2;
         boolean isPadding = false;
         byte itemCount = 1;
@@ -71,7 +62,7 @@ public class RtcpEncoderTest
 
         ApplicationDefined app = new ApplicationDefined(header, ssrc, name, applicationDependentData);
 
-        ByteBuf result = encoder.encodeApp(app);
+        ByteBuf result = RtcpEncoder.encodeApp(app);
         
         System.out.println();
         
@@ -95,15 +86,10 @@ public class RtcpEncoderTest
         short expectedLength = (short) (result.readableBytes()); 
         System.out.println("Length in App: " + expectedLength);
         assertEquals(expectedLength, result.getShort(2));
-        
     }
-    
-    
-    @Test
-    public void testEncodeBye() 
-    {
-        encoder = new RtcpEncoder();
 
+    @Test
+    public void testEncodeBye() {
         byte version = 2;
         boolean isPadding = false;
         byte itemCount = 1;
@@ -122,7 +108,7 @@ public class RtcpEncoderTest
         bye.setLengthOfReason(lengthOfReason); 
         bye.setReason(reason);
 
-        ByteBuf result = encoder.encodeBye(bye);
+        ByteBuf result = RtcpEncoder.encodeBye(bye);
 
         assertNotNull(result);
         
@@ -138,10 +124,7 @@ public class RtcpEncoderTest
     }
 
     @Test
-    public void testEncodeReceiverReport() 
-    {
-    	encoder = new RtcpEncoder();
-    	    
+    public void testEncodeReceiverReport() {
     	byte version = 2;
     	boolean isPadding = false;
     	byte itemCount = 1; 
@@ -155,9 +138,9 @@ public class RtcpEncoderTest
     	ReceiverReport rr = new ReceiverReport(header, ssrc);
     	  
     	ReportBlock reportBlock = new ReportBlock(ssrc, (byte) 11, 12, 13, 14, 15, 16); 
-    	rr.setReportBlocks(List.of(reportBlock)); 
+    	rr.setReportBlocks(Collections.singletonList(reportBlock));
 
-    	ByteBuf result = encoder.encodeReceiverReport(rr);
+    	ByteBuf result = RtcpEncoder.encodeReceiverReport(rr);
 
     	assertNotNull(result);
     	assertEquals(32, result.readableBytes()); 
@@ -176,15 +159,10 @@ public class RtcpEncoderTest
 		short expectedLength = (short) (result.readableBytes());
         System.out.println("Length in RR: " + expectedLength);
         assertEquals(expectedLength, result.getShort(2));
-		 
-    	}
-
+    }
 
     @Test
-    public void testEncodeSenderReport() 
-    {
-    	encoder = new RtcpEncoder();
-    	
+    public void testEncodeSenderReport() {
         byte version = 2;
         boolean isPadding = false;
         byte itemCount = 1;
@@ -204,9 +182,9 @@ public class RtcpEncoderTest
         SenderReport sr = new SenderReport(header, ssrc, ntpTimestampMostSignificant, ntpTimestampLeastSignificant, rtpTimestamp, senderPacketCount, senderOctetCount);
         
         ReportBlock reportBlock = new ReportBlock(ssrc, (byte) 20, 30, 40, 50, 60, 70); 
-    	sr.setReportBlocks(List.of(reportBlock)); 
+    	sr.setReportBlocks(Collections.singletonList(reportBlock));
 
-        ByteBuf result = encoder.encodeSenderReport(sr);
+        ByteBuf result = RtcpEncoder.encodeSenderReport(sr);
 
         assertEquals(52, result.readableBytes());
 
@@ -243,13 +221,9 @@ public class RtcpEncoderTest
         System.out.println("Length in SR: " + expectedLength);
         assertEquals(expectedLength, result.getShort(2)); 
     }
-    
 
     @Test
-    public void testEncodeSourceDescription() 
-    {
-    	encoder = new RtcpEncoder();
-    	
+    public void testEncodeSourceDescription() {
         byte version = 2;
         boolean isPadding = false;
         byte itemCount = 1;
@@ -274,21 +248,17 @@ public class RtcpEncoderTest
         
         sd.setChunks(ch);
 
-        ByteBuf result = encoder.encodeSourceDescription(sd);
+        ByteBuf result = RtcpEncoder.encodeSourceDescription(sd);
         
         short expectedLength = (short) (result.readableBytes());
         System.out.println("Length in SD: " + expectedLength);
         
         assertNotNull(result);
-        assertEquals(12, result.readableBytes()); 
-       
+        assertEquals(12, result.readableBytes());
     }
 
     @Test
-    public void testEncodeChunk() 
-    {
-    	encoder = new RtcpEncoder();
-    
+    public void testEncodeChunk() {
         int ssrc = 123456789;
         
         SdesItem loc = new SdesItem(ItemsTypeEnum.LOC, 11, "re");
@@ -297,7 +267,7 @@ public class RtcpEncoderTest
         
         Chunk chunk = new Chunk(ssrc,items);
   
-        ByteBuf result = encoder.encodeChunk(chunk);
+        ByteBuf result = RtcpEncoder.encodeChunk(chunk);
         
         short expectedLength = (short) (result.readableBytes());
         System.out.println("Length in Chunk: " + expectedLength);
@@ -307,13 +277,10 @@ public class RtcpEncoderTest
     }
 
     @Test
-    public void testEncodeReportBlock() 
-    {
-    	encoder = new RtcpEncoder();
-    	
+    public void testEncodeReportBlock() {
         ReportBlock rb = new ReportBlock(123456789, (byte) 0, 0, 0, 0, 0, 0);
 
-        ByteBuf result = encoder.encodeReportBlock(rb);
+        ByteBuf result = RtcpEncoder.encodeReportBlock(rb);
         
         short expectedLength = (short) (result.readableBytes());
         
@@ -325,13 +292,10 @@ public class RtcpEncoderTest
     }
 
     @Test
-    public void testEncodeSdesItem() 
-    {
-    	encoder = new RtcpEncoder();
-    	
+    public void testEncodeSdesItem() {
         SdesItem item = new SdesItem(ItemsTypeEnum.LOC, 2,"et");
     
-        ByteBuf result = encoder.encodeSdesItem(item);
+        ByteBuf result = RtcpEncoder.encodeSdesItem(item);
       
         short expectedLength = (short) (result.readableBytes());
         
@@ -339,8 +303,6 @@ public class RtcpEncoderTest
         assertEquals(4, expectedLength);
         
         System.out.println("Length in SdesItem: " + expectedLength);
-    
     }
-
 }
     
