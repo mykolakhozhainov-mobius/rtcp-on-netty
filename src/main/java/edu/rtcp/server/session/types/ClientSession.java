@@ -100,9 +100,9 @@ public class ClientSession extends Session {
                 listener.onDataAnswer(answer, this, callback);
             }
 
-        	}
         }
     }
+   }
     @Override
     public boolean isServer() {
         return false;

@@ -29,9 +29,9 @@ import java.util.List;
 public class SourceDescription extends RtcpBasePacket {
 	public List<Chunk> chunk;
 
-	public SourceDescription(RtcpHeader header, Integer ssrc) {
+	public SourceDescription(RtcpHeader header) 
+	{
 		super(header);
-		this.ssrc = ssrc;
 	}
 
 	public List<Chunk> getChunks()
