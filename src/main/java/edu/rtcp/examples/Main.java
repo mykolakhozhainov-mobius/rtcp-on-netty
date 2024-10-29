@@ -38,7 +38,7 @@ public class Main {
         }
     };
 
-    private static final int SESSION_NUMBER = 1000;
+    private static final int SESSION_NUMBER = 10000;
     private static final TransportEnum TRANSPORT = TransportEnum.UDP;
     private static final boolean LOGGING = true;
 
@@ -71,17 +71,20 @@ public class Main {
                                 null
                         );
 
-                serverSession.sendInitialAnswer(answer, 8081, new AsyncCallback() {
-                    @Override
-                    public void onSuccess() {
-                        serverSent.incrementAndGet();
-                    }
-
-                    @Override
-                    public void onError(Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                });
+                System.out.println("ANSWER:");
+                System.out.println(System.currentTimeMillis());
+//
+//                serverSession.sendInitialAnswer(answer, 8081, new AsyncCallback() {
+//                    @Override
+//                    public void onSuccess() {
+//                        serverSent.incrementAndGet();
+//                    }
+//
+//                    @Override
+//                    public void onError(Exception e) {
+//                        throw new RuntimeException(e);
+//                    }
+//                });
 
                 serverReceived.incrementAndGet();
             }
@@ -208,10 +211,10 @@ public class Main {
                     .getSessionFactory()
                     .createClientSession(initialPacket);
 
-            //Thread.sleep(1);
             clientSession.sendInitialRequest(initialPacket, 8080, new AsyncCallback() {
                 @Override
                 public void onSuccess() {
+                    System.out.println(System.currentTimeMillis());
                     clientSent.incrementAndGet();
                 }
 
@@ -222,7 +225,7 @@ public class Main {
             });
         }
 
-        Thread.sleep(5000);
+        Thread.sleep(800);
 
         serverStack.stop();
         clientStack.stop();

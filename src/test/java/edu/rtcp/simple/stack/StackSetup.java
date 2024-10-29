@@ -1,4 +1,4 @@
-package edu.rtcp.stack;
+package edu.rtcp.simple.stack;
 
 import edu.rtcp.RtcpStack;
 

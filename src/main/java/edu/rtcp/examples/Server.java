@@ -8,10 +8,11 @@ import java.net.InetAddress;
 
 public class Server {
     private static final String localLinkID = "1";
+    private static final int THREAD_POOL_SIZE = 4;
 
     public RtcpStack setupServer(TransportEnum transport, boolean logging) throws Exception {
         RtcpStack serverStack = new RtcpStack(
-                32,
+                THREAD_POOL_SIZE,
                 true,
                 transport,
                 logging

@@ -9,16 +9,12 @@ import edu.rtcp.server.callback.AsyncCallback;
 import edu.rtcp.server.network.channel.DatagramChannelInitializer;
 import edu.rtcp.server.network.channel.StreamChannelInitializer;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.EventLoopGroup;
+import io.netty.channel.*;
 //import io.netty.channel.ServerChannel;
 import io.netty.channel.epoll.EpollChannelOption;
 import io.netty.channel.epoll.EpollDatagramChannel;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.DatagramChannel;
 import io.netty.channel.socket.DatagramPacket;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.bootstrap.ServerBootstrap;
@@ -40,6 +36,7 @@ public class NetworkManager {
 
 	private boolean isServerStarted = false;
 
+	private static final int BUFFER_SIZE = 256 * 1024 * 50;
 	public static Logger logger = LogManager.getLogger(NetworkManager.class);
 
 	public NetworkManager(RtcpStack stack) {
@@ -118,31 +115,34 @@ public class NetworkManager {
 		Bootstrap connectionlessBootstrap = new Bootstrap();
 		EventLoopGroup group = ServerChannelUtils.createEventLoopGroup();
 		connectionlessBootstrap.channel(ServerChannelUtils.getDatagramChannel());
-		connectionlessBootstrap.group(group)
-				.option(EpollChannelOption.SO_REUSEPORT, true)
-				.option(EpollChannelOption.IP_RECVORIGDSTADDR, true)
-				.option(ChannelOption.SO_SNDBUF, 256*1024*50)
-				.option(ChannelOption.SO_RCVBUF, 256*1024*50)
-				.option(EpollChannelOption.IP_FREEBIND, true);
-		connectionlessBootstrap
-				.handler(new ChannelInitializer<DatagramChannel>() {
-					@Override
-					protected void initChannel(DatagramChannel datagramChannel) {
-						link.setChannel(datagramChannel);
-						datagramChannel.pipeline().addLast(new DatagramChannelInitializer(stack));
-					}
-				});
 
+		connectionlessBootstrap.group(group)
+				.option(EpollChannelOption.SO_SNDBUF, BUFFER_SIZE)
+				.option(EpollChannelOption.SO_RCVBUF, BUFFER_SIZE);
+	//.option(EpollChannelOption.SO_RCVBUF)
+
+		connectionlessBootstrap
+				.handler(new DatagramChannelInitializer(stack));
 		ChannelFuture future = connectionlessBootstrap.bind(link.getLocalAddress(), link.getLocalPort()).syncUninterruptibly();
 		future.awaitUninterruptibly();
+		link.setChannel(future.channel());
+
+		for (int i = 0; i < stack.getThreadPoolSize(); ++i) {
+			future = connectionlessBootstrap.bind(new InetSocketAddress("0.0.0.0", link.getLocalPort()));
+
+			future.awaitUninterruptibly();
+			if(!future.isSuccess()) {
+				logger.debug("Channel Not Connected:" + future.cause());
+			}
+
+//			serverChannels.add(future.channel());
+		}
 	}
 
 	public void setStreamClient(NetworkLink link) {
 		NioEventLoopGroup group = new NioEventLoopGroup();
 		Bootstrap bootstrap = new Bootstrap().group(group)
 				.channel(NioSocketChannel.class)
-				.option(ChannelOption.SO_SNDBUF, 256*1024)
-				.option(ChannelOption.SO_RCVBUF, 256*1024)
 				.handler(new ChannelInitializer<SocketChannel>() {
 					@Override
 					protected void initChannel(SocketChannel socketChannel) {
@@ -171,17 +171,17 @@ public class NetworkManager {
 	public void setDatagramClient(NetworkLink link) {
 		EventLoopGroup group = new EpollEventLoopGroup();
 		Bootstrap bootstrap = new Bootstrap();
-		bootstrap.group(group).channel(EpollDatagramChannel.class)
-				.handler(new ChannelInitializer<DatagramChannel>() {
-					@Override
-					protected void initChannel(DatagramChannel channel) {
-						link.setChannel(channel);
-						link.getChannel().pipeline().addLast(new DatagramChannelInitializer(stack));
-					}
-				});
+		bootstrap.group(group)
+				.channel(EpollDatagramChannel.class)
+				.option(EpollChannelOption.SO_SNDBUF, BUFFER_SIZE)
+				.option(EpollChannelOption.SO_RCVBUF, BUFFER_SIZE)
+				.handler(new DatagramChannelInitializer(stack));
 		ChannelFuture future = bootstrap.connect(
 				new InetSocketAddress(link.getRemoteAddress(), link.getRemotePort()),
 				new InetSocketAddress(link.getLocalAddress(), link.getLocalPort()));
+
+		link.setChannel(future.channel());
+
 		new Thread(() -> {
 			try {
 				future.channel().closeFuture().sync();
@@ -224,14 +224,16 @@ public class NetworkManager {
 	public void sendMessage(RtcpBasePacket message, int port, AsyncCallback callback) {
 		NetworkLink link = getLinkByPort(port);
 
-		if (stack.isServer && stack.transport == TransportEnum.UDP && link.getChannel().remoteAddress() == null) {
-			link.getChannel().writeAndFlush(new DatagramPacket(RtcpParser.encode(message), new InetSocketAddress(link.getRemoteAddress(), link.getRemotePort())));
-		}
-		else {
-			link.getChannel().writeAndFlush((RtcpParser.encode(message)));
-		}
+		ChannelFuture result = stack.transport == TransportEnum.UDP ?
+				link.getChannel().writeAndFlush(new DatagramPacket(RtcpParser.encode(message), new InetSocketAddress(link.getRemoteAddress(), link.getRemotePort()))) :
+				link.getChannel().writeAndFlush((RtcpParser.encode(message)));
 
-		callback.onSuccess();
+		result.awaitUninterruptibly();
+		if (result.isSuccess()) {
+			callback.onSuccess();
+		} else {
+			callback.onError(new Exception("Message is not sent"));
+		}
 	}
 
 	public void stop() {

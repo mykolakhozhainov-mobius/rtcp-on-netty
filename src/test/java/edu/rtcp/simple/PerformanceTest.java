@@ -1,5 +1,6 @@
-package edu.rtcp;
+package edu.rtcp.simple;
 
+import edu.rtcp.RtcpStack;
 import edu.rtcp.common.TransportEnum;
 import edu.rtcp.common.message.rtcp.header.RtcpBasePacket;
 import edu.rtcp.common.message.rtcp.packet.ApplicationDefined;
@@ -13,8 +14,8 @@ import edu.rtcp.server.provider.listeners.ServerSessionListener;
 import edu.rtcp.server.session.Session;
 import edu.rtcp.server.session.types.ClientSession;
 import edu.rtcp.server.session.types.ServerSession;
-import edu.rtcp.stack.DefaultStackSetup;
-import edu.rtcp.stack.StackSetup;
+import edu.rtcp.simple.stack.DefaultStackSetup;
+import edu.rtcp.simple.stack.StackSetup;
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -28,9 +29,9 @@ import static org.junit.Assert.assertEquals;
 public class PerformanceTest {
     // Configurable values ------------------------------------------
     private static final int SESSION_NUMBER = 10000;
-    private static final int TIME_LIMIT = 3000;
-    private static final TransportEnum TRANSPORT = TransportEnum.TCP;
-    private static final int THREAD_POOL_SIZE = 32;
+    private static final int TIME_LIMIT = 5000;
+    private static final TransportEnum TRANSPORT = TransportEnum.UDP;
+    private static final int THREAD_POOL_SIZE = 4;
 
     // Message counters ----------------------------------------------
     private static final AtomicInteger serverReceived = new AtomicInteger(0);

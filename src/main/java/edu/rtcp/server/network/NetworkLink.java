@@ -5,13 +5,16 @@ import io.netty.channel.Channel;
 import java.net.InetAddress;
 
 public class NetworkLink {
-    private String linkId;
-    private InetAddress remoteAddress;
-    private int remotePort;
-    private InetAddress localAddress;
-    private int localPort;
+    private final String linkId;
+
+    private final InetAddress remoteAddress;
+    private final int remotePort;
+
+    private final InetAddress localAddress;
+    private final int localPort;
+
     private Channel channel;
-    NetworkManager networkManager;
+    private final NetworkManager networkManager;
 
     public NetworkLink(String linkId, InetAddress remoteAddress, int remotePort, InetAddress localAddress, int localPort, NetworkManager networkManager) {
         this.linkId = linkId;
