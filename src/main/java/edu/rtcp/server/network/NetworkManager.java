@@ -36,7 +36,7 @@ public class NetworkManager {
 
 	private boolean isServerStarted = false;
 
-	private static final int BUFFER_SIZE = 256 * 1024 * 10;
+	private static final int BUFFER_SIZE = 256 * 1024 * 20;
 	public static Logger logger = LogManager.getLogger(NetworkManager.class);
 
 	public NetworkManager(RtcpStack stack) {

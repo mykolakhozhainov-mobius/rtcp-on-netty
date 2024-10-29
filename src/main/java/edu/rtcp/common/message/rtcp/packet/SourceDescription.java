@@ -39,8 +39,7 @@ public class SourceDescription extends RtcpBasePacket {
 		return chunk;
 	}
 	
-	public void setChunks(List<Chunk> value)
-	{
+	public void setChunks(List<Chunk> value) {
 		this.chunk = value;
 	}
 	
