@@ -25,6 +25,7 @@ public class RtcpEncoder
 	        return headerInBuf;
 	  }
 	 
+
 	 public ByteBuf encodeApp(ApplicationDefined app) 
 	 {
 		 ByteBuf appInBuf = Unpooled.buffer(16);
@@ -46,6 +47,7 @@ public class RtcpEncoder
 		 return appInBuf;
 	 }
 	 
+
 	 public ByteBuf encodeBye(Bye bye) 
 	 {
 		 final int baseSize = 8;
@@ -78,8 +80,10 @@ public class RtcpEncoder
 		 return byeInBuf;
 	 }
 	 
+
 	 public ByteBuf encodeReceiverReport(ReceiverReport rr) 
 	 {
+
 		final int baseSize = 8;
 		final int reportBlockSize = 24;
 
@@ -109,6 +113,7 @@ public class RtcpEncoder
 	 
 	 public ByteBuf encodeSenderReport(SenderReport sr) 
 	 {
+     
 		final int baseSize = 8 + 20 ;
 		final int reportBlockSize = 24;
 		
@@ -155,14 +160,15 @@ public class RtcpEncoder
 		return srInBuf;
 	 }
 	 
+
 	 public ByteBuf encodeSourceDescription(SourceDescription sd)
 	 {
 		 final int baseSize = 4;
-		 final int ChunkSize = 8;
+		 final int chunkSize = 8;
 		 
 		 int itemCount = sd.getChunks() != null ? sd.getChunks().size() : 0;
 		 
-		 int totalSize = baseSize + (itemCount * ChunkSize);
+		 int totalSize = baseSize + (itemCount * chunkSize);
 				 
 		 ByteBuf sdInBuf = Unpooled.buffer(totalSize);
 		    
@@ -183,8 +189,10 @@ public class RtcpEncoder
 		 return sdInBuf;
 	 }
 	 
+
 	 public ByteBuf encodeChunk(Chunk chunk)
 	 {
+
 		 int totalSdesSize = 4;
 		    
 		 for (SdesItem item : chunk.getItems()) 
@@ -205,8 +213,10 @@ public class RtcpEncoder
 		 return chunkInBuf;
 	 }
 	 
+
 	 public ByteBuf encodeReportBlock(ReportBlock reportBlock) 
 	 {
+
 		 ByteBuf reportBlockInBuf = Unpooled.buffer(24);
 
 	     reportBlockInBuf.writeInt(reportBlock.getSsrc());
@@ -221,10 +231,11 @@ public class RtcpEncoder
 
 	     return reportBlockInBuf;
 	 }
-	 
+
 	 public ByteBuf encodeSdesItem(SdesItem item) 
 	 {
 		    int totalLength = 2 + item.getData().length(); 
+
 
 		    if (item.getPrefix() != null && !item.getPrefix().isEmpty()) 
 		    {

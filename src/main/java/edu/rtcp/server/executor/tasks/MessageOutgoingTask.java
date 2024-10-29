@@ -1,24 +1,30 @@
 package edu.rtcp.server.executor.tasks;
 
-import edu.rtcp.RtcpStack;
 import edu.rtcp.common.message.rtcp.header.RtcpBasePacket;
 import edu.rtcp.server.callback.AsyncCallback;
+import edu.rtcp.server.session.Session;
+import edu.rtcp.server.session.SessionStateEnum;
 
 public class MessageOutgoingTask extends MessageTask {
-    private final RtcpStack stack;
+    private final Session session;
     private final int port;
     private final AsyncCallback callback;
 
-    public MessageOutgoingTask(RtcpBasePacket message, int port, RtcpStack stack, AsyncCallback callback) {
-        this.message = message;
-        this.stack = stack;
+    public MessageOutgoingTask(Session session, RtcpBasePacket message, int port, AsyncCallback callback) {
+        super(message);
+
+        this.session = session;
         this.port = port;
         this.callback = callback;
     }
 
     @Override
     public void execute() {
-        System.out.println("[OUTGOING-TASK] Sending message...");
-        this.stack.getNetworkManager().sendMessage(message, port, callback);
+        this.session.setSessionState(SessionStateEnum.WAITING);
+
+        this.session.getProvider()
+                .getStack()
+                .getNetworkManager()
+                .sendMessage(message, port, callback);
     }
 }

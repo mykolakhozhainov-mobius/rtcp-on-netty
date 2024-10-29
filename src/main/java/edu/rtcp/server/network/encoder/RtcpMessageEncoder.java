@@ -12,7 +12,7 @@ public class RtcpMessageEncoder extends MessageToByteEncoder<RtcpBasePacket> {
             ChannelHandlerContext ctx,
             RtcpBasePacket msg,
             ByteBuf out
-    ) throws Exception {
+    ) {
         out.writeBytes(RtcpParser.encode(msg));
     }
 }

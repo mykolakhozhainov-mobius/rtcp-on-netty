@@ -7,9 +7,12 @@ import edu.rtcp.server.executor.MessageExecutor;
 import edu.rtcp.server.executor.tasks.MessageProcessingTask;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.handler.timeout.ReadTimeoutException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class MessageHandler extends ChannelInboundHandlerAdapter {
+	public static Logger logger = LogManager.getLogger(MessageHandler.class);
+
 	private final RtcpStack stack;
 	private final MessageExecutor executor;
 
@@ -22,27 +25,19 @@ public class MessageHandler extends ChannelInboundHandlerAdapter {
 	public void channelRead(ChannelHandlerContext ctx, Object msg) {
 		RtcpBasePacket message = (RtcpBasePacket) msg;
 
-//		if (message.sender == null) {
-//			message.sender = (java.net.InetSocketAddress) ctx.channel().remoteAddress();
-//		}
-		System.out.println("[HANDLER] New message content from " + ctx.channel() + ":");
-		System.out.println(message);
+		if (this.stack.isLogging) {
+            logger.info("{} from session {}", message.getHeader().getPacketType(), message.getSSRC());
+		}
 
 		this.executor.addTaskLast(new MessageProcessingTask(message, this.stack));
 	}
 
 	@Override
 	public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-		if (cause instanceof ReadTimeoutException) {
-			System.out.println("[HANDLER] Read Timeout Received on channel " + ctx.channel() + ", closing channel");
-		} else {
-			System.out.println("[HANDLER] " + cause.toString());
-			System.out.println("[HANDLER] Exception " + cause.getClass().getName() + " on channel " + stack.isServer
-					+ ctx.channel() + ", closing channel handle context");
-		}
 		if (stack.transport == TransportEnum.TCP) {
 			ctx.channel().close();
 		}
-		System.out.println(cause);
+
+		logger.error(cause.getMessage(), cause);
 	}
 }

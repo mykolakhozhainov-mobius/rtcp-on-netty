@@ -3,6 +3,7 @@ package edu.rtcp.server.session;
 import edu.rtcp.common.message.rtcp.header.RtcpBasePacket;
 import edu.rtcp.server.callback.AsyncCallback;
 import edu.rtcp.server.executor.tasks.MessageOutgoingTask;
+import edu.rtcp.server.executor.tasks.MessageTask;
 import edu.rtcp.server.provider.Provider;
 
 public abstract class Session {
@@ -12,6 +13,10 @@ public abstract class Session {
 
 	public int getId() {
 		return this.id;
+	}
+
+	public Provider getProvider() {
+		return this.provider;
 	}
 
 	public void setProvider(Provider provider) {
@@ -32,6 +37,10 @@ public abstract class Session {
 	public abstract boolean isServer();
 
 	public void sendMessage(RtcpBasePacket packet, int port, AsyncCallback callback) {
-		this.provider.getStack().getMessageExecutor().addTaskLast(new MessageOutgoingTask(packet, port, this.provider.getStack(), callback));
+		this.sendMessageAsTask(new MessageOutgoingTask(this, packet, port, callback));
+	}
+
+	public void sendMessageAsTask(MessageTask task) {
+		this.provider.getStack().getMessageExecutor().addTaskLast(task);
 	}
 }

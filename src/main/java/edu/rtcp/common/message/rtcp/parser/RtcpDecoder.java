@@ -13,9 +13,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
  
-public class RtcpDecoder 
-{
-    public RtcpHeader decodeHeader(ByteBuf headerInBuf) {
+public class RtcpDecoder {
+    public static RtcpHeader decodeHeader(ByteBuf headerInBuf) {
         byte firstByte = headerInBuf.readByte();
 
         byte version = (byte) ((firstByte >> 6) & 0x03);
@@ -30,7 +29,7 @@ public class RtcpDecoder
         return new RtcpHeader(version, isPadding, itemCount, packetTypeValue, length);
     }
     
-    public ApplicationDefined decodeApp(ByteBuf appInBuf) {
+    public static ApplicationDefined decodeApp(ByteBuf appInBuf) {
         RtcpHeader header = decodeHeader(appInBuf);
         int ssrc = appInBuf.readInt();
       
@@ -44,8 +43,8 @@ public class RtcpDecoder
         return new ApplicationDefined(header, ssrc, name, applicationDependentData);
     }
     
-    public Bye decodeBye(ByteBuf byeInBuf) {
-        RtcpHeader header = this.decodeHeader(byeInBuf);
+    public static Bye decodeBye(ByteBuf byeInBuf) {
+        RtcpHeader header = decodeHeader(byeInBuf);
         int ssrc = byeInBuf.readInt();
 
         int reasonLength = 0;
@@ -73,7 +72,7 @@ public class RtcpDecoder
         return bye;
     }
     
-    public ReceiverReport decodeReceiverReport(ByteBuf rrInBuf) {
+    public static ReceiverReport decodeReceiverReport(ByteBuf rrInBuf) {
         RtcpHeader header = decodeHeader(rrInBuf);
         int ssrc = rrInBuf.readInt();
         
@@ -93,7 +92,7 @@ public class RtcpDecoder
         return rr;
     }
     
-    public SenderReport decodeSenderReport(ByteBuf srInBuf) {
+    public static SenderReport decodeSenderReport(ByteBuf srInBuf) {
         RtcpHeader header = decodeHeader(srInBuf.readBytes(4));
         
         int ssrc = srInBuf.readInt();
@@ -122,6 +121,7 @@ public class RtcpDecoder
         return sr;
     }
     
+
     public SourceDescription decodeSourceDescription(ByteBuf sdInBuf) 
     {
         RtcpHeader header = decodeHeader(sdInBuf.readBytes(4));
@@ -141,10 +141,11 @@ public class RtcpDecoder
         }
 
         sd.setChunks(chunks);  
+
         return sd;
     }
     
-    public Chunk decodeChunk(ByteBuf chunkBuf) 
+    public static Chunk decodeChunk(ByteBuf chunkBuf)
     {
         int ssrc = chunkBuf.readInt();
         List<SdesItem> items = new ArrayList<>();
@@ -157,6 +158,7 @@ public class RtcpDecoder
         return new Chunk(ssrc, items);
     }
     
+
     public SdesItem decodeSdesItem(ByteBuf sdesItemInBuf) 
     {
         if (!sdesItemInBuf.isReadable(2)) 
@@ -202,25 +204,28 @@ public class RtcpDecoder
         {
             return new SdesItem(type, length, data);
         }
-    }
+
     
-    public ReportBlock decodeReportBlock(ByteBuf buf) 
-    {
+    public static ReportBlock decodeReportBlock(ByteBuf buf) {
         int ssrc = buf.readInt();
-        
         byte fractionLost = buf.readByte();
         
         int cumulativePacketsLost = buf.readMedium();
-        
         int extendedHighestSeqNumber = buf.readInt();
       
         int interarrivalJitter = buf.readInt();
-     
         int lastSenderReport = buf.readInt();
         
         int delaySinceLastSenderReport = buf.readInt();
 
-        return new ReportBlock(ssrc, fractionLost, cumulativePacketsLost,extendedHighestSeqNumber, interarrivalJitter, lastSenderReport, delaySinceLastSenderReport);
+        return new ReportBlock(
+                ssrc,
+                fractionLost,
+                cumulativePacketsLost,
+                extendedHighestSeqNumber,
+                interarrivalJitter,
+                lastSenderReport,
+                delaySinceLastSenderReport
+        );
     }
-    
 }

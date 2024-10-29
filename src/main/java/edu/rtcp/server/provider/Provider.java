@@ -11,12 +11,14 @@ import edu.rtcp.server.session.SessionFactory;
 import edu.rtcp.server.session.SessionStorage;
 import edu.rtcp.server.session.types.ServerSession;
 import edu.rtcp.server.session.Session;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class Provider {
     private final RtcpStack stack;
 
     // Sessions handling -------------------------
-    private final SessionStorage sessionStorage = new SessionStorage();
+    private final SessionStorage sessionStorage;
     private final SessionFactory sessionFactory = new SessionFactory(this);
 
     // Listeners ---------------------------------
@@ -28,6 +30,7 @@ public class Provider {
 
     public Provider(RtcpStack stack) {
         this.stack = stack;
+        this.sessionStorage = new SessionStorage(stack);
     }
 
     public RtcpStack getStack() {
@@ -75,8 +78,7 @@ public class Provider {
 
     // Event handling -----------------------------
     public void onMessage(RtcpBasePacket message, AsyncCallback callback) {
-        System.out.println("[PROVIDER] Incoming message is handled by provider");
-        int sessionId = message.getSSRC();
+         int sessionId = message.getSSRC();
 
         boolean isAnswer = message instanceof ReceiverReport && message.getHeader().getItemCount() == 0;
         boolean isNewSession = false;
@@ -87,7 +89,6 @@ public class Provider {
             this.sessionStorage.store(session);
 
             isNewSession = true;
-            System.out.println("[PROVIDER] Session " + sessionId + " created (Item Count = 0 and Type = SR)");
         }
 
         if (session == null) {
@@ -96,10 +97,8 @@ public class Provider {
         }
 
         if (isAnswer) {
-            System.out.println("[PROVIDER] Answer will be processed by session");
             session.processAnswer(message, callback);
         } else {
-            System.out.println("[PROVIDER] Request will be processed by session");
             session.processRequest(message, isNewSession, callback);
         }
     }

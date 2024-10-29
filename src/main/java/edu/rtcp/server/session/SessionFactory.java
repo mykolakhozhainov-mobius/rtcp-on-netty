@@ -13,10 +13,18 @@ public class SessionFactory {
     }
 
     public ServerSession createServerSession(RtcpBasePacket request) {
-        return new ServerSession(request.getSSRC(), provider);
+        ServerSession serverSession = new ServerSession(request.getSSRC(), provider);
+
+        this.provider.getSessionStorage().store(serverSession);
+
+        return serverSession;
     }
 
     public ClientSession createClientSession(RtcpBasePacket request) {
-        return new ClientSession(request.getSSRC(), provider);
+        ClientSession clientSession = new ClientSession(request.getSSRC(), provider);
+
+        this.provider.getSessionStorage().store(clientSession);
+
+        return clientSession;
     }
 }
