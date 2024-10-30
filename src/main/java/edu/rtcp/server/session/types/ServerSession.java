@@ -1,5 +1,10 @@
 package edu.rtcp.server.session.types;
 
+import java.net.InetSocketAddress;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import edu.rtcp.common.message.rtcp.header.RtcpBasePacket;
 import edu.rtcp.common.message.rtcp.packet.Bye;
 import edu.rtcp.server.callback.AsyncCallback;
@@ -8,8 +13,6 @@ import edu.rtcp.server.provider.Provider;
 import edu.rtcp.server.provider.listeners.ServerSessionListener;
 import edu.rtcp.server.session.Session;
 import edu.rtcp.server.session.SessionStateEnum;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class ServerSession extends Session {
     public static Logger logger = LogManager.getLogger(ServerSession.class);
@@ -20,7 +23,7 @@ public class ServerSession extends Session {
         this.provider = provider;
     }
 
-    public void sendInitialAnswer(RtcpBasePacket answer, int port, AsyncCallback callback) {
+    public void sendInitialAnswer(RtcpBasePacket answer, InetSocketAddress address, AsyncCallback callback) {
         if (this.state != SessionStateEnum.IDLE) {
             callback.onError(new RuntimeException("Can not send initial answer cause session is already open or closed"));
             return;
@@ -30,7 +33,7 @@ public class ServerSession extends Session {
             @Override
             public void execute() {
                 setSessionState(SessionStateEnum.OPEN);
-                provider.getStack().getNetworkManager().sendMessage(answer, port, callback);
+                provider.getStack().getNetworkManager().sendMessage(answer, address, callback);
 
                 if (provider.getStack().isLogging) {
                     logger.info("ACK on initial in session {} sent", ServerSession.this.id);
@@ -39,7 +42,7 @@ public class ServerSession extends Session {
         });
     }
 
-    public void sendDataAnswer(RtcpBasePacket answer, int port, AsyncCallback callback) {
+    public void sendDataAnswer(RtcpBasePacket answer,  InetSocketAddress address, AsyncCallback callback) {
         if (this.state != SessionStateEnum.OPEN) {
             callback.onError(new RuntimeException("Can not send data answer cause session is idle, waiting or closed"));
             return;
@@ -48,7 +51,7 @@ public class ServerSession extends Session {
         super.sendMessageAsTask(new MessageTask(answer) {
             @Override
             public void execute() {
-                provider.getStack().getNetworkManager().sendMessage(answer, port, callback);
+                provider.getStack().getNetworkManager().sendMessage(answer, address, callback);
 
                 if (provider.getStack().isLogging) {
                     logger.info("ACK on data in session {} sent", ServerSession.this.id);
@@ -57,7 +60,7 @@ public class ServerSession extends Session {
         });
     }
 
-    public void sendTerminationAnswer(RtcpBasePacket answer, int port, AsyncCallback callback) {
+    public void sendTerminationAnswer(RtcpBasePacket answer, InetSocketAddress address, AsyncCallback callback) {
         if (this.state != SessionStateEnum.OPEN) {
             callback.onError(new RuntimeException("Can not terminate not opened session"));
             return;
@@ -69,7 +72,7 @@ public class ServerSession extends Session {
                 setSessionState(SessionStateEnum.CLOSED);
                 provider.getSessionStorage().remove(ServerSession.this);
 
-                provider.getStack().getNetworkManager().sendMessage(answer, port, callback);
+                provider.getStack().getNetworkManager().sendMessage(answer, address, callback);
 
                 if (provider.getStack().isLogging) {
                     logger.info("ACK on termination in session {} sent", ServerSession.this.id);
@@ -79,7 +82,7 @@ public class ServerSession extends Session {
     }
 
     @Override
-    public void processRequest(RtcpBasePacket request, boolean isNewSession, AsyncCallback callback) {
+    public void processRequest(RtcpBasePacket request, InetSocketAddress address, boolean isNewSession, AsyncCallback callback) {
         ServerSessionListener listener = this.provider.getServerListener();
 
         boolean isLogging = this.provider.getStack().isLogging;
@@ -93,7 +96,7 @@ public class ServerSession extends Session {
             }
 
             if (listener != null) {
-                listener.onTerminationRequest(request, this, callback);
+                listener.onTerminationRequest(request, this, address, callback);
             }
         } else if (isNewSession) {
             if (isLogging) logger.info("Message [SR] is in process");
@@ -104,7 +107,7 @@ public class ServerSession extends Session {
             }
 
             if (listener != null) {
-                listener.onInitialRequest(request, this, callback);
+                listener.onInitialRequest(request, this, address, callback);
             }
         } else {
             if (isLogging) logger.info("Data message [APP, SD, RR] is in process");
@@ -121,7 +124,7 @@ public class ServerSession extends Session {
             }
 
             if (listener != null) {
-                listener.onDataRequest(request, this, callback);
+                listener.onDataRequest(request, this, address, callback);
             }
         }
     }

@@ -8,7 +8,6 @@ import edu.rtcp.common.message.rtcp.packet.Bye;
 import edu.rtcp.common.message.rtcp.packet.ReceiverReport;
 import edu.rtcp.common.message.rtcp.packet.SenderReport;
 import edu.rtcp.server.callback.AsyncCallback;
-import edu.rtcp.server.network.NetworkLink;
 import edu.rtcp.server.provider.Provider;
 import edu.rtcp.server.provider.listeners.ClientSessionListener;
 import edu.rtcp.server.provider.listeners.ServerSessionListener;
@@ -20,6 +19,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Random;
@@ -39,7 +39,7 @@ public class PerformanceTest extends NetworkTestBase {
     
     private static final HashSet<Integer> usedIds = new HashSet<>();
 
-    private final PacketFactory packetFactory = new PacketFactory();
+//    private final PacketFactory packetFactory = new PacketFactory();
     public ArrayList<Session> sessions = new ArrayList<>();
     
     private static final AsyncCallback SENT_CALLBACK = new AsyncCallback() {
@@ -71,7 +71,7 @@ public class PerformanceTest extends NetworkTestBase {
 
         serverProvider.setServerListener(new ServerSessionListener() {
             @Override
-            public void onInitialRequest(RtcpBasePacket request, Session session, AsyncCallback callback) {
+            public void onInitialRequest(RtcpBasePacket request, Session session, InetSocketAddress address, AsyncCallback callback) {
                 ServerSession serverSession = (ServerSession) session;
 
                 ReceiverReport answer = serverProvider.getPacketFactory().
@@ -81,7 +81,7 @@ public class PerformanceTest extends NetworkTestBase {
                                 null
                         );
 
-                serverSession.sendInitialAnswer(answer, 8081, new AsyncCallback() {
+                serverSession.sendInitialAnswer(answer, address, new AsyncCallback() {
                     @Override
                     public void onSuccess() {
                         serverSent.incrementAndGet();
@@ -97,7 +97,7 @@ public class PerformanceTest extends NetworkTestBase {
             }
 
             @Override
-            public void onTerminationRequest(RtcpBasePacket request, Session session, AsyncCallback callback) {
+            public void onTerminationRequest(RtcpBasePacket request, Session session, InetSocketAddress address, AsyncCallback callback) {
                 ServerSession serverSession = (ServerSession) session;
 
                 ReceiverReport answer = serverProvider.getPacketFactory().
@@ -107,7 +107,7 @@ public class PerformanceTest extends NetworkTestBase {
                                 null
                         );
 
-                serverSession.sendTerminationAnswer(answer, 8081, new AsyncCallback() {
+                serverSession.sendTerminationAnswer(answer, address, new AsyncCallback() {
                     @Override
                     public void onSuccess() {
                         serverSent.incrementAndGet();
@@ -123,7 +123,7 @@ public class PerformanceTest extends NetworkTestBase {
             }
 
             @Override
-            public void onDataRequest(RtcpBasePacket request, Session session, AsyncCallback callback) {
+            public void onDataRequest(RtcpBasePacket request, Session session, InetSocketAddress address, AsyncCallback callback) {
                 ServerSession serverSession = (ServerSession) session;
 
                 ReceiverReport answer = serverProvider.getPacketFactory().
@@ -133,7 +133,7 @@ public class PerformanceTest extends NetworkTestBase {
                                 null
                         );
 
-                serverSession.sendDataAnswer(answer, 8081, new AsyncCallback() {
+                serverSession.sendDataAnswer(answer, address, new AsyncCallback() {
                     @Override
                     public void onSuccess() {
                         serverSent.incrementAndGet();
@@ -164,7 +164,7 @@ public class PerformanceTest extends NetworkTestBase {
 
                 ClientSession clientSession = (ClientSession) session;
 
-                clientSession.sendTerminationRequest(byeMessage, 8080, SENT_CALLBACK);
+                clientSession.sendTerminationRequest(byeMessage, null, SENT_CALLBACK);
                 callback.onSuccess();
             }
 
@@ -183,7 +183,7 @@ public class PerformanceTest extends NetworkTestBase {
 
                 ClientSession clientSession = (ClientSession) session;
 
-//                clientSession.sendDataRequest(dataPacket, 8080, SENT_CALLBACK);
+                clientSession.sendDataRequest(dataPacket, null, SENT_CALLBACK);
                 callback.onSuccess();
             }
 
@@ -207,15 +207,15 @@ public class PerformanceTest extends NetworkTestBase {
     	setServerListener(serverStack);
         setClientListener(localStack);
         
-        serverStack.getNetworkManager().startLink(localLinkID);
+        serverStack.getNetworkManager().startAllLinks();
         Thread.sleep(100);
-        localStack.getNetworkManager().startLink(localLinkID);
+        localStack.getNetworkManager().startAllLinks();;
        
 
         System.out.println(localStack);
         System.out.println(serverStack);
 
-        NetworkLink localLink = localStack.getNetworkManager().getLinkByLinkId(localLinkID);
+//        NetworkLink localLink = localStack.getNetworkManager().getLinkByLinkId(localLinkID);
         
         for (int k = 0; k < numberOfSessions; k++) {
             int sessionId = generateId();
@@ -231,8 +231,7 @@ public class PerformanceTest extends NetworkTestBase {
                     .getSessionFactory()
                     .createClientSession(initialPacket);
 
-//            Thread.sleep(1);
-            clientSession.sendInitialRequest(initialPacket, 8080, new AsyncCallback() {
+            clientSession.sendInitialRequest(initialPacket, null, new AsyncCallback() {
                 @Override
                 public void onSuccess() {
                     clientSent.incrementAndGet();
