@@ -1,5 +1,7 @@
 package edu.rtcp.server.session;
 
+import java.net.InetSocketAddress;
+
 import edu.rtcp.common.message.rtcp.header.RtcpBasePacket;
 import edu.rtcp.server.callback.AsyncCallback;
 import edu.rtcp.server.executor.tasks.MessageOutgoingTask;
@@ -31,13 +33,13 @@ public abstract class Session {
 		this.state = state;
 	}
 
-	public abstract void processRequest(RtcpBasePacket request, boolean isNewSession, AsyncCallback callback);
+	public abstract void processRequest(RtcpBasePacket request, InetSocketAddress address, boolean isNewSession, AsyncCallback callback);
 	public abstract void processAnswer(RtcpBasePacket answer, AsyncCallback callback);
 
 	public abstract boolean isServer();
 
-	public void sendMessage(RtcpBasePacket packet, int port, AsyncCallback callback) {
-		this.sendMessageAsTask(new MessageOutgoingTask(this, packet, port, callback));
+	public void sendMessage(RtcpBasePacket packet,  InetSocketAddress address, AsyncCallback callback) {
+		this.sendMessageAsTask(new MessageOutgoingTask(this, packet, address, callback));
 	}
 
 	public void sendMessageAsTask(MessageTask task) {

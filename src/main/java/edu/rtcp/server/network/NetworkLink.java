@@ -1,8 +1,8 @@
 package edu.rtcp.server.network;
 
-import io.netty.channel.Channel;
-
 import java.net.InetAddress;
+
+import io.netty.channel.Channel;
 
 public class NetworkLink {
     private final String linkId;
@@ -26,7 +26,11 @@ public class NetworkLink {
         this.networkManager = networkManager;
     }
 
-    public void setChannel(Channel channel) {
+    public String getLinkId() {
+		return linkId;
+	}
+
+	public void setChannel(Channel channel) {
         this.channel = channel;
     }
 

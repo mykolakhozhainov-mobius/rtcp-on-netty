@@ -12,7 +12,7 @@ public class RtcpParser {
 
         working.skipBytes(1);
         int typeInInt = ((int) working.readByte()) & 0xff;
-
+        
         working.release();
 
         return PacketTypeEnum.fromInt(typeInInt);
