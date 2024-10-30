@@ -1,29 +1,21 @@
 package edu.rtcp.server.network;
 
-import java.net.InetAddress;
-
+import java.net.InetSocketAddress;
 import io.netty.channel.Channel;
 
 public class NetworkLink {
     private final String linkId;
 
-    private final InetAddress remoteAddress;
-    private final int remotePort;
+    private final InetSocketAddress remoteAddress;
 
-    private final InetAddress localAddress;
-    private final int localPort;
+    private final InetSocketAddress localAddress;
 
     private Channel channel;
-    private final NetworkManager networkManager;
 
-    public NetworkLink(String linkId, InetAddress remoteAddress, int remotePort, InetAddress localAddress, int localPort, NetworkManager networkManager) {
+    public NetworkLink(String linkId, InetSocketAddress remoteAddress, InetSocketAddress localAddress) {
         this.linkId = linkId;
         this.remoteAddress = remoteAddress;
-        this.remotePort = remotePort;
         this.localAddress = localAddress;
-        this.localPort = localPort;
-
-        this.networkManager = networkManager;
     }
 
     public String getLinkId() {
@@ -38,19 +30,11 @@ public class NetworkLink {
         return channel;
     }
 
-    public int getLocalPort() {
-        return localPort;
-    }
-
-    public InetAddress getLocalAddress() {
+    public InetSocketAddress getLocalAddress() {
         return localAddress;
     }
 
-    public int getRemotePort() {
-        return remotePort;
-    }
-
-    public InetAddress getRemoteAddress() {
+    public InetSocketAddress getRemoteAddress() {
         return remoteAddress;
     }
 }
