@@ -14,7 +14,7 @@ import java.util.List;
  
 public class RtcpDecoder 
 {
-    public RtcpHeader decodeHeader(ByteBuf headerInBuf) {
+    public static RtcpHeader decodeHeader(ByteBuf headerInBuf) {
         byte firstByte = headerInBuf.readByte();
 
         byte version = (byte) ((firstByte >> 6) & 0x03);
@@ -29,7 +29,7 @@ public class RtcpDecoder
         return new RtcpHeader(version, isPadding, itemCount, packetTypeValue, length);
     }
     
-    public ApplicationDefined decodeApp(ByteBuf appInBuf) {
+    public static ApplicationDefined decodeApp(ByteBuf appInBuf) {
         RtcpHeader header = decodeHeader(appInBuf);
         int ssrc = appInBuf.readInt();
       
@@ -43,8 +43,8 @@ public class RtcpDecoder
         return new ApplicationDefined(header, ssrc, name, applicationDependentData);
     }
     
-    public Bye decodeBye(ByteBuf byeInBuf) {
-        RtcpHeader header = this.decodeHeader(byeInBuf);
+    public static Bye decodeBye(ByteBuf byeInBuf) {
+        RtcpHeader header = decodeHeader(byeInBuf);
         int ssrc = byeInBuf.readInt();
 
         int reasonLength = 0;
@@ -72,7 +72,7 @@ public class RtcpDecoder
         return bye;
     }
     
-    public ReceiverReport decodeReceiverReport(ByteBuf rrInBuf) {
+    public static ReceiverReport decodeReceiverReport(ByteBuf rrInBuf) {
         RtcpHeader header = decodeHeader(rrInBuf);
         int ssrc = rrInBuf.readInt();
         
@@ -92,8 +92,8 @@ public class RtcpDecoder
         return rr;
     }
     
-    public SenderReport decodeSenderReport(ByteBuf srInBuf) {
-        RtcpHeader header = decodeHeader(srInBuf.readBytes(4));
+    public static SenderReport decodeSenderReport(ByteBuf srInBuf) {
+        RtcpHeader header = decodeHeader(srInBuf);
         
         int ssrc = srInBuf.readInt();
         int ntpTimestampMostSignificant = srInBuf.readInt();
@@ -126,11 +126,10 @@ public class RtcpDecoder
         return sr;
     }
     
-    public SourceDescription decodeSourceDescription(ByteBuf sdInBuf) {
+    public static SourceDescription decodeSourceDescription(ByteBuf sdInBuf) {
         RtcpHeader header = decodeHeader(sdInBuf.readBytes(4));
 
-        int ssrc = sdInBuf.readInt();
-        SourceDescription sd = new SourceDescription(header, ssrc);
+        SourceDescription sd = new SourceDescription(header);
 
         int itemCount = header.getItemCount(); 
         List<Chunk> chunks = new ArrayList<>(itemCount);
@@ -142,7 +141,7 @@ public class RtcpDecoder
         return sd;
     }
     
-    public Chunk decodeChunk(ByteBuf chunkBuf) 
+    public static Chunk decodeChunk(ByteBuf chunkBuf)
     {
         int ssrc = chunkBuf.readInt();
         
@@ -156,7 +155,7 @@ public class RtcpDecoder
         return new Chunk(ssrc, items);
     }
     
-    public SdesItem decodeSdesItem(ByteBuf sdesItemInBuf) 
+    public static SdesItem decodeSdesItem(ByteBuf sdesItemInBuf)
     {
     	 ItemsTypeEnum type = ItemsTypeEnum.fromInt((int) sdesItemInBuf.readByte()); 
     	    
@@ -185,7 +184,7 @@ public class RtcpDecoder
     	
     }
     
-    public ReportBlock decodeReportBlock(ByteBuf buf) 
+    public static ReportBlock decodeReportBlock(ByteBuf buf)
     {
         int ssrc = buf.readInt();
         

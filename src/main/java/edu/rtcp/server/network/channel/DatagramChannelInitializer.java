@@ -2,7 +2,6 @@ package edu.rtcp.server.network.channel;
 
 import edu.rtcp.RtcpStack;
 import edu.rtcp.server.network.decoder.RtcpDatagramDecoder;
-import edu.rtcp.server.network.handler.MessageHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.DatagramChannel;
@@ -21,12 +20,9 @@ public class DatagramChannelInitializer extends ChannelInitializer<DatagramChann
         ChannelPipeline pipeline = ch.pipeline();
 
         // Decoder
-        pipeline.addLast("decoder", new RtcpDatagramDecoder());
+        pipeline.addLast("decoder", new RtcpDatagramDecoder(this.stack));
 
         // Encoder
         pipeline.addLast("byteEncoder", new ByteArrayEncoder());
-
-        // Handler
-        pipeline.addLast("handler", new MessageHandler(this.stack));
     }
 }

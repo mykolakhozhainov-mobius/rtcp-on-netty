@@ -113,12 +113,24 @@ public class PacketFactory {
     ) {
         RtcpHeader header = new RtcpHeader(VERSION, IS_PADDING, itemCount, PacketTypeEnum.SOURCE_DESCRIPTION, length);
         
-        SourceDescription sdPacket = new SourceDescription(header, ssrc);
+        SourceDescription sdPacket = new SourceDescription(header);
 
         if (chunks != null && !chunks.isEmpty()) {
             sdPacket.setChunks(chunks);
         }
         
         return sdPacket;
+    }
+
+    public ReportBlock createReportBlock(int ssrc, byte fractionLost) {
+        return new ReportBlock(
+                ssrc,
+                fractionLost,
+                random.nextInt(),
+                random.nextInt(),
+                random.nextInt(),
+                random.nextInt(),
+                random.nextInt()
+        );
     }
 }

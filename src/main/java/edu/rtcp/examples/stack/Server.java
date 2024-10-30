@@ -1,4 +1,4 @@
-package edu.rtcp.examples;
+package edu.rtcp.examples.stack;
 
 import edu.rtcp.RtcpStack;
 import edu.rtcp.common.TransportEnum;
@@ -9,13 +9,18 @@ import java.net.InetAddress;
 public class Server {
     private static final String localLinkID = "1";
 
-    public RtcpStack setupServer(TransportEnum transport, boolean logging) throws Exception {
+    public RtcpStack setupServer(
+            int port,
+            int remotePort,
+            TransportEnum transport,
+            int threadPoolSize,
+            boolean logging
+    ) throws Exception {
         RtcpStack serverStack = new RtcpStack(
-                32,
+                threadPoolSize,
                 true,
                 transport,
-                logging
-        );
+                logging);
 
         Provider serverProvider = new Provider(serverStack);
         serverStack.registerProvider(serverProvider);
@@ -24,9 +29,9 @@ public class Server {
                 .addLink(
                         localLinkID,
                         InetAddress.getByName("127.0.0.1"),
-                        8081,
+                        remotePort,
                         InetAddress.getByName("127.0.0.1"),
-                        8080);
+                        port);
 
         serverStack.getNetworkManager().startLink(localLinkID);
         return serverStack;

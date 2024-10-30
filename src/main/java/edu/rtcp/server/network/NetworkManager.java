@@ -13,12 +13,10 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
-//import io.netty.channel.ServerChannel;
 import io.netty.channel.epoll.EpollChannelOption;
 import io.netty.channel.epoll.EpollDatagramChannel;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.DatagramChannel;
 import io.netty.channel.socket.DatagramPacket;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.bootstrap.ServerBootstrap;
@@ -26,12 +24,15 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class NetworkManager {
 	private final RtcpStack stack;
 	private final ConcurrentHashMap<String, NetworkLink> links = new ConcurrentHashMap<String, NetworkLink>();
+	private AtomicInteger linkIndex = new AtomicInteger();
 
 	EventLoopGroup bossGroup;
 	EventLoopGroup workerGroup;
@@ -57,9 +58,9 @@ public class NetworkManager {
 		return links.get(linkId);
 	}
 
-	public NetworkLink getLinkByPort(int port) {
+	public NetworkLink getLinkByAddress(InetSocketAddress address) {
 		for (NetworkLink link : links.values()) {
-			if (link.getRemotePort() == port) {
+			if (new InetSocketAddress (link.getRemoteAddress(), link.getRemotePort()).equals(address)) {
 				return link;
 			}
 		}
@@ -72,29 +73,27 @@ public class NetworkManager {
 			return;
 		}
 		if (stack.isServer) {
-			if (!isServerStarted) {
 				if (stack.transport.equals(TransportEnum.TCP)) {
-					ServerBootstrap bootstrap = new ServerBootstrap();
-
-					bootstrap.group(bossGroup, workerGroup);
-
-					bootstrap.channel(ServerChannelUtils.getSocketChannel())
+					ServerBootstrap bootstrap = new ServerBootstrap()
+							.group(bossGroup, workerGroup)
+							.channel(ServerChannelUtils.getSocketChannel())
 							.childHandler(new ChannelInitializer<SocketChannel>() {
 								@Override
 								protected void initChannel(SocketChannel socketChannel) {
-									NetworkLink foundLink = getLinkByPort(socketChannel.remoteAddress().getPort());
+									NetworkLink foundLink = getLinkByAddress(socketChannel.remoteAddress());
 									if(foundLink != null) {
-										foundLink.setChannel(socketChannel);
+										link.setChannel(socketChannel);
 									} else {
 										socketChannel.close();
 									}
+									foundLink.setChannel(socketChannel);
 									socketChannel.pipeline().addLast(new StreamChannelInitializer(stack));
 								}
 							});
-//							.childOption(ChannelOption.SO_KEEPALIVE, true);
 
-					ChannelFuture future = bootstrap.bind(link.getLocalPort()).syncUninterruptibly();
-					future.awaitUninterruptibly();
+					ChannelFuture future = bootstrap.bind(link.getLocalPort())
+							.syncUninterruptibly()
+							.awaitUninterruptibly();
 
 					new Thread(() -> {
 						try {
@@ -106,56 +105,33 @@ public class NetworkManager {
 							bossGroup.shutdownGracefully();
 						}
 					}).start();
-
-					for (int i = 0; i < stack.getThreadPoolSize(); ++i) {
-						ChannelFuture futures = bootstrap.bind(new InetSocketAddress("0.0.0.0", link.getLocalPort()));
-
-						futures.awaitUninterruptibly();
-
-						if (futures.isSuccess()) {
-							System.out.println("[UDP-PROCESSOR] Channel started on port " + link.getLocalPort());
-						} else {
-							System.out.println("[UDP-PROCESSOR] Channel not connected: " + future.cause());
-						}
-						try {
-							futures.channel().closeFuture().sync();
-						} catch (InterruptedException e) {
-							System.out.println(e);
-						}
-					}
-
-
-
-					System.out.println("[TCP-PROCESSOR] Server started on port " + link.getLocalPort());
-					isServerStarted = true;
-				} else if (stack.transport.equals(TransportEnum.UDP)) {
-					Bootstrap connectionlessBootstrap = new Bootstrap();
+					link.setChannel(future.channel());
+				} 
+				else if (stack.transport.equals(TransportEnum.UDP)) {
 					EventLoopGroup group = ServerChannelUtils.createEventLoopGroup();
-					connectionlessBootstrap.channel(ServerChannelUtils.getDatagramChannel());
-					connectionlessBootstrap.group(group)
+					Bootstrap bootstrap = new Bootstrap()
+							.channel(ServerChannelUtils.getDatagramChannel())
+							.group(group)
 							.option(EpollChannelOption.SO_REUSEPORT, true)
 							.option(EpollChannelOption.IP_RECVORIGDSTADDR, true)
 							.option(ChannelOption.SO_SNDBUF, 256*1024)
 							.option(ChannelOption.SO_RCVBUF, 256*1024)
-							.option(EpollChannelOption.IP_FREEBIND, true);
-					connectionlessBootstrap
-							.handler(new ChannelInitializer<DatagramChannel>() {
-								@Override
-								protected void initChannel(DatagramChannel datagramChannel) {
-									System.out.println("Found link: " + datagramChannel);
-									link.setChannel(datagramChannel);
-									datagramChannel.pipeline().addLast(new DatagramChannelInitializer(stack));
-								}
-							});
+							.option(EpollChannelOption.IP_FREEBIND, true)
+							.handler(new DatagramChannelInitializer(stack));
 
-					ChannelFuture future = connectionlessBootstrap.bind(link.getLocalAddress(), link.getLocalPort()).syncUninterruptibly();
-					future.awaitUninterruptibly();
-				}
+					ChannelFuture future = bootstrap
+							.bind(link.getLocalAddress(), link.getLocalPort())
+							.syncUninterruptibly()
+							.awaitUninterruptibly();
+					link.setChannel(future.channel());
 			}
-		} else {
+		} 
+		else {
 			if (stack.transport.equals(TransportEnum.TCP)) {
 				NioEventLoopGroup group = new NioEventLoopGroup();
-				Bootstrap bootstrap = new Bootstrap().group(group).channel(NioSocketChannel.class)
+				Bootstrap bootstrap = new Bootstrap()
+						.group(group)
+						.channel(NioSocketChannel.class)
 						.handler(new ChannelInitializer<SocketChannel>() {
 							@Override
 							protected void initChannel(SocketChannel socketChannel) {
@@ -163,15 +139,12 @@ public class NetworkManager {
 								socketChannel.pipeline().addLast(new StreamChannelInitializer(stack));
 							}
 						});
+				
 				ChannelFuture future = bootstrap
 						.connect(new InetSocketAddress(link.getRemoteAddress(), link.getRemotePort()),
 								new InetSocketAddress(link.getLocalAddress(), link.getLocalPort()))
 						.syncUninterruptibly();
-				if (!future.isSuccess()) {
-					System.out.println(future.cause());
-					return;
-				}
-
+//				link.setChannel(future.channel());
 				new Thread(() -> {
 					try {
 						link.getChannel().closeFuture().syncUninterruptibly();
@@ -179,20 +152,21 @@ public class NetworkManager {
 						group.shutdownGracefully();
 					}
 				}).start();
-			} else if (stack.transport.equals(TransportEnum.UDP)) {
+			} 
+			else if (stack.transport.equals(TransportEnum.UDP)) {
 				EventLoopGroup group = new EpollEventLoopGroup();
-				Bootstrap bootstrap = new Bootstrap();
-				bootstrap.group(group).channel(EpollDatagramChannel.class)
-						.handler(new ChannelInitializer<DatagramChannel>() {
-							@Override
-							protected void initChannel(DatagramChannel channel) {
-								link.setChannel(channel);
-								link.getChannel().pipeline().addLast(new DatagramChannelInitializer(stack));
-							}
-						});
+				Bootstrap bootstrap = new Bootstrap()
+						.option(EpollChannelOption.IP_RECVORIGDSTADDR, true)
+						.option(ChannelOption.SO_SNDBUF, 256*1024)
+						.option(ChannelOption.SO_RCVBUF, 256*1024)
+						.option(EpollChannelOption.IP_FREEBIND, true)
+						.group(group).channel(EpollDatagramChannel.class)
+						.handler(new DatagramChannelInitializer(stack));
+				
 				ChannelFuture future = bootstrap.connect(
 						new InetSocketAddress(link.getRemoteAddress(), link.getRemotePort()),
 						new InetSocketAddress(link.getLocalAddress(), link.getLocalPort()));
+				link.setChannel(future.channel());
 				new Thread(() -> {
 					try {
 						future.channel().closeFuture().sync();
@@ -205,6 +179,21 @@ public class NetworkManager {
 			}
 		}
 	}
+	
+	public void startAllLinks (){
+		if (stack.isServer) {
+			startLink(links.keys().nextElement());
+		} else {
+			for (NetworkLink link : links.values()) {
+				startLink(link.getLinkId());
+			}
+		}
+	}
+	
+	public NetworkLink getNextLink() {
+		ArrayList<NetworkLink> linksArray = new ArrayList<NetworkLink>(links.values());
+		return linksArray.get(linkIndex.incrementAndGet() % links.size());
+	}
 
 	public void stopLink(String linkId) {
 		NetworkLink link = getLinkByLinkId(linkId);
@@ -214,15 +203,28 @@ public class NetworkManager {
 		link.getChannel().close();
 	}
 
-	public void sendMessage(RtcpBasePacket message, int port, AsyncCallback callback) {
-		NetworkLink link = getLinkByPort(port);
-
-		if (stack.isServer && stack.transport == TransportEnum.UDP && link.getChannel().remoteAddress() == null) {
-			link.getChannel().writeAndFlush(new DatagramPacket(RtcpParser.encode(message), new InetSocketAddress(link.getRemoteAddress(), link.getRemotePort())));
+	public void sendMessage(RtcpBasePacket message, InetSocketAddress address, AsyncCallback callback) {
+		NetworkLink link = null;
+		if (address == null) {
+			link = getNextLink();
+			
+			if (stack.transport == TransportEnum.UDP ) {
+				link.getChannel().writeAndFlush(new DatagramPacket(RtcpParser.encode(message), new InetSocketAddress(link.getRemoteAddress(), link.getRemotePort())));
+			}
+			else {
+				link.getChannel().writeAndFlush((RtcpParser.encode(message)));
+			}
 		}
 		else {
-			link.getChannel().writeAndFlush((RtcpParser.encode(message)));
+			link = getLinkByAddress(address);
+			if (stack.transport == TransportEnum.UDP ) {
+				link.getChannel().writeAndFlush(new DatagramPacket(RtcpParser.encode(message), (InetSocketAddress) address));
+			}
+			else {
+				link.getChannel().writeAndFlush((RtcpParser.encode(message)));
+			}
 		}
+		
 
 		callback.onSuccess();
 	}

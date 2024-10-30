@@ -1,5 +1,9 @@
 package edu.rtcp.server.session.types;
 
+import java.net.InetSocketAddress;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
 import edu.rtcp.common.message.rtcp.header.RtcpBasePacket;
 import edu.rtcp.common.message.rtcp.packet.Bye;
 import edu.rtcp.common.message.rtcp.packet.SenderReport;
@@ -10,11 +14,10 @@ import edu.rtcp.server.provider.listeners.ClientSessionListener;
 import edu.rtcp.server.session.Session;
 import edu.rtcp.server.session.SessionStateEnum;
 
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
-
 public class ClientSession extends Session {
+
     private final Queue<RtcpBasePacket> lastSentMessages = new ConcurrentLinkedQueue<>();
+
 
     public ClientSession(int id, Provider provider) {
         this.id = id;
@@ -22,44 +25,47 @@ public class ClientSession extends Session {
         this.provider = provider;
     }
 
-    public void sendInitialRequest(RtcpBasePacket request, int port, AsyncCallback callback) {
+    public void sendInitialRequest(RtcpBasePacket request, InetSocketAddress address, AsyncCallback callback) {
         if (this.state != SessionStateEnum.IDLE) {
             callback.onError(new RuntimeException("Client session can not send initial request cause it is already opened"));
             return;
         }
 
+
         // Sending Sender Report (Session opening message)
-        this.sendMessageAsTask(new MessageOutgoingTask(this, request, port, callback));
+        this.sendMessageAsTask(new MessageOutgoingTask(this, request, address, callback));
+
 
         lastSentMessages.add(request);
     }
 
-    public void sendTerminationRequest(Bye request, int port, AsyncCallback callback) {
+    public void sendTerminationRequest(Bye request, InetSocketAddress address, AsyncCallback callback) {
         if (this.state == SessionStateEnum.CLOSED) {
             callback.onError(new RuntimeException("Client session can not send termination request cause it is already opened"));
             return;
         }
 
+
         // Sending Bye (Session closing message)
-        this.sendMessageAsTask(new MessageOutgoingTask(this, request, port, callback));
+        this.sendMessageAsTask(new MessageOutgoingTask(this, request, address, callback));
 
         lastSentMessages.add(request);
     }
 
-    public void sendDataRequest(RtcpBasePacket request, int port, AsyncCallback callback) {
+    public void sendDataRequest(RtcpBasePacket request, InetSocketAddress address, AsyncCallback callback) {
         if (this.state == SessionStateEnum.CLOSED) {
             callback.onError(new RuntimeException("Client session can not send data request cause session is closed"));
             return;
         }
 
         // Sending Data
-        this.sendMessageAsTask(new MessageOutgoingTask(this, request, port, callback));
+        this.sendMessageAsTask(new MessageOutgoingTask(this, request, address, callback));
 
         lastSentMessages.add(request);
     }
 
     @Override
-    public void processRequest(RtcpBasePacket request, boolean isNewSession, AsyncCallback callback) {
+    public void processRequest(RtcpBasePacket request,InetSocketAddress address, boolean isNewSession, AsyncCallback callback) {
         // Here will be some logic if client will process any requests
     }
 
@@ -76,7 +82,9 @@ public class ClientSession extends Session {
 
         if (lastSentMessage instanceof SenderReport && lastSentMessage.getHeader().getItemCount() == 0) {
             this.setSessionState(SessionStateEnum.OPEN);
+        }
 
+        if (lastSentMessage instanceof SenderReport && lastSentMessage.getHeader().getItemCount() == 0) {
             if (listener != null) {
                 listener.onInitialAnswer(answer, this, callback);
             }
@@ -88,9 +96,11 @@ public class ClientSession extends Session {
                 listener.onTerminationAnswer(answer, this, callback);
             }
         } else {
+
             if (listener != null) {
                 listener.onDataAnswer(answer, this, callback);
             }
+
         }
     }
 
