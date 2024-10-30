@@ -17,7 +17,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class RtcpStreamDecoder extends ByteToMessageDecoder {
-	public static Logger logger = LogManager.getLogger(RtcpDatagramDecoder.class);
+	public static Logger logger = LogManager.getLogger(RtcpStreamDecoder.class);
 
 	private final RtcpStack stack;
 	private final MessageExecutor executor;
@@ -28,26 +28,25 @@ public class RtcpStreamDecoder extends ByteToMessageDecoder {
 	}
     @Override
     protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) {
-    	
         InetSocketAddress socketAddress = (InetSocketAddress) ctx.channel().remoteAddress();
         
         if (in.readableBytes() < 8) {
             return;
         }
 
-        ByteBuf copied = in.copy();
-        if (in.readableBytes() < copied.readInt() + 4) {
+        in.markReaderIndex();
+        int size = in.readInt();
+
+        if (in.readableBytes() < size) {
+            in.resetReaderIndex();
             return;
         }
-
-        copied.release();
-        in.readInt();
-        RtcpBasePacket message = (RtcpBasePacket) RtcpParser.decode(in);
+        RtcpBasePacket message = RtcpParser.decode(in);
         
 		if (this.stack.isLogging) {
             logger.info("{} from session {}", message.getHeader().getPacketType(), message.getSSRC());
 		}
-		
+
 		this.executor.addTaskLast(new MessageProcessingTask(message, socketAddress, this.stack));
     }
     

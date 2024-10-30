@@ -34,14 +34,14 @@ public class RtcpDatagramDecoder extends SimpleChannelInboundHandler<DatagramPac
             return;
         }
 
-        ByteBuf copied = in.copy();
-        if (in.readableBytes() < copied.readInt() + 4) {
+		in.markReaderIndex();
+		int size = in.readInt();
+
+        if (in.readableBytes() < size) {
+        	in.resetReaderIndex();
             return;
         }
 
-        copied.release();
-
-        in.readInt();
         RtcpBasePacket basePacket = RtcpParser.decode(in);
         
         if (this.stack.isLogging) {

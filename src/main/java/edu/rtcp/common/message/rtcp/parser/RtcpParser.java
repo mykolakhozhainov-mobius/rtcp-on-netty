@@ -8,12 +8,12 @@ import io.netty.buffer.Unpooled;
 
 public class RtcpParser {
     private static PacketTypeEnum decodePacketType(ByteBuf message) {
-        ByteBuf working = message.copy();
+        message.markReaderIndex();
+        message.skipBytes(1);
 
-        working.skipBytes(1);
-        int typeInInt = ((int) working.readByte()) & 0xff;
-        
-        working.release();
+        int typeInInt = ((int) message.readByte()) & 0xff;
+
+        message.resetReaderIndex();
 
         return PacketTypeEnum.fromInt(typeInInt);
     }
@@ -64,6 +64,7 @@ public class RtcpParser {
         }
 
         ByteBuf result = Unpooled.buffer();
+
         result.writeInt(encoded.readableBytes());
         result.writeBytes(encoded);
 
