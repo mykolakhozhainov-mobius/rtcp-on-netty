@@ -29,13 +29,15 @@ public class RtcpStreamDecoder extends ByteToMessageDecoder {
     @Override
     protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) {
         InetSocketAddress socketAddress = (InetSocketAddress) ctx.channel().remoteAddress();
-        
+
         if (in.readableBytes() < 8) {
             return;
         }
 
         in.markReaderIndex();
         int size = in.readInt();
+
+        System.out.println(size);
 
         if (in.readableBytes() < size) {
             in.resetReaderIndex();
