@@ -86,6 +86,7 @@ public class NetworkManager {
 									} else {
 										socketChannel.close();
 									}
+									foundLink.setChannel(socketChannel);
 									socketChannel.pipeline().addLast(new StreamChannelInitializer(stack));
 								}
 							});

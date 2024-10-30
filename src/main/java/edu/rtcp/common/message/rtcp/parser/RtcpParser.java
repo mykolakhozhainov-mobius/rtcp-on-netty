@@ -15,8 +15,6 @@ public class RtcpParser {
         
         working.release();
 
-        working.release();
-
         return PacketTypeEnum.fromInt(typeInInt);
     }
 

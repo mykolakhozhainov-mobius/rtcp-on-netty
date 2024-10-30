@@ -25,20 +25,10 @@ public class NetworkLink {
 
         this.networkManager = networkManager;
     }
-    
-    
 
     public String getLinkId() {
 		return linkId;
 	}
-
-
-
-	public void setLinkId(String linkId) {
-		this.linkId = linkId;
-	}
-
-
 
 	public void setChannel(Channel channel) {
         this.channel = channel;
