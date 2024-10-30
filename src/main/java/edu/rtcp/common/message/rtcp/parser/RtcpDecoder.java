@@ -120,7 +120,7 @@ public class RtcpDecoder
             List<ReportBlock> reportBlocks = new ArrayList<>(itemCount);
         
             for (int i = 0; i < itemCount; i++) {
-                reportBlocks.add(decodeReportBlock(content.readBytes(24)));
+                reportBlocks.add(decodeReportBlock(content));
             }
 
             sr.setReportBlocks(reportBlocks);
