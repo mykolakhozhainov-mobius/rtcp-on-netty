@@ -3,7 +3,7 @@ package edu.rtcp.performance;
 import edu.rtcp.common.TransportEnum;
 
 public class TestConfig {
-    public static final int SESSION_NUMBER = 10;
+    public static final int SESSION_NUMBER = 10000;
 
     // Networking options ------------------------------------------
     public static final String ADDRESS = "127.0.0.1";

@@ -32,7 +32,7 @@ public class StackSetup {
         serverStack.registerProvider(new Provider(serverStack));
 
         NetworkManager manager = serverStack.getNetworkManager();
-        this.serverPort = this.generatePort();
+        this.serverPort = 54738;//this.generatePort();
 
         for (int i = 0; i < TestConfig.CONNECTIONS_NUMBER; i++) {
             int clientPort = this.generatePort();
@@ -44,6 +44,8 @@ public class StackSetup {
                     InetAddress.getByName(TestConfig.ADDRESS), this.serverPort
             );
         }
+
+        System.out.println("Server port: " + this.serverPort);
 
         return serverStack;
     }
@@ -68,6 +70,8 @@ public class StackSetup {
                     InetAddress.getByName(TestConfig.ADDRESS), clientPort
             );
         }
+
+        System.out.println("Client ports: " + this.clientPorts);
 
         return clientStack;
     }

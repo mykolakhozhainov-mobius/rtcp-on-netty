@@ -1,11 +1,10 @@
 package edu.rtcp.performance.setup;
 
 import edu.rtcp.RtcpStack;
-import edu.rtcp.common.message.rtcp.factory.PacketFactory;
 import edu.rtcp.common.message.rtcp.header.RtcpBasePacket;
-import edu.rtcp.common.message.rtcp.packet.ApplicationDefined;
 import edu.rtcp.common.message.rtcp.packet.Bye;
 import edu.rtcp.common.message.rtcp.packet.ReceiverReport;
+import edu.rtcp.common.message.rtcp.packet.SenderReport;
 import edu.rtcp.server.callback.AsyncCallback;
 import edu.rtcp.server.provider.Provider;
 import edu.rtcp.server.provider.listeners.ClientSessionListener;
@@ -17,7 +16,7 @@ import edu.rtcp.server.session.types.ServerSession;
 import java.net.InetSocketAddress;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class CounterSetup {
+public class ListenersSetup {
     public static final AtomicInteger serverReceived = new AtomicInteger(0);
     public static final AtomicInteger serverSent = new AtomicInteger(0);
 
@@ -32,12 +31,7 @@ public class CounterSetup {
             public void onInitialRequest(RtcpBasePacket request, Session session, InetSocketAddress address, AsyncCallback callback) {
                 ServerSession serverSession = (ServerSession) session;
 
-                ReceiverReport answer = serverProvider.getPacketFactory().
-                        createReceiverReport(
-                                (byte) 0,
-                                request.getSSRC(),
-                                null
-                        );
+                ReceiverReport answer = PacketUtils.createResponse(request.getSSRC());
 
                 serverSession.sendInitialAnswer(answer, address, new AsyncCallback() {
                     @Override
@@ -58,12 +52,7 @@ public class CounterSetup {
             public void onTerminationRequest(RtcpBasePacket request, Session session, InetSocketAddress address, AsyncCallback callback) {
                 ServerSession serverSession = (ServerSession) session;
 
-                ReceiverReport answer = serverProvider.getPacketFactory().
-                        createReceiverReport(
-                                (byte) 0,
-                                request.getSSRC(),
-                                null
-                        );
+                ReceiverReport answer = PacketUtils.createResponse(request.getSSRC());
 
                 serverSession.sendTerminationAnswer(answer, address, new AsyncCallback() {
                     @Override
@@ -84,12 +73,7 @@ public class CounterSetup {
             public void onDataRequest(RtcpBasePacket request, Session session, InetSocketAddress address, AsyncCallback callback) {
                 ServerSession serverSession = (ServerSession) session;
 
-                ReceiverReport answer = serverProvider.getPacketFactory().
-                        createReceiverReport(
-                                (byte) 0,
-                                request.getSSRC(),
-                                null
-                        );
+                ReceiverReport answer = PacketUtils.createResponse(request.getSSRC());
 
                 serverSession.sendDataAnswer(answer, address, new AsyncCallback() {
                     @Override
@@ -114,15 +98,11 @@ public class CounterSetup {
             public void onDataAnswer(RtcpBasePacket response, Session session, AsyncCallback callback) {
                 clientAcks.incrementAndGet();
 
-                Bye byeMessage = clientStack.getProvider().getPacketFactory().createBye(
-                        (byte) 0,
-                        session.getId(),
-                        "Because I wanted so"
-                );
+                Bye bye = PacketUtils.createBye(response.getSSRC());
 
                 ClientSession clientSession = (ClientSession) session;
 
-                clientSession.sendTerminationRequest(byeMessage, null, new AsyncCallback() {
+                clientSession.sendTerminationRequest(bye, null, new AsyncCallback() {
                     @Override
                     public void onSuccess() {
                         clientSent.incrementAndGet();
@@ -140,14 +120,7 @@ public class CounterSetup {
             public void onInitialAnswer(RtcpBasePacket response, Session session, AsyncCallback callback) {
                 clientAcks.incrementAndGet();
 
-                PacketFactory packetFactory = clientStack.getProvider().getPacketFactory();
-                ApplicationDefined dataPacket = packetFactory
-                        .createApplicationDefined(
-                                (byte) 0,
-                                session.getId(),
-                                "Hi",
-                                0
-                        );
+                SenderReport dataPacket = PacketUtils.createData(response.getSSRC());
 
                 ClientSession clientSession = (ClientSession) session;
 

@@ -3,7 +3,8 @@ package edu.rtcp.performance;
 import edu.rtcp.RtcpStack;
 import edu.rtcp.common.message.rtcp.factory.PacketFactory;
 import edu.rtcp.common.message.rtcp.packet.SenderReport;
-import edu.rtcp.performance.setup.CounterSetup;
+import edu.rtcp.performance.setup.ListenersSetup;
+import edu.rtcp.performance.setup.PacketUtils;
 import edu.rtcp.performance.setup.StackSetup;
 import edu.rtcp.server.callback.AsyncCallback;
 import edu.rtcp.server.session.types.ClientSession;
@@ -37,8 +38,8 @@ public class PerformanceTest {
         RtcpStack serverStack = stackSetup.setupServer();
         RtcpStack clientStack = stackSetup.setupClient();
 
-        CounterSetup.setServerListener(serverStack);
-        CounterSetup.setClientListener(clientStack);
+        ListenersSetup.setServerListener(serverStack);
+        ListenersSetup.setClientListener(clientStack);
 
         // Preconditions: start links
         serverStack.getNetworkManager().startAllLinks();
@@ -51,12 +52,7 @@ public class PerformanceTest {
         for (int k = 0; k < TestConfig.SESSION_NUMBER; k++) {
             int sessionId = getSessionId();
 
-            SenderReport initialPacket = packetFactory.createSenderReport(
-                    (byte) 0,
-                    sessionId,
-                    null,
-                    null
-            );
+            SenderReport initialPacket = PacketUtils.createInitial(sessionId);
 
             ClientSession clientSession = clientStack.getProvider()
                     .getSessionFactory()
@@ -65,7 +61,7 @@ public class PerformanceTest {
             clientSession.sendInitialRequest(initialPacket, null, new AsyncCallback() {
                 @Override
                 public void onSuccess() {
-                    CounterSetup.clientSent.incrementAndGet();
+                    ListenersSetup.clientSent.incrementAndGet();
                 }
 
                 @Override
@@ -81,22 +77,22 @@ public class PerformanceTest {
 
         // Output the stats
         System.out.println("===== SERVER STATS =====");
-        System.out.println("RECEIVED: " + CounterSetup.serverReceived.get());
-        System.out.println("SENT: " + CounterSetup.serverSent.get());
+        System.out.println("RECEIVED: " + ListenersSetup.serverReceived.get());
+        System.out.println("SENT: " + ListenersSetup.serverSent.get());
         System.out.println("OPEN SESSIONS: " + serverStack.getProvider().getSessionStorage().size());
 
         System.out.println("===== CLIENT STATS =====");
-        System.out.println("SENT: " + CounterSetup.clientSent.get());
-        System.out.println("ACKS: " + CounterSetup.clientAcks.get());
+        System.out.println("SENT: " + ListenersSetup.clientSent.get());
+        System.out.println("ACKS: " + ListenersSetup.clientAcks.get());
         System.out.println("OPEN SESSIONS: " + clientStack.getProvider().getSessionStorage().size());
 
         // Test Case 1: asserting numbers of messages
         final int expectedMessages = TestConfig.SESSION_NUMBER * 3;
 
-        assertEquals(expectedMessages, CounterSetup.serverReceived.get());
-        assertEquals(expectedMessages, CounterSetup.serverSent.get());
-        assertEquals(expectedMessages, CounterSetup.serverReceived.get());
-        assertEquals(expectedMessages, CounterSetup.clientSent.get());
+        assertEquals(expectedMessages, ListenersSetup.serverReceived.get());
+        assertEquals(expectedMessages, ListenersSetup.serverSent.get());
+        assertEquals(expectedMessages, ListenersSetup.serverReceived.get());
+        assertEquals(expectedMessages, ListenersSetup.clientSent.get());
 
         // Test Case 2: asserting numbers of open sessions
         final int expectedSessions = 0;

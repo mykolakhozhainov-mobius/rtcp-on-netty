@@ -79,7 +79,7 @@ public class RtcpDecoder
         int itemCount = header.getItemCount(); 
         
         ReceiverReport rr = new ReceiverReport(header, ssrc);
-        
+
         if (itemCount > 0) {
             List<ReportBlock> reportBlocks = new ArrayList<>(itemCount);
 
@@ -94,16 +94,18 @@ public class RtcpDecoder
     
     public static SenderReport decodeSenderReport(ByteBuf srInBuf) {
         RtcpHeader header = decodeHeader(srInBuf);
-        
-        int ssrc = srInBuf.readInt();
-        int ntpTimestampMostSignificant = srInBuf.readInt();
-        int ntpTimestampLeastSignificant = srInBuf.readInt();
-        int rtpTimestamp = srInBuf.readInt();
-        int senderPacketCount = srInBuf.readInt();
-        int senderOctetCount = srInBuf.readInt();
+
+        ByteBuf content = srInBuf.readBytes(header.getLength() - 4);
+
+        int ssrc = content.readInt();
+        int ntpTimestampMostSignificant = content.readInt();
+        int ntpTimestampLeastSignificant = content.readInt();
+        int rtpTimestamp = content.readInt();
+        int senderPacketCount = content.readInt();
+        int senderOctetCount = content.readInt();
 
         int itemCount = header.getItemCount();
-        
+
         SenderReport sr = new SenderReport(
                 header,
                 ssrc,
@@ -118,11 +120,15 @@ public class RtcpDecoder
             List<ReportBlock> reportBlocks = new ArrayList<>(itemCount);
         
             for (int i = 0; i < itemCount; i++) {
-                reportBlocks.add(decodeReportBlock(srInBuf.readBytes(24)));
-                sr.setReportBlocks(reportBlocks);
+                reportBlocks.add(decodeReportBlock(content.readBytes(24)));
             }
+
+            sr.setReportBlocks(reportBlocks);
         }
-        
+
+        if (content.readableBytes() > 0) {
+            sr.setProfileSpecificExtensions(content.readBytes(content.readableBytes()));
+        }
         return sr;
     }
     

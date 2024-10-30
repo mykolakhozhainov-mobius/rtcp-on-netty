@@ -80,7 +80,7 @@ public class Provider {
     public void onMessage(RtcpBasePacket message, InetSocketAddress address, AsyncCallback callback) {
          int sessionId = message.getSSRC();
 
-        boolean isAnswer = message instanceof ReceiverReport && message.getHeader().getItemCount() == 0;
+        boolean isAnswer = message instanceof ReceiverReport;
         boolean isNewSession = false;
 
         

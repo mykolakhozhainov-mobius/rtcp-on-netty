@@ -9,7 +9,6 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.List;
 
 public class RtcpEncoder 
@@ -36,7 +35,7 @@ public class RtcpEncoder
 		 appInBuf.writeInt(app.getSSRC());
 		 
 		 byte[] nameBytes = app.getName().getBytes();
-		 appInBuf.writeBytes(Arrays.copyOfRange(nameBytes, 0, 4));
+		 appInBuf.writeBytes(nameBytes, 0, 4);
 		 
 		 appInBuf.writeInt(app.getApplicationDependentData());
 		 
@@ -154,7 +153,7 @@ public class RtcpEncoder
 		}
 		
 		//правильно встановлює довжину пакета
-		 header.setLength((short) (srInBuf.readableBytes())); 
+		 header.setLength((short) (srInBuf.readableBytes()));
 		 srInBuf.setShort(2, header.getLength());
 		    
 		return srInBuf;
