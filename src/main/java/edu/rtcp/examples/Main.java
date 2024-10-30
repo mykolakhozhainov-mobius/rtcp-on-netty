@@ -17,9 +17,15 @@ import edu.rtcp.server.session.Session;
 import edu.rtcp.server.session.types.ClientSession;
 import edu.rtcp.server.session.types.ServerSession;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.util.ArrayList;
 import java.util.List;
 public class Main {
+	
+	private static final Logger logger = LogManager.getLogger(Main.class);
+	
     public static void setServerListener(RtcpStack serverStack) {
         Provider serverProvider = serverStack.getProvider();
 
@@ -110,6 +116,10 @@ public class Main {
             public void onDataAnswer(RtcpBasePacket response, Session session, AsyncCallback callback) {
                 Configuration.clientAcks.incrementAndGet();
 
+                if (Configuration.processingStartTime == 0) {
+                	Configuration.processingStartTime = System.currentTimeMillis();
+                }
+                
                 Bye byeMessage = clientStack.getProvider().getPacketFactory().createBye(
                         (byte) 0,
                         session.getId(),
@@ -122,6 +132,7 @@ public class Main {
                     @Override
                     public void onSuccess() {
                         Configuration.clientSent.incrementAndGet();
+                        
                     }
 
                     @Override
@@ -159,6 +170,13 @@ public class Main {
             @Override
             public void onTerminationAnswer(RtcpBasePacket response, Session session, AsyncCallback callback) {
                 Configuration.clientAcks.incrementAndGet();
+                
+                if (Configuration.clientAcks.get() == Configuration.SESSION_NUMBER*3) {
+                    long processingEndTime = System.currentTimeMillis();
+                    Configuration.isComplete = true;
+                    logger.info("Total time to process all incoming messages: " + (processingEndTime - Configuration.processingStartTime) + " ms");
+                }
+                
                 callback.onSuccess();
             }
         });
@@ -215,6 +233,13 @@ public class Main {
                 @Override
                 public void onSuccess() {
                     Configuration.clientSent.incrementAndGet();
+
+                    if ( Configuration.clientSent.get() ==  Configuration.SESSION_NUMBER) 
+                    {
+                        long endTime = System.currentTimeMillis();
+                        Configuration.isAllSent = true;
+                        logger.info("Total time to send all messages: " + (endTime - Configuration.startTime) + " ms");
+                    }
                 }
 
                 @Override

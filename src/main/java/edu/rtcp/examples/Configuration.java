@@ -12,7 +12,15 @@ public class Configuration {
 
     public static final AtomicInteger clientSent = new AtomicInteger(0);
     public static final AtomicInteger clientAcks = new AtomicInteger(0);
+//
+    public static final long startTime = System.currentTimeMillis(); 
+    public static boolean isAllSent = false;
+    
+    public static long processingStartTime = 0;
+    public static boolean isComplete = false;
 
+ //
+    
     public static final int SESSION_NUMBER = 10000;
 
     public static final int TIME_LIMIT = 5000;
