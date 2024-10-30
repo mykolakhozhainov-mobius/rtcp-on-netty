@@ -17,7 +17,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class RtcpStreamDecoder extends ByteToMessageDecoder {
-	public static Logger logger = LogManager.getLogger(RtcpDatagramDecoder.class);
+	public static Logger logger = LogManager.getLogger(RtcpStreamDecoder.class);
 
 	private final RtcpStack stack;
 	private final MessageExecutor executor;

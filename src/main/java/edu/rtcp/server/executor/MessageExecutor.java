@@ -31,6 +31,7 @@ public class MessageExecutor {
     }
 
     public void addTaskLast(MessageTask task) {
+        this.workerPool.getPeriodicQueue();
         CountableQueue<Task> queue = this.getQueue(task.getId());
 
         if (queue != null) {

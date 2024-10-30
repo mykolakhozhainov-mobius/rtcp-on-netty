@@ -61,9 +61,6 @@ public class NetworkManager {
 	public NetworkLink getLinkByAddress(InetSocketAddress address) {
 		for (NetworkLink link : links.values()) {
 			if (new InetSocketAddress (link.getRemoteAddress(), link.getRemotePort()).equals(address)) {
-				System.out.println("isServer : " + this.stack.isServer);
-				System.out.println("Found LINK : " + link);
-				System.out.println("Found LINK : " + link.getChannel());
 				return link;
 			}
 		}
@@ -107,7 +104,7 @@ public class NetworkManager {
 							bossGroup.shutdownGracefully();
 						}
 					}).start();
-					
+
 					link.setChannel(future.channel());
 				} 
 				else if (stack.transport.equals(TransportEnum.UDP)) {
@@ -126,7 +123,7 @@ public class NetworkManager {
 							.bind(link.getLocalAddress(), link.getLocalPort())
 							.syncUninterruptibly()
 							.awaitUninterruptibly();
-					
+
 					for (NetworkLink foundLink : links.values()) {
 						foundLink.setChannel(future.channel());
 					}
@@ -218,7 +215,6 @@ public class NetworkManager {
 		}
 		else {
 			link = getLinkByAddress(address);
-			System.out.println("LINKS "+links.size());
 			if (stack.transport == TransportEnum.UDP ) {
 				link.getChannel().writeAndFlush(new DatagramPacket(RtcpParser.encode(message), (InetSocketAddress) address));
 			}
@@ -233,7 +229,7 @@ public class NetworkManager {
 
 	public void stop() {
 		if (!links.isEmpty()) {
-			
+
 			for (NetworkLink link : links.values()) {
 				try {
 					stopLink(link);
