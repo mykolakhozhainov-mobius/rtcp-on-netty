@@ -40,7 +40,7 @@ public class NetworkManager {
 	private final EventLoopGroup bossGroup;
 	private final EventLoopGroup workerGroup;
 
-	private static final int BUFFER_SIZE = 256 * 1024;
+	private static final int BUFFER_SIZE = 256 * 1024 * 2;
 
 	public NetworkManager(RtcpStack stack) {
 		this.stack = stack;

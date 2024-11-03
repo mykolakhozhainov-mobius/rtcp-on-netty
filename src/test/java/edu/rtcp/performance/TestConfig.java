@@ -13,8 +13,8 @@ public class TestConfig {
 
     // Performance options ------------------------------------------
     public static final int IDLE_TIMEOUT = 1000;
-    public static final int RESPONSE_TIMEOUT = 7000;
-    public static final int THREAD_POOL_SIZE = 16;
+    public static final int RESPONSE_TIMEOUT = 10000;
+    public static final int THREAD_POOL_SIZE = 4;
 
     public static final boolean LOGGING = false;
 }

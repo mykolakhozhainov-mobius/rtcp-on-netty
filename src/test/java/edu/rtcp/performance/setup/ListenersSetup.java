@@ -17,11 +17,22 @@ import java.net.InetSocketAddress;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class ListenersSetup {
-    public static final AtomicInteger serverReceived = new AtomicInteger(0);
-    public static final AtomicInteger serverSent = new AtomicInteger(0);
+    public static final AtomicInteger serverInitialRequests = new AtomicInteger(0);
+    public static final AtomicInteger serverDataRequests = new AtomicInteger(0);
+    public static final AtomicInteger serverTerminationRequests = new AtomicInteger(0);
+    public static final AtomicInteger serverAckSent = new AtomicInteger(0);
 
-    public static final AtomicInteger clientSent = new AtomicInteger(0);
-    public static final AtomicInteger clientAcks = new AtomicInteger(0);
+    public static final AtomicInteger clientInitialRequests = new AtomicInteger(0);
+    public static final AtomicInteger clientDataRequests = new AtomicInteger(0);
+    public static final AtomicInteger clientTerminationRequests = new AtomicInteger(0);
+    public static final AtomicInteger clientAckReceived = new AtomicInteger(0);
+
+
+//    public static final AtomicInteger serverReceived = new AtomicInteger(0);
+//    public static final AtomicInteger serverSent = new AtomicInteger(0);
+//
+//    public static final AtomicInteger clientSent = new AtomicInteger(0);
+//    public static final AtomicInteger clientAcks = new AtomicInteger(0);
 
     public static void setServerListener(RtcpStack serverStack) {
         Provider serverProvider = serverStack.getProvider();
@@ -36,7 +47,7 @@ public class ListenersSetup {
                 serverSession.sendInitialAnswer(answer, address, new AsyncCallback() {
                     @Override
                     public void onSuccess() {
-                        serverSent.incrementAndGet();
+                        serverAckSent.incrementAndGet();
                     }
 
                     @Override
@@ -45,7 +56,7 @@ public class ListenersSetup {
                     }
                 });
 
-                serverReceived.incrementAndGet();
+                serverInitialRequests.incrementAndGet();
             }
 
             @Override
@@ -57,7 +68,7 @@ public class ListenersSetup {
                 serverSession.sendTerminationAnswer(answer, address, new AsyncCallback() {
                     @Override
                     public void onSuccess() {
-                        serverSent.incrementAndGet();
+                        serverAckSent.incrementAndGet();
                     }
 
                     @Override
@@ -66,7 +77,7 @@ public class ListenersSetup {
                     }
                 });
 
-                serverReceived.incrementAndGet();
+                serverTerminationRequests.incrementAndGet();
             }
 
             @Override
@@ -78,7 +89,7 @@ public class ListenersSetup {
                 serverSession.sendDataAnswer(answer, address, new AsyncCallback() {
                     @Override
                     public void onSuccess() {
-                        serverSent.incrementAndGet();
+                        serverAckSent.incrementAndGet();
                     }
 
                     @Override
@@ -87,7 +98,7 @@ public class ListenersSetup {
                     }
                 });
 
-                serverReceived.incrementAndGet();
+                serverDataRequests.incrementAndGet();
             }
         });
     }
@@ -96,7 +107,7 @@ public class ListenersSetup {
         clientStack.getProvider().setClientListener(new ClientSessionListener() {
             @Override
             public void onDataAnswer(RtcpBasePacket response, Session session, AsyncCallback callback) {
-                clientAcks.incrementAndGet();
+                clientAckReceived.incrementAndGet();
 
                 Bye bye = PacketUtils.createBye(response.getSSRC());
 
@@ -105,7 +116,7 @@ public class ListenersSetup {
                 clientSession.sendTerminationRequest(bye, null, new AsyncCallback() {
                     @Override
                     public void onSuccess() {
-                        clientSent.incrementAndGet();
+                        clientTerminationRequests.incrementAndGet();
                     }
 
                     @Override
@@ -118,7 +129,7 @@ public class ListenersSetup {
 
             @Override
             public void onInitialAnswer(RtcpBasePacket response, Session session, AsyncCallback callback) {
-                clientAcks.incrementAndGet();
+                clientAckReceived.incrementAndGet();
 
                 SenderReport dataPacket = PacketUtils.createData(response.getSSRC());
 
@@ -127,7 +138,7 @@ public class ListenersSetup {
                 clientSession.sendDataRequest(dataPacket, null, new AsyncCallback() {
                     @Override
                     public void onSuccess() {
-                        clientSent.incrementAndGet();
+                        clientDataRequests.incrementAndGet();
                     }
 
                     @Override
@@ -140,7 +151,7 @@ public class ListenersSetup {
 
             @Override
             public void onTerminationAnswer(RtcpBasePacket response, Session session, AsyncCallback callback) {
-                clientAcks.incrementAndGet();
+                clientAckReceived.incrementAndGet();
                 callback.onSuccess();
             }
         });

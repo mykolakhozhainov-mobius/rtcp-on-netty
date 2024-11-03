@@ -1,8 +1,6 @@
 package edu.rtcp.server.session.types;
 
 import java.net.InetSocketAddress;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 import edu.rtcp.common.message.rtcp.header.RtcpBasePacket;
 import edu.rtcp.common.message.rtcp.packet.Bye;
@@ -15,9 +13,7 @@ import edu.rtcp.server.session.Session;
 import edu.rtcp.server.session.SessionStateEnum;
 
 public class ClientSession extends Session {
-
-    private final Queue<RtcpBasePacket> lastSentMessages = new ConcurrentLinkedQueue<>();
-
+    private RtcpBasePacket lastSentMessage;
 
     public ClientSession(int id, Provider provider) {
         this.id = id;
@@ -36,7 +32,7 @@ public class ClientSession extends Session {
         this.sendMessageAsTask(new MessageOutgoingTask(this, request, address, callback));
 
 
-        lastSentMessages.add(request);
+        this.lastSentMessage = request;
     }
 
     public void sendTerminationRequest(Bye request, InetSocketAddress address, AsyncCallback callback) {
@@ -49,7 +45,7 @@ public class ClientSession extends Session {
         // Sending Bye (Session closing message)
         this.sendMessageAsTask(new MessageOutgoingTask(this, request, address, callback));
 
-        lastSentMessages.add(request);
+        this.lastSentMessage = request;
     }
 
     public void sendDataRequest(RtcpBasePacket request, InetSocketAddress address, AsyncCallback callback) {
@@ -61,7 +57,7 @@ public class ClientSession extends Session {
         // Sending Data
         this.sendMessageAsTask(new MessageOutgoingTask(this, request, address, callback));
 
-        lastSentMessages.add(request);
+        this.lastSentMessage = request;
     }
 
     @Override
@@ -77,8 +73,6 @@ public class ClientSession extends Session {
             callback.onError(new RuntimeException("ACK response received while session status is not WAITING"));
             return;
         }
-
-        RtcpBasePacket lastSentMessage = lastSentMessages.poll();
 
         if (lastSentMessage instanceof SenderReport && lastSentMessage.getHeader().getItemCount() == 0) {
             this.setSessionState(SessionStateEnum.OPEN);

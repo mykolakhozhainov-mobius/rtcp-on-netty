@@ -2,7 +2,6 @@ package edu.rtcp.performance;
 
 import com.mobius.software.common.dal.timers.Timer;
 import edu.rtcp.RtcpStack;
-import edu.rtcp.common.message.rtcp.factory.PacketFactory;
 import edu.rtcp.common.message.rtcp.packet.SenderReport;
 import edu.rtcp.performance.setup.ListenersSetup;
 import edu.rtcp.performance.setup.PacketUtils;
@@ -52,15 +51,14 @@ public class PerformanceTest {
         clientStack.getNetworkManager().startAllLinks();
 
         // Test Action: sending messages (size > 200)
-        final PacketFactory packetFactory = clientStack.getProvider().getPacketFactory();
+        long startTime = System.currentTimeMillis() + 1000;
+        int chunk = TestConfig.SESSION_NUMBER / (TestConfig.INIT_TIME * 10);
 
-        Long startTime=System.currentTimeMillis()+1000;
-        int chunk=TestConfig.SESSION_NUMBER/(TestConfig.INIT_TIME*10);
-        logger.info("Chunk size:" + chunk);
+        logger.info("Chunk size: {}", chunk);
+
         for (int k = 0; k < TestConfig.SESSION_NUMBER; k++) {
             int sessionId = getSessionId();
-            if((k%chunk)==(chunk-1))
-                startTime+=100;
+            if ((k % chunk) == (chunk - 1)) startTime += 100;
 
             SenderReport initialPacket = PacketUtils.createInitial(sessionId);
 
@@ -68,7 +66,7 @@ public class PerformanceTest {
                     .getSessionFactory()
                     .createClientSession(initialPacket);
 
-            final Long currTime=startTime;
+            final long currTime = startTime;
             clientStack.getMessageExecutor().getPeriodicQueue().store(startTime, new Timer() {
                 @Override
                 public Long getRealTimestamp() {
@@ -85,7 +83,7 @@ public class PerformanceTest {
                     clientSession.sendInitialRequest(initialPacket, null, new AsyncCallback() {
                         @Override
                         public void onSuccess() {
-                            ListenersSetup.clientSent.incrementAndGet();
+                            ListenersSetup.clientInitialRequests.incrementAndGet();
                         }
 
                         @Override
@@ -108,22 +106,29 @@ public class PerformanceTest {
 
         // Output the stats
         System.out.println("===== SERVER STATS =====");
-        System.out.println("RECEIVED: " + ListenersSetup.serverReceived.get());
-        System.out.println("SENT: " + ListenersSetup.serverSent.get());
-        System.out.println("OPEN SESSIONS: " + serverStack.getProvider().getSessionStorage().size());
+        System.out.println("INITIAL: " + ListenersSetup.serverInitialRequests.get());
+        System.out.println("DATA: " + ListenersSetup.serverDataRequests.get());
+        System.out.println("TERMINATION: " + ListenersSetup.serverTerminationRequests.get());
+        System.out.println("ACKS SENT: " + ListenersSetup.serverAckSent.get());
+        System.out.println("SESSIONS LEFT: " + serverStack.getProvider().getSessionStorage().size());
 
         System.out.println("===== CLIENT STATS =====");
-        System.out.println("SENT: " + ListenersSetup.clientSent.get());
-        System.out.println("ACKS: " + ListenersSetup.clientAcks.get());
-        System.out.println("OPEN SESSIONS: " + clientStack.getProvider().getSessionStorage().size());
+        System.out.println("INITIAL: " + ListenersSetup.clientInitialRequests.get());
+        System.out.println("DATA: " + ListenersSetup.clientDataRequests.get());
+        System.out.println("TERMINATION: " + ListenersSetup.clientTerminationRequests.get());
+        System.out.println("ACKS RECEIVED: " + ListenersSetup.clientAckReceived.get());
+        System.out.println("SESSIONS LEFT: " + clientStack.getProvider().getSessionStorage().size());
 
         // Test Case 1: asserting numbers of messages
         final int expectedMessages = TestConfig.SESSION_NUMBER * 3;
 
-        assertEquals(expectedMessages, ListenersSetup.serverReceived.get());
-        assertEquals(expectedMessages, ListenersSetup.serverSent.get());
-        assertEquals(expectedMessages, ListenersSetup.serverReceived.get());
-        assertEquals(expectedMessages, ListenersSetup.clientSent.get());
+        int clientSent = ListenersSetup.clientInitialRequests.get() + ListenersSetup.clientDataRequests.get() + ListenersSetup.clientTerminationRequests.get();
+        int serverReceived = ListenersSetup.serverInitialRequests.get() + ListenersSetup.serverDataRequests.get() + ListenersSetup.serverTerminationRequests.get();
+
+        assertEquals(expectedMessages, serverReceived);
+        assertEquals(expectedMessages, ListenersSetup.serverAckSent.get());
+        assertEquals(expectedMessages, clientSent);
+        assertEquals(expectedMessages, ListenersSetup.clientAckReceived.get());
 
         // Test Case 2: asserting numbers of open sessions
         final int expectedSessions = 0;

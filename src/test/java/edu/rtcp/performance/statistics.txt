@@ -1,0 +1,13 @@
+Default workflow is:
+> Open message: 263 (329) bytes
+> Data message: 272 (338) bytes
+> Response message: 252 (318) bytes
+> Termination message: 244 (310) bytes
+
+10000 messages works fine if:
+> BUFFER_SIZE in Network Manager is 256 * 1024 * 2 = 524 288
+> wmem and rmem in system is 256 * 1024 * 2 = 524 288
+
+If buffer is default (256 * 1024):
+> 6000 - OK (if all other tabs are closed)
+> After Wireshark was opened - 6000 not OK (it may consume resources)
