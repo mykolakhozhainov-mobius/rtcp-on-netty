@@ -19,10 +19,10 @@ public class NetworkLink {
     }
 
     public String getLinkId() {
-		return linkId;
-	}
+        return linkId;
+    }
 
-	public void setChannel(Channel channel) {
+    public void setChannel(Channel channel) {
         this.channel = channel;
     }
 

@@ -6,6 +6,7 @@ import edu.rtcp.server.network.NetworkManager;
 import edu.rtcp.server.provider.Provider;
 
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -40,8 +41,8 @@ public class StackSetup {
 
             manager.addLink(
                     String.valueOf(i),
-                    InetAddress.getByName(TestConfig.ADDRESS), clientPort,
-                    InetAddress.getByName(TestConfig.ADDRESS), this.serverPort
+                    new InetSocketAddress(InetAddress.getByName(TestConfig.ADDRESS), clientPort),
+                    new InetSocketAddress(InetAddress.getByName(TestConfig.ADDRESS), this.serverPort)
             );
         }
 
@@ -66,8 +67,8 @@ public class StackSetup {
 
             manager.addLink(
                     String.valueOf(i),
-                    InetAddress.getByName(TestConfig.ADDRESS), this.serverPort,
-                    InetAddress.getByName(TestConfig.ADDRESS), clientPort
+                    new InetSocketAddress(InetAddress.getByName(TestConfig.ADDRESS), this.serverPort),
+                    new InetSocketAddress(InetAddress.getByName(TestConfig.ADDRESS), clientPort)
             );
         }
 

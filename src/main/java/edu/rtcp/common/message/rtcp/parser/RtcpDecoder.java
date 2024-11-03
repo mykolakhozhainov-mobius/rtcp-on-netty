@@ -8,7 +8,9 @@ import edu.rtcp.common.message.rtcp.parts.chunk.SdesItem;
 import edu.rtcp.common.message.rtcp.types.ItemsTypeEnum;
 import edu.rtcp.common.message.rtcp.types.PacketTypeEnum;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufUtil;
 
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
  
@@ -94,15 +96,15 @@ public class RtcpDecoder
     
     public static SenderReport decodeSenderReport(ByteBuf srInBuf) {
         RtcpHeader header = decodeHeader(srInBuf);
+        int usedLength = 0;
 
-        ByteBuf content = srInBuf.readBytes(header.getLength() - 4);
-
-        int ssrc = content.readInt();
-        int ntpTimestampMostSignificant = content.readInt();
-        int ntpTimestampLeastSignificant = content.readInt();
-        int rtpTimestamp = content.readInt();
-        int senderPacketCount = content.readInt();
-        int senderOctetCount = content.readInt();
+        int ssrc = srInBuf.readInt();
+        int ntpTimestampMostSignificant = srInBuf.readInt();
+        int ntpTimestampLeastSignificant = srInBuf.readInt();
+        int rtpTimestamp = srInBuf.readInt();
+        int senderPacketCount = srInBuf.readInt();
+        int senderOctetCount = srInBuf.readInt();
+        usedLength += 4 * 6;
 
         int itemCount = header.getItemCount();
 
@@ -120,20 +122,24 @@ public class RtcpDecoder
             List<ReportBlock> reportBlocks = new ArrayList<>(itemCount);
         
             for (int i = 0; i < itemCount; i++) {
-                reportBlocks.add(decodeReportBlock(content.readBytes(24)));
+                usedLength += 24;
+                reportBlocks.add(decodeReportBlock(srInBuf));
             }
 
             sr.setReportBlocks(reportBlocks);
         }
 
-        if (content.readableBytes() > 0) {
-            sr.setProfileSpecificExtensions(content.readBytes(content.readableBytes()));
+        int packetLength = header.getLength();
+        if (packetLength > usedLength) {
+            sr.setProfileSpecificExtensions(srInBuf.slice(srInBuf.readerIndex(), packetLength - usedLength - 4));
+            srInBuf.skipBytes(packetLength - usedLength - 4);
         }
+
         return sr;
     }
     
     public static SourceDescription decodeSourceDescription(ByteBuf sdInBuf) {
-        RtcpHeader header = decodeHeader(sdInBuf.readBytes(4));
+        RtcpHeader header = decodeHeader(sdInBuf);
 
         SourceDescription sd = new SourceDescription(header);
 
@@ -141,7 +147,7 @@ public class RtcpDecoder
         List<Chunk> chunks = new ArrayList<>(itemCount);
 
         for (int i = 0; i < itemCount; i++) {
-            chunks.add(decodeChunk(sdInBuf.readBytes(8))); 
+            chunks.add(decodeChunk(sdInBuf));
         }
 
         return sd;
@@ -173,11 +179,11 @@ public class RtcpDecoder
     	    if (type == ItemsTypeEnum.PRIV && sdesItemInBuf.isReadable(1)) 
     	    {
     	        prefixLength = (int) sdesItemInBuf.readByte(); 
-    	        prefix = sdesItemInBuf.readBytes(prefixLength).toString(); 
+    	        prefix = sdesItemInBuf.readCharSequence(prefixLength, Charset.forName("utf-8")).toString();
     	        totalLength += (prefixLength + 1);
     	    }
 
-    	    String data = sdesItemInBuf.readBytes(totalLength).toString(); 
+    	    String data = sdesItemInBuf.readCharSequence(totalLength, Charset.forName("utf-8")).toString();
 
     	    if (type == ItemsTypeEnum.PRIV) 
     	    {

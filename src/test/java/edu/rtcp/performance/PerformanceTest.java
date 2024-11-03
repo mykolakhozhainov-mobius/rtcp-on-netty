@@ -1,5 +1,6 @@
 package edu.rtcp.performance;
 
+import com.mobius.software.common.dal.timers.Timer;
 import edu.rtcp.RtcpStack;
 import edu.rtcp.common.message.rtcp.factory.PacketFactory;
 import edu.rtcp.common.message.rtcp.packet.SenderReport;
@@ -9,6 +10,8 @@ import edu.rtcp.performance.setup.StackSetup;
 import edu.rtcp.server.callback.AsyncCallback;
 import edu.rtcp.server.session.types.ClientSession;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 
 import java.util.HashSet;
@@ -19,6 +22,8 @@ import static org.junit.Assert.assertEquals;
 public class PerformanceTest {
     private static final StackSetup stackSetup = new StackSetup();
     private static final HashSet<Integer> usedIds = new HashSet<>();
+
+    private static final Logger logger= LogManager.getLogger(PerformanceTest.class);
 
     private static int getSessionId() {
         int id = Math.abs(new Random().nextInt());
@@ -49,8 +54,13 @@ public class PerformanceTest {
         // Test Action: sending messages (size > 200)
         final PacketFactory packetFactory = clientStack.getProvider().getPacketFactory();
 
+        Long startTime=System.currentTimeMillis()+1000;
+        int chunk=TestConfig.SESSION_NUMBER/(TestConfig.INIT_TIME*10);
+        logger.info("Chunk size:" + chunk);
         for (int k = 0; k < TestConfig.SESSION_NUMBER; k++) {
             int sessionId = getSessionId();
+            if((k%chunk)==(chunk-1))
+                startTime+=100;
 
             SenderReport initialPacket = PacketUtils.createInitial(sessionId);
 
@@ -58,15 +68,36 @@ public class PerformanceTest {
                     .getSessionFactory()
                     .createClientSession(initialPacket);
 
-            clientSession.sendInitialRequest(initialPacket, null, new AsyncCallback() {
+            final Long currTime=startTime;
+            clientStack.getMessageExecutor().getPeriodicQueue().store(startTime, new Timer() {
                 @Override
-                public void onSuccess() {
-                    ListenersSetup.clientSent.incrementAndGet();
+                public Long getRealTimestamp() {
+                    return currTime;
                 }
 
                 @Override
-                public void onError(Exception e) {
-                    throw new RuntimeException(e);
+                public void stop() {
+
+                }
+
+                @Override
+                public void execute() {
+                    clientSession.sendInitialRequest(initialPacket, null, new AsyncCallback() {
+                        @Override
+                        public void onSuccess() {
+                            ListenersSetup.clientSent.incrementAndGet();
+                        }
+
+                        @Override
+                        public void onError(Exception e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
+                }
+
+                @Override
+                public long getStartTime() {
+                    return currTime;
                 }
             });
         }

@@ -15,7 +15,7 @@ public class RtcpStack {
     private final MessageExecutor messageExecutor;
     private final int threadPoolSize;
 
-    private static final int WORKERS_NUMBER = 4;
+    private static final int WORKERS_NUMBER = 16;
     private static final int TASK_INTERVAL = 100;
 
     // Networking --------------------------------------

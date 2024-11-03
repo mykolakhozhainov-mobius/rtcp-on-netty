@@ -52,9 +52,7 @@ public class NetworkManager {
 		System.out.println("links Size: " + links.size());
 		System.out.println("remoteAddress " + address);
 		for (NetworkLink link : links.values()) {
-			System.out.println("remoteAddress of link" + link.getRemoteAddress());
-			if (link.getRemoteAddress().equals(address)) {
-				System.out.println("remoteAddress returned");
+			if (link.getRemoteAddress().equals(address))
 				return link;
 			}
 		}
