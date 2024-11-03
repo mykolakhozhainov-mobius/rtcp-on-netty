@@ -48,8 +48,11 @@ public class NetworkManager {
 	}
 
 	public NetworkLink getLinkByAddress(InetSocketAddress address) {
+		System.out.println("remoteAddress isServer: " + stack.isServer);
+		System.out.println("links Size: " + links.size());
+		System.out.println("remoteAddress " + address);
 		for (NetworkLink link : links.values()) {
-			if (link.getRemoteAddress().equals(address)) {
+			if (link.getRemoteAddress().equals(address))
 				return link;
 			}
 		}
