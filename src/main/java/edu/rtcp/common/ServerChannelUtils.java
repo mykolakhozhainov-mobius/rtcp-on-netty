@@ -23,6 +23,6 @@ public class ServerChannelUtils {
     }
 
     public static EventLoopGroup createEventLoopGroup() {
-        return isEpoll ? new EpollEventLoopGroup() : new NioEventLoopGroup();
+        return isEpoll ? new EpollEventLoopGroup(16) : new NioEventLoopGroup(16);
     }
 }

@@ -1,5 +1,15 @@
 package edu.rtcp.server.network;
 
+import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import edu.rtcp.RtcpStack;
 import edu.rtcp.common.ClientChannelUtils;
 import edu.rtcp.common.ServerChannelUtils;
@@ -10,24 +20,17 @@ import edu.rtcp.server.callback.AsyncCallback;
 import edu.rtcp.server.network.channel.DatagramChannelInitializer;
 import edu.rtcp.server.network.channel.StreamChannelInitializer;
 import io.netty.bootstrap.Bootstrap;
+import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
+import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollChannelOption;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.socket.DatagramPacket;
 import io.netty.channel.socket.SocketChannel;
-import io.netty.bootstrap.ServerBootstrap;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class NetworkManager {
 	public static Logger logger = LogManager.getLogger(NetworkManager.class);
@@ -40,7 +43,7 @@ public class NetworkManager {
 	private final EventLoopGroup bossGroup;
 	private final EventLoopGroup workerGroup;
 
-	private static final int BUFFER_SIZE = 256 * 1024 * 2;
+	private static final int BUFFER_SIZE = 128 * 1024;
 
 	public NetworkManager(RtcpStack stack) {
 		this.stack = stack;
@@ -66,7 +69,7 @@ public class NetworkManager {
 		return null;
 	}
 
-	private void startStreamServer(NetworkLink link) {
+	private void startStreamServer(InetSocketAddress localAddress) {
 		ServerBootstrap streamBootstrap = new ServerBootstrap()
 				.group(bossGroup, workerGroup)
 				.channel(ServerChannelUtils.getSocketChannel())
@@ -86,7 +89,7 @@ public class NetworkManager {
 				});
 
 		ChannelFuture streamFuture = streamBootstrap
-				.bind(link.getLocalAddress())
+				.bind(localAddress)
 				.syncUninterruptibly()
 				.awaitUninterruptibly();
 
@@ -106,7 +109,7 @@ public class NetworkManager {
 		}
 	}
 
-	private void startDatagramServer(NetworkLink link) {
+	private void startDatagramServer(InetSocketAddress localAddress) {
 		Bootstrap datagramBootstrap = new Bootstrap()
 				.channel(ServerChannelUtils.getDatagramChannel())
 				.group(workerGroup)
@@ -117,19 +120,30 @@ public class NetworkManager {
 				.option(EpollChannelOption.IP_FREEBIND, true)
 				.handler(new DatagramChannelInitializer(stack));
 
-		ChannelFuture datagramFuture = datagramBootstrap
-				.bind(link.getLocalAddress())
-				.syncUninterruptibly()
-				.awaitUninterruptibly();
-
+		List<ChannelFuture> futures = new ArrayList<ChannelFuture>();
+		int maxChannels=stack.getThreadPoolSize();
+		if(!Epoll.isAvailable())
+			maxChannels=1;
+		
+		for(int i=0;i<maxChannels;i++)
+		{
+			ChannelFuture datagramFuture = datagramBootstrap
+					.bind(localAddress)
+					.syncUninterruptibly()
+					.awaitUninterruptibly();
+			futures.add(datagramFuture);
+		}
+		
+		int index=0;
 		for (NetworkLink foundLink : links.values()) {
-			foundLink.setChannel(datagramFuture.channel());
+			foundLink.setChannel(futures.get(index%futures.size()).channel());
+			index++;
 		}
 	}
 
 	public void startServer(NetworkLink link) {
-		if (stack.transport == TransportEnum.TCP) this.startStreamServer(link);
-		else this.startDatagramServer(link);
+		if (stack.transport == TransportEnum.TCP) this.startStreamServer(link.getLocalAddress());
+		else this.startDatagramServer(link.getLocalAddress());
 	}
 
 	private void startStreamClient(NetworkLink link) {
